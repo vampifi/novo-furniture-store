@@ -34,6 +34,17 @@ module.exports = {
           80: "#1F2937",
           90: "#111827",
         },
+        primary: "#ff5e57", // Set this as per the Dusk theme's color
+        secondary: "#4a4a4a", // Adjust the secondary colors too
+        // background: "#f3e8e1", // Background color based on Dusk theme
+        background: "#f6ece6", // Background color based on Dusk theme
+        accent: "#ff5e57", // Accent color based on Dusk theme
+        muted: "#f3f4f6", // Muted color based on Dusk theme
+        border: "#e5e7eb", // Border color based on Dusk theme
+        success: "#22c55e", // Success color based on Dusk theme
+        info: "#3b82f6", // Info color based on Dusk theme
+        warning: "#facc15", // Warning color based on Dusk theme
+        danger: "#ef4444", // Danger color based on Dusk theme
       },
       borderRadius: {
         none: "0px",
