@@ -14,6 +14,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+     domains: ['res.cloudinary.com'],
     remotePatterns: [
       {
         protocol: "http",

@@ -111,25 +111,25 @@
 //   )
 // }
 
-
-import { Suspense } from "react";
-import { listRegions } from "@lib/data/regions";
-import { StoreRegion } from "@medusajs/types";
-import LocalizedClientLink from "@modules/common/components/localized-client-link";
-import CartButton from "@modules/layout/components/cart-button";
-import User from "@modules/common/icons/user";
-import { BiSupport } from "react-icons/bi";
-import { CiShoppingCart } from "react-icons/ci";
-import { getCategoriesList } from "@lib/data/categories"; // Import to fetch categories
+import { Suspense } from "react"
+import { listRegions } from "@lib/data/regions"
+import { StoreRegion } from "@medusajs/types"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import CartButton from "@modules/layout/components/cart-button"
+import User from "@modules/common/icons/user"
+import { BiSupport } from "react-icons/bi"
+import { CiShoppingCart } from "react-icons/ci"
+import { getCategoriesList } from "@lib/data/categories" // Import to fetch categories
 
 export default async function Nav() {
   // Fetch regions and categories dynamically
-  const regions = await listRegions().then((regions: StoreRegion[]) => regions);
-  const { product_categories } = await getCategoriesList(0, 6); // Fetch the first 6 categories
+  const regions = await listRegions().then((regions: StoreRegion[]) => regions)
+  const { product_categories } = await getCategoriesList(0, 6) // Fetch the first 6 categories
 
   return (
-    <div className="sticky top-0 inset-x-0 z-50 group">
-      <header className="relative h-28 mx-auto bg-background ">
+    <div className="bg-background">
+      {/* <div className="sticky top-0 inset-x-0 z-50 group"> */}
+      <header className="relative h-28 mx-auto  ">
         <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full h-full text-small-regular">
           {/* Logo and Top Icons */}
           <div className="h-full items-center flex justify-between w-full">
@@ -143,14 +143,14 @@ export default async function Nav() {
             </LocalizedClientLink>
 
             {/* Right-side icons (Search, Support, User, Cart) */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-8">
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
                 href="/search"
                 scroll={false}
                 data-testid="nav-search-link"
               >
-                <div className="relative w-full max-w-md">
+                <div className="relative min-w-96 max-w-md">
                   <input
                     type="text"
                     placeholder="Search"
@@ -210,10 +210,11 @@ export default async function Nav() {
       </header>
 
       {/* Categories Below the Logo */}
-      <div className="bg-background border-t py-3">
+      <div className=" py-3">
         <div className="content-container">
           <ul className="flex space-x-6">
-            {product_categories && product_categories.length > 0 && (
+            {product_categories &&
+              product_categories.length > 0 &&
               product_categories.slice(0, 6).map((category) => (
                 <li key={category.id} className="text-small-regular">
                   <LocalizedClientLink
@@ -224,11 +225,25 @@ export default async function Nav() {
                     {category.name}
                   </LocalizedClientLink>
                 </li>
-              ))
-            )}
+              ))}
           </ul>
         </div>
       </div>
+      {/* Informational Bar Below Categories */}
+      <div className="flex justify-between text-center space-x-4 py-4">
+        <div className="flex-1">
+          <p className="text-small-regular  ">
+            <span className="font-bold">0% Finance</span> Available</p>
+        </div>
+        <div className="flex-1">
+          <p className="text-small-regular ">
+            Over <span className="font-bold">1,000,000</span> Happy Customers
+          </p>
+        </div>
+        <div className="flex-1">
+          <p className="text-small-regular">85,000+ <span className="font-bold">5 Star Reviews</span></p>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
