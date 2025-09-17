@@ -34,7 +34,7 @@ module.exports = {
           80: "#1F2937",
           90: "#111827",
         },
-        primary: "#ff5e57", // Set this as per the Dusk theme's color
+        primary: "#BB2649", // Set this as per the Dusk theme's color
         secondary: "#4a4a4a", // Adjust the secondary colors too
         // background: "#f3e8e1", // Background color based on Dusk theme
         background: "#f6ece6", // Background color based on Dusk theme

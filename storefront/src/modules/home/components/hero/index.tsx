@@ -1,24 +1,23 @@
-import { Github } from "@medusajs/icons"
-import { Button, Heading } from "@medusajs/ui"
 import Image from "next/image"
 
 const Hero = () => {
   return (
-    <div className="h-96 w-full border-b border-ui-border-base relative bg-ui-bg-subtle bg-background">
-    <Image 
-      src="https://res.cloudinary.com/dhbh2lu21/image/upload/v1758089072/WebBanner_Novo-furniture_ay0axy.webp"
-      alt="Novo furniture Hero Image"
-      className="h-auto max-w-full object-cover"
-      layout="fill"
-    />
+    <div className="relative w-full border-b border-ui-border-base bg-ui-bg-subtle bg-background">
+      {/* Mobile-first responsive container with aspect ratio */}
+      <div className="relative w-full h-48 sm:h-64 md:h-72 lg:h-80 xl:h-96 2xl:h-[28rem] overflow-hidden">
+        <Image 
+          src="https://res.cloudinary.com/dhbh2lu21/image/upload/v1758089072/WebBanner_Novo-furniture_ay0axy.webp"
+          alt="Novo furniture Hero Image"
+          fill
+          priority
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 100vw, 100vw"
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-50"></div>
+      </div>
     </div>
-
-    
   )
 }
 
 export default Hero
-
-
-{/* <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center small:p-32 gap-6">
-      </div> */}
