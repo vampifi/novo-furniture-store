@@ -155,124 +155,395 @@
 // }
 
 
-import { getCategoriesList } from "@lib/data/categories";
-import { getCollectionsList } from "@lib/data/collections";
-import { Text, clx } from "@medusajs/ui";
-import LocalizedClientLink from "@modules/common/components/localized-client-link";
-import MedusaCTA from "@modules/layout/components/medusa-cta";
+// [#474546]
+
+// import { getCategoriesList } from "@lib/data/categories"
+// import { getCollectionsList } from "@lib/data/collections"
+// import { Text, clx } from "@medusajs/ui"
+
+// import LocalizedClientLink from "@modules/common/components/localized-client-link"
+// import MedusaCTA from "@modules/layout/components/medusa-cta"
+
+// export default async function Footer() {
+//   const { collections } = await getCollectionsList(0, 6)
+//   const { product_categories } = await getCategoriesList(0, 6)
+
+//   return (
+//     <footer className="bg-[#474546] py-16 text-white">
+//       <div className="content-container flex flex-col w-full">
+//         {/* Main Footer Content */}
+//         <div className="flex flex-col gap-y-12 md:flex-row items-start justify-between py-16">
+//           {/* Logo and Branding */}
+//           <div className="flex flex-col items-start mb-8 md:mb-0">
+//             <LocalizedClientLink
+//               href="/"
+//               className="text-4xl font-bold text-white uppercase hover:text-primary mb-6"
+//             >
+//               NOVA FURNITURE
+//             </LocalizedClientLink>
+//             <Text className="text-sm text-muted mb-4">
+//               Your trusted furniture store for modern living. Offering quality and style in every piece.
+//             </Text>
+//           </div>
+
+//           {/* Links Section */}
+//           <div className="grid grid-cols-2 sm:grid-cols-4 gap-12">
+//             {/* Categories */}
+//             {product_categories && product_categories.length > 0 && (
+//               <div className="flex flex-col gap-y-4">
+//                 <span className="text-lg font-semibold mb-4">Categories</span>
+//                 <ul className="space-y-3">
+//                   {product_categories.slice(0, 6).map((c) => {
+//                     if (c.parent_category) return null
+
+//                     const children =
+//                       c.category_children?.map((child) => ({
+//                         name: child.name,
+//                         handle: child.handle,
+//                         id: child.id,
+//                       })) || null
+
+//                     return (
+//                       <li key={c.id} className="text-sm text-muted">
+//                         <LocalizedClientLink
+//                           className="hover:text-primary transition-all"
+//                           href={`/categories/${c.handle}`}
+//                         >
+//                           {c.name}
+//                         </LocalizedClientLink>
+//                         {children && (
+//                           <ul className="ml-4 space-y-2">
+//                             {children.map((child) => (
+//                               <li key={child.id}>
+//                                 <LocalizedClientLink
+//                                   className="hover:text-primary text-sm transition-all"
+//                                   href={`/categories/${child.handle}`}
+//                                 >
+//                                   {child.name}
+//                                 </LocalizedClientLink>
+//                               </li>
+//                             ))}
+//                           </ul>
+//                         )}
+//                       </li>
+//                     )
+//                   })}
+//                 </ul>
+//               </div>
+//             )}
+
+//             {/* Collections */}
+//             {collections && collections.length > 0 && (
+//               <div className="flex flex-col gap-y-4">
+//                 <span className="text-lg font-semibold mb-4">Collections</span>
+//                 <ul className="space-y-3">
+//                   {collections.slice(0, 6).map((c) => (
+//                     <li key={c.id} className="text-sm text-muted">
+//                       <LocalizedClientLink
+//                         className="hover:text-primary transition-all"
+//                         href={`/collections/${c.handle}`}
+//                       >
+//                         {c.title}
+//                       </LocalizedClientLink>
+//                     </li>
+//                   ))}
+//                 </ul>
+//               </div>
+//             )}
+
+//             {/* Medusa Links */}
+//             <div className="flex flex-col gap-y-4">
+//               <span className="text-lg font-semibold mb-4">Medusa</span>
+//               <ul className="space-y-3 text-sm text-muted">
+//                 <li>
+//                   <a
+//                     href="https://github.com/medusajs"
+//                     target="_blank"
+//                     rel="noreferrer"
+//                     className="hover:text-primary transition-all"
+//                   >
+//                     GitHub
+//                   </a>
+//                 </li>
+//                 <li>
+//                   <a
+//                     href="https://docs.medusajs.com"
+//                     target="_blank"
+//                     rel="noreferrer"
+//                     className="hover:text-primary transition-all"
+//                   >
+//                     Documentation
+//                   </a>
+//                 </li>
+//                 <li>
+//                   <a
+//                     href="https://github.com/medusajs/nextjs-starter-medusa"
+//                     target="_blank"
+//                     rel="noreferrer"
+//                     className="hover:text-primary transition-all"
+//                   >
+//                     Source code
+//                   </a>
+//                 </li>
+//               </ul>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Footer Bottom Content */}
+//         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted py-6">
+//           {/* Copyright Text */}
+//           <Text className="text-center md:text-left text-white">
+//             © {new Date().getFullYear()} Nova Furniture. All rights reserved.
+//           </Text>
+
+//           {/* Social Media Icons */}
+//           <div className="flex space-x-6 mt-6 md:mt-0">
+//             <a href="#" className="hover:text-primary transition-all">
+//               <i className="fab fa-facebook-f"></i>
+//             </a>
+//             <a href="#" className="hover:text-primary transition-all">
+//               <i className="fab fa-instagram"></i>
+//             </a>
+//             <a href="#" className="hover:text-primary transition-all">
+//               <i className="fab fa-twitter"></i>
+//             </a>
+//             <a href="#" className="hover:text-primary transition-all">
+//               <i className="fab fa-pinterest"></i>
+//             </a>
+//           </div>
+
+//           {/* Payment Icons */}
+//           <div className="flex space-x-6 mt-6 md:mt-0">
+//             <img src="/images/apple-pay.png" alt="Apple Pay" className="h-8" />
+//             <img src="/images/google-pay.png" alt="Google Pay" className="h-8" />
+//             <img src="/images/credit-card.png" alt="Credit Card" className="h-8" />
+//             <img src="/images/paypal.png" alt="PayPal" className="h-8" />
+//           </div>
+//         </div>
+
+//         {/* Back to Top Button */}
+//         <div className="text-center mt-6">
+//           <a href="#top" className="text-sm hover:text-primary transition-all">
+//             Back to Top
+//           </a>
+//         </div>
+//       </div>
+//     </footer>
+//   )
+// }
+
+import { getCategoriesList } from "@lib/data/categories"
+import { getCollectionsList } from "@lib/data/collections"
+import { Text, clx } from "@medusajs/ui"
+
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import MedusaCTA from "@modules/layout/components/medusa-cta"
 
 export default async function Footer() {
-  const { collections } = await getCollectionsList(0, 6);
-  const { product_categories } = await getCategoriesList(0, 6);
+  const { collections } = await getCollectionsList(0, 6)
+  const { product_categories } = await getCategoriesList(0, 6)
 
   return (
-    <footer className="border-t border-ui-border-base w-full bg-[#474546]">
+    <footer className="bg-[#474546] py-16 text-white">
       <div className="content-container flex flex-col w-full">
-        {/* Footer Top */}
-        <div className="flex flex-col gap-y-6 sm:flex-row items-start justify-between py-16">
-          {/* Logo Section */}
-          <div>
+        {/* Main Footer Content */}
+        <div className="flex flex-col gap-y-12 md:flex-row items-start justify-between py-16">
+          {/* Logo and Branding */}
+          <div className="flex flex-col items-start mb-8 md:mb-0">
             <LocalizedClientLink
               href="/"
-              className="text-xl text-white font-bold uppercase hover:text-primary"
+              className="text-4xl font-bold text-white uppercase hover:text-primary mb-6"
             >
-              Dusk
+              NOVA FURNITURE
             </LocalizedClientLink>
+            <Text className="text-sm text-muted mb-4">
+              Your trusted furniture store for modern living. Offering quality and style in every piece.
+            </Text>
           </div>
 
-          {/* Footer Sections */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-10 sm:gap-x-16">
-            {/* Dusk Style */}
-            <div className="flex flex-col gap-y-2 text-white">
-              <span className="font-semibold">Dusk Style</span>
-              <ul className="space-y-2">
-                <li><LocalizedClientLink href="/about-us">About Us</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/inspiration">Inspiration</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/blog">Blog</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/buying-guides">Buying Guides</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/best-sellers">Best Sellers</LocalizedClientLink></li>
+          {/* 6 Column Footer Layout */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-12">
+            {/* Categories */}
+            {product_categories && product_categories.length > 0 && (
+              <div className="flex flex-col gap-y-4">
+                <span className="text-lg font-semibold mb-4">Categories</span>
+                <ul className="space-y-3">
+                  {product_categories.slice(0, 6).map((c) => {
+                    if (c.parent_category) return null
+
+                    const children =
+                      c.category_children?.map((child) => ({
+                        name: child.name,
+                        handle: child.handle,
+                        id: child.id,
+                      })) || null
+
+                    return (
+                      <li key={c.id} className="text-sm text-muted">
+                        <LocalizedClientLink
+                          className="hover:text-primary transition-all"
+                          href={`/categories/${c.handle}`}
+                        >
+                          {c.name}
+                        </LocalizedClientLink>
+                        {children && (
+                          <ul className="ml-4 space-y-2">
+                            {children.map((child) => (
+                              <li key={child.id}>
+                                <LocalizedClientLink
+                                  className="hover:text-primary text-sm transition-all"
+                                  href={`/categories/${child.handle}`}
+                                >
+                                  {child.name}
+                                </LocalizedClientLink>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {/* Collections */}
+            {collections && collections.length > 0 && (
+              <div className="flex flex-col gap-y-4">
+                <span className="text-lg font-semibold mb-4">Collections</span>
+                <ul className="space-y-3">
+                  {collections.slice(0, 6).map((c) => (
+                    <li key={c.id} className="text-sm text-muted">
+                      <LocalizedClientLink
+                        className="hover:text-primary transition-all"
+                        href={`/collections/${c.handle}`}
+                      >
+                        {c.title}
+                      </LocalizedClientLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Medusa Links */}
+            <div className="flex flex-col gap-y-4">
+              <span className="text-lg font-semibold mb-4">Medusa</span>
+              <ul className="space-y-3 text-sm text-muted">
+                <li>
+                  <a
+                    href="https://github.com/medusajs"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-primary transition-all"
+                  >
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://docs.medusajs.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-primary transition-all"
+                  >
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/medusajs/nextjs-starter-medusa"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-primary transition-all"
+                  >
+                    Source code
+                  </a>
+                </li>
               </ul>
             </div>
 
-            {/* Customer Care */}
-            <div className="flex flex-col gap-y-2 text-white">
-              <span className="font-semibold">Customer Care</span>
-              <ul className="space-y-2">
-                <li><LocalizedClientLink href="/track-my-order">Track My Order</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/help-faqs">Help & FAQs</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/delivery">Delivery</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/returns">Returns</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/rewards">MyDusk Rewards</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/sleep-trial">100-Night Sleep Trial</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/will-it-fit">Will It Fit?</LocalizedClientLink></li>
+            {/* Other Links (About Us, Contact, etc.) */}
+            <div className="flex flex-col gap-y-4">
+              <span className="text-lg font-semibold mb-4">Quick Links</span>
+              <ul className="space-y-3 text-sm text-muted">
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-primary transition-all"
+                    href="/about"
+                  >
+                    About Us
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-primary transition-all"
+                    href="/contact"
+                  >
+                    Contact
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-primary transition-all"
+                    href="/faq"
+                  >
+                    FAQs
+                  </LocalizedClientLink>
+                </li>
               </ul>
             </div>
 
-            {/* Our Website */}
-            <div className="flex flex-col gap-y-2 text-white">
-              <span className="font-semibold">Our Website</span>
-              <ul className="space-y-2">
-                <li><LocalizedClientLink href="/terms-and-conditions">Terms & Conditions</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/privacy-policy">Privacy Policy</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/klarna">Klarna</LocalizedClientLink></li>
-              </ul>
-            </div>
+         
 
-            {/* Best Sellers */}
-            <div className="flex flex-col gap-y-2 text-white">
-              <span className="font-semibold">Best Sellers</span>
-              <ul className="space-y-2">
-                <li><LocalizedClientLink href="/luxury-bedding">Luxury Bedding</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/beds">Beds</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/ottoman-beds">Ottoman Beds</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/mattresses">Mattresses</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/sofas">Sofas</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/corner-sofas">Corner Sofas</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/dining-tables">Dining Tables</LocalizedClientLink></li>
-              </ul>
+            {/* Social Media */}
+            <div className="flex flex-col gap-y-4">
+              <span className="text-lg font-semibold mb-4">Follow Us</span>
+              <div className="flex space-x-6 mt-4">
+                <a href="#" className="hover:text-primary transition-all">
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" className="hover:text-primary transition-all">
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a href="#" className="hover:text-primary transition-all">
+                  <i className="fab fa-twitter"></i>
+                </a>
+                <a href="#" className="hover:text-primary transition-all">
+                  <i className="fab fa-pinterest"></i>
+                </a>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Footer Bottom */}
-        <div className="flex w-full justify-between items-center py-8 text-sm text-gray-400">
-          {/* Back to Top Button */}
-          <button className="text-white hover:text-primary">
-            Back to Top
-          </button>
-
-          {/* Social Media & Payment Methods */}
-          <div className="flex items-center gap-4">
-            {/* Social Media Icons */}
-            <div className="flex gap-3">
-              <LocalizedClientLink href="https://www.instagram.com" target="_blank">
-                <img src="/images/instagram-icon.png" alt="Instagram" className="w-6 h-6" />
-              </LocalizedClientLink>
-              <LocalizedClientLink href="https://www.tiktok.com" target="_blank">
-                <img src="/images/tiktok-icon.png" alt="TikTok" className="w-6 h-6" />
-              </LocalizedClientLink>
-              <LocalizedClientLink href="https://www.pinterest.com" target="_blank">
-                <img src="/images/pinterest-icon.png" alt="Pinterest" className="w-6 h-6" />
-              </LocalizedClientLink>
-            </div>
-
-            {/* Payment Methods */}
-            <div className="flex gap-4">
-              <img src="/images/apple-pay-icon.png" alt="Apple Pay" className="w-8 h-8" />
-              <img src="/images/google-pay-icon.png" alt="Google Pay" className="w-8 h-8" />
-              <img src="/images/paypal-icon.png" alt="PayPal" className="w-8 h-8" />
-              <img src="/images/visa-icon.png" alt="Visa" className="w-8 h-8" />
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Copyright */}
-        <div className="flex justify-center items-center py-4 text-white text-sm">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Dusk. All rights reserved.
+        {/* Footer Bottom Content */}
+        <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted py-6">
+          {/* Copyright Text */}
+          <Text className="text-center md:text-left text-white">
+            © {new Date().getFullYear()} Nova Furniture. All rights reserved.
           </Text>
+
+          {/* Payment Icons */}
+          <div className="flex space-x-6 mt-6 md:mt-0">
+            <img src="/images/apple-pay.png" alt="Apple Pay" className="h-8" />
+            <img src="/images/google-pay.png" alt="Google Pay" className="h-8" />
+            <img src="/images/credit-card.png" alt="Credit Card" className="h-8" />
+            <img src="/images/paypal.png" alt="PayPal" className="h-8" />
+          </div>
+        </div>
+
+        {/* Back to Top Button */}
+        <div className="text-center mt-6">
+          <a
+            href="#top"
+            className="text-sm hover:text-primary transition-all fixed bottom-10 right-10 bg-primary text-white rounded-full p-3"
+          >
+            ↑
+          </a>
         </div>
       </div>
     </footer>
-  );
+  )
 }
