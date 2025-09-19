@@ -1,115 +1,3 @@
-// import { Suspense } from "react"
-
-// import { listRegions } from "@lib/data/regions"
-// import { StoreRegion } from "@medusajs/types"
-// import LocalizedClientLink from "@modules/common/components/localized-client-link"
-// import CartButton from "@modules/layout/components/cart-button"
-// import SideMenu from "@modules/layout/components/side-menu"
-// import User from "@modules/common/icons/user"
-// import { CiShoppingBasket, CiShoppingCart } from "react-icons/ci"
-// import { BiSupport } from "react-icons/bi"
-
-// export default async function Nav() {
-//   const regions = await listRegions().then((regions: StoreRegion[]) => regions)
-
-//   return (
-//     <div className="sticky top-0 inset-x-0 z-50 group">
-//       <header className="relative h-28 mx-auto border-b duration-200 bg-background border-ui-border-base">
-//         <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full h-full text-small-regular">
-//           {/* <div className="flex-1 basis-0 h-full flex items-center"> */}
-//           <div className="h-full items-center flex">
-//             {/* <SideMenu regions={regions} /> */}
-//             <LocalizedClientLink
-//               href="/"
-//               className="text-6xl font-extrabold hover:text-ui-fg-base uppercase text-[#474546]"
-//               data-testid="nav-store-link"
-//             >
-//               DUSK
-//             </LocalizedClientLink>
-//           </div>
-//           {/* </div> */}
-
-//           {/* <div className="flex items-center h-full">
-//             <LocalizedClientLink
-//               href="/"
-//               className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase text-primary"
-//               data-testid="nav-store-link"
-//             >
-//               Medusa Store
-//             </LocalizedClientLink>
-//           </div> */}
-
-//           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
-//             <div className="hidden small:flex items-center gap-x-6 h-full">
-//               {/* {process.env.NEXT_PUBLIC_FEATURE_SEARCH_ENABLED && ( */}
-//               <LocalizedClientLink
-//                 className="hover:text-ui-fg-base"
-//                 href="/search"
-//                 scroll={false}
-//                 data-testid="nav-search-link"
-//               >
-//                 <div className="flex items-center justify-center">
-//                   <div className="relative w-full max-w-md">
-//                     <input
-//                       type="text"
-//                       placeholder="Search"
-//                       className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
-//                     />
-//                     <span className="absolute inset-y-0 right-3 flex items-center text-gray-400">
-//                       <svg
-//                         xmlns="http://www.w3.org/2000/svg"
-//                         className="h-5 w-5"
-//                         fill="none"
-//                         viewBox="0 0 24 24"
-//                         stroke="currentColor"
-//                         stroke-width="2"
-//                       >
-//                         <path
-//                           stroke-linecap="round"
-//                           stroke-linejoin="round"
-//                           d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
-//                         />
-//                       </svg>
-//                     </span>
-//                   </div>
-//                 </div>
-//               </LocalizedClientLink>
-//               {/* )} */}
-
-//               <LocalizedClientLink className="hover:text-ui-fg-base" href="/">
-//                 <BiSupport className="w-6 h-6" />
-//               </LocalizedClientLink>
-
-//               <LocalizedClientLink
-//                 className="hover:text-ui-fg-base"
-//                 href="/account"
-//                 data-testid="nav-account-link"
-//               >
-//                 <User className="w-6 h-6" />
-//               </LocalizedClientLink>
-//             </div>
-//             <div className="flex items-center">
-//               <Suspense
-//                 fallback={
-//                   <LocalizedClientLink
-//                     className="hover:text-ui-fg-base flex gap-2"
-//                     href="/cart"
-//                     data-testid="nav-cart-link"
-//                   >
-//                     Cart (0)
-//                   </LocalizedClientLink>
-//                 }
-//               >
-//                 <CartButton />
-//               </Suspense>
-//               <CiShoppingCart className="w-6 h-6" />
-//             </div>
-//           </div>
-//         </nav>
-//       </header>
-//     </div>
-//   )
-// }
 
 import { Suspense } from "react"
 import { listRegions } from "@lib/data/regions"
@@ -149,7 +37,7 @@ export default async function Nav() {
       <header className="relative mx-auto">
         <nav className="content-container py-4 flex items-center justify-between w-full">
           {/* Left: Mobile menu button (visible on mobile only) */}
-          <button className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100">
+          <button className="md:hidden p-2 rounded-md text-gray-600 ">
             <SideMenu regions={regions} product_categories={product_categories}/>
           </button>
 
@@ -164,41 +52,41 @@ export default async function Nav() {
           {/* Right: Icons (mobile) and Search (desktop) */}
           <div className="flex items-center space-x-4 md:space-x-6">
            
-            <div className="hidden md:flex relative w-full min-w-96">
+            <LocalizedClientLink href="/search" className="hidden md:flex relative w-full min-w-96">
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full pl-4 pr-10 py-2 rounded-full  focus:outline-none transition-all"
+                className="w-full pl-4 pr-10 py-2 rounded-full focus:outline-none transition-all"
               />
               <span className="absolute inset-y-0 right-3 flex items-center text-black">
                 <HiOutlineSearch className="h-5 w-5" />
               </span>
-            </div>
+            </LocalizedClientLink>
 
             {/* Mobile Search Icon */}
-            <button className="md:hidden p-2 rounded-md hover:bg-gray-100">
+            <LocalizedClientLink href="/search" className="md:hidden p-2 rounded-md ">
               <HiOutlineSearch className="h-5 w-5" />
-            </button>
+            </LocalizedClientLink>
 
             {/* Support Icon (desktop only) */}
-            <LocalizedClientLink className="hidden md:block hover:text-ui-fg-base p-2 rounded-md hover:bg-gray-100" href="/support">
+            <LocalizedClientLink className="hidden md:block hover:text-ui-fg-base p-2 rounded-md text-[#474546]" href="/support">
               <BiSupport className="h-5 w-5" />
             </LocalizedClientLink>
 
             {/* User Icon */}
             <LocalizedClientLink
-              className="hover:text-ui-fg-base p-2 rounded-md hover:bg-gray-100"
+              className="hover:text-ui-fg-base p-2 rounded-md text-[#474546]"
               href="/account"
               data-testid="nav-account-link"
             >
-              <User className="w-6 h-6" />
+              <User className="w-6 h-6"/>
             </LocalizedClientLink>
 
             {/* Cart Button */}
             <Suspense
               fallback={
                 <LocalizedClientLink
-                  className="hover:text-ui-fg-base flex gap-2 p-2 rounded-md hover:bg-gray-100"
+                  className="hover:text-ui-fg-base flex gap-2 p-2 rounded-md "
                   href="/cart"
                   data-testid="nav-cart-link"
                 >
@@ -214,7 +102,7 @@ export default async function Nav() {
         </nav>
         
         {/* Mobile search bar (hidden by default) */}
-        <div className="md:hidden px-4 pb-4 hidden">
+        <div className="md:hidden px-3 pb-4 hidden">
           <div className="relative">
             <input
               type="text"
@@ -236,7 +124,7 @@ export default async function Nav() {
             {product_categories?.slice(0, 6).map((category) => (
               <LocalizedClientLink
                 key={category.id}
-                className="hover:text-ui-fg-base font-normal transition-colors py-1 px-2 rounded-md hover:bg-gray-50"
+                className="hover:text-ui-fg-base font-normal py-1 px-2 rounded-md text-[#474546"
                 href={`/categories/${category.handle}`}
                 data-testid="category-link"
               >
@@ -250,7 +138,7 @@ export default async function Nav() {
       </div>
 
       {/* Third Section: Informational Bar */}
-      <div>
+      <div className="hidden md:block text-[#474546]">
         <div className="content-container">
           <div className="flex flex-col md:flex-row justify-between text-center py-3 gap-3 md:gap-0">
             <div className="flex-1 flex items-center justify-center gap-2">

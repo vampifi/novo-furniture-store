@@ -39,14 +39,14 @@ const BrandsSection = () => {
     <section className="w-full py-10 md:py-16 lg:py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6">
         {/* Section Header - Visible on all screens */}
-        <div className="flex justify-center text-center mb-6 md:mb-12 lg:mb-16">
+        <div className="hidden md:flex justify-center text-center mb-6 md:mb-12 lg:mb-16">
           <p className="font-normal text-[#474546] text-base md:text-lg lg:text-xl tracking-wide">
             AS SEEN IN
           </p>
         </div>
 
         {/* Brand Logos - Responsive grid */}
-        <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-10 md:mb-16 lg:mb-20">
+        <div className="hidden md:grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-10 md:mb-16 lg:mb-20">
           {[
             {
               id: 1,
@@ -163,7 +163,7 @@ const BrandsSection = () => {
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12 lg:gap-16 xl:gap-20 items-start">
          
           {/* Text Content - Full width on mobile, half on desktop */}
-          <div className="w-full lg:w-1/2 flex flex-col justify-center p-5">
+          <div className="w-full lg:w-1/2 flex flex-col justify-center md:p-5">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] xl:text-5xl font-light text-[#474546] mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight">
             We&apos;re like those high quality expensive brands. Just not the expensive bit.
             </h2>
