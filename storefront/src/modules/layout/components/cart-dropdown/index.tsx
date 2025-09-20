@@ -4,6 +4,7 @@ import { Popover, Transition } from "@headlessui/react"
 import { Button } from "@medusajs/ui"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
+import { HiOutlineShoppingBag } from "react-icons/hi"
 
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
@@ -15,9 +16,30 @@ import Thumbnail from "@modules/products/components/thumbnail"
 
 const CartDropdown = ({
   cart: cartState,
+  variant = "default",
 }: {
   cart?: HttpTypes.StoreCart | null
+  variant?: "default" | "mobile"
 }) => {
+  const totalItems =
+    cartState?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0
+
+  if (variant === "mobile") {
+    return (
+      <LocalizedClientLink
+        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f] transition-colors hover:bg-white"
+        href="/cart"
+        data-testid="nav-cart-link-mobile"
+      >
+        <span className="sr-only">Open cart</span>
+        <span className="absolute -top-1 -right-1 min-w-[1.2rem] rounded-full bg-primary px-1 text-center text-[0.6rem] font-semibold text-white shadow">
+          {totalItems}
+        </span>
+        <HiOutlineShoppingBag className="h-5 w-5" />
+      </LocalizedClientLink>
+    )
+  }
+
   const [activeTimer, setActiveTimer] = useState<NodeJS.Timer | undefined>(
     undefined
   )
@@ -25,11 +47,6 @@ const CartDropdown = ({
 
   const open = () => setCartDropdownOpen(true)
   const close = () => setCartDropdownOpen(false)
-
-  const totalItems =
-    cartState?.items?.reduce((acc, item) => {
-      return acc + item.quantity
-    }, 0) || 0
 
   const subtotal = cartState?.subtotal ?? 0
   const itemRef = useRef<number>(totalItems || 0)
@@ -78,10 +95,16 @@ const CartDropdown = ({
       <Popover className="relative h-full">
         <Popover.Button className="h-full">
           <LocalizedClientLink
-            className="hover:text-ui-fg-base"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f] transition-colors hover:bg-white md:h-11 md:w-11"
             href="/cart"
             data-testid="nav-cart-link"
-          >{`Cart (${totalItems})`}</LocalizedClientLink>
+          >
+            <span className="sr-only">Open cart</span>
+            <span className="absolute -top-1 -right-1 min-w-[1.4rem] rounded-full bg-primary px-1 text-center text-[0.65rem] font-semibold text-white shadow">
+              {totalItems}
+            </span>
+            <HiOutlineShoppingBag className="h-5 w-5 md:h-6 md:w-6" />
+          </LocalizedClientLink>
         </Popover.Button>
         <Transition
           show={cartDropdownOpen}

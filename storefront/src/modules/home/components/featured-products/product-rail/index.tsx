@@ -12,7 +12,11 @@ export default function ProductRail({
   region: HttpTypes.StoreRegion
 }) {
   const { products } = collection
-
+  console.log("===================================")
+  console.log("collection ---------------", collection)
+  console.log("===================================")
+  console.log("products ---------------", products)
+  console.log("===================================")
   if (!products) {
     return null
   }
