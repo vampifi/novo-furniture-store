@@ -1,13 +1,12 @@
 import Image from "next/image"
 
-const Hero = () => {
+const TrendingSection = () => {
   return (
     <div className="relative w-full border-b border-ui-border-base bg-ui-bg-subtle bg-background">
       {/* Mobile-first responsive container with aspect ratio */}
       <div className="relative w-full h-48 sm:h-64 md:h-72 lg:h-80 xl:h-96 2xl:h-[28rem] overflow-hidden">
         <Image 
-          src="https://res.cloudinary.com/dhbh2lu21/image/upload/v1758089072/WebBanner_Novo-furniture_ay0axy.webp"
-          // src="https://res.cloudinary.com/dhbh2lu21/image/upload/v1758300788/novo-furniture3_iuesz1.webp"
+          src="https://res.cloudinary.com/dhbh2lu21/image/upload/v1758300788/novo-furniture3_iuesz1.webp"
           alt="Novo furniture Hero Image"
           fill
           priority
@@ -21,4 +20,4 @@ const Hero = () => {
   )
 }
 
-export default Hero
+export default TrendingSection

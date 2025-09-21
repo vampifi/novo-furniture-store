@@ -4,178 +4,205 @@ import { Text } from "@medusajs/ui"
 import {
   FaFacebookF,
   FaInstagram,
-  FaTiktok,
   FaPinterestP,
+  FaTiktok,
 } from "react-icons/fa"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import BackToTop from "@modules/layout/components/back-to-top"
 
+type FooterLink = {
+  name: string
+  href: string
+}
+
+type FooterColumnProps = {
+  title: string
+  links: FooterLink[]
+}
+
 export default async function Footer() {
   const { collections } = await getCollectionsList(0, 6)
   const { product_categories } = await getCategoriesList(0, 6)
 
+  const rootCategories = (product_categories ?? []).filter(
+    (category) => !category.parent_category
+  )
+
+  const duskStyleLinks: FooterLink[] = [
+    { name: "About Us", href: "/about" },
+    { name: "Inspiration", href: "/inspiration" },
+    { name: "Blog", href: "/blog" },
+    { name: "Buying Guides", href: "/buying-guides" },
+    { name: "Best Sellers", href: "/collections/best-sellers" },
+  ]
+
+  const customerCareLinks: FooterLink[] = [
+    { name: "Track My Order", href: "/track-order" },
+    { name: "Help & FAQs", href: "/faq" },
+    { name: "Delivery", href: "/shipping" },
+    { name: "Returns", href: "/returns" },
+    { name: "Warranty", href: "/warranty" },
+  ]
+
+  const websiteLinks: FooterLink[] = [
+    { name: "Terms & Conditions", href: "/terms" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Cookies", href: "/cookies" },
+  ]
+
+  const bestSellerLinks: FooterLink[] = rootCategories.slice(0, 6).map(
+    (category) => ({
+      name: category.name,
+      href: `/categories/${category.handle}`,
+    })
+  )
+
+  const collectionLinks: FooterLink[] = (collections ?? [])
+    .slice(0, 6)
+    .map((collection) => ({
+      name: collection.title,
+      href: `/collections/${collection.handle}`,
+    }))
+
+  const footerColumns: FooterColumnProps[] = [
+    { title: "DUSK Style", links: duskStyleLinks },
+    { title: "Customer Care", links: customerCareLinks },
+    { title: "Our Website", links: websiteLinks },
+    { title: "Best Sellers", links: bestSellerLinks },
+    { title: "Collections", links: collectionLinks },
+  ].filter((column) => column.links.length > 0)
+
+  const socialLinks = [
+    { icon: FaFacebookF, label: "Facebook", href: "https://facebook.com" },
+    { icon: FaInstagram, label: "Instagram", href: "https://instagram.com" },
+    { icon: FaTiktok, label: "TikTok", href: "https://tiktok.com" },
+    { icon: FaPinterestP, label: "Pinterest", href: "https://pinterest.com" },
+  ] as const
+
+  const paymentMethods = [
+    { label: "Apple Pay", short: "Apple Pay" },
+    { label: "Google Pay", short: "G Pay" },
+    { label: "Mastercard", short: "Mastercard" },
+    { label: "Visa", short: "Visa" },
+  ]
+
+  const currentYear = new Date().getFullYear()
+
   return (
-    <footer className="bg-[#474546] text-white relative">
-      <div className="content-container px-6 py-12 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-12 lg:gap-20">
-          <div className="lg:row-span-2">
+    <footer className="relative bg-[#3f3c3d] text-white">
+      <div className="content-container px-6 py-16">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(180px,1fr)_repeat(5,minmax(140px,1fr))] lg:gap-16">
+          <div>
             <LocalizedClientLink
               href="/"
-              className="text-3xl font-bold text-white hover:text-primary transition-colors duration-300 inline-block mb-6"
+              className="text-3xl font-semibold tracking-[0.25em]"
             >
-              NOVO FURNITURE
+              NOVO
             </LocalizedClientLink>
           </div>
 
-          {product_categories && product_categories.length > 0 && (
-            <div className="lg:mt-10">
-              <h3 className="text-lg font-medium text-white mb-5">Shop Categories</h3>
-              <ul className="space-y-3 text-lg text-gray-300">
-                {product_categories.slice(0, 6).map((c) => {
-                  if (c.parent_category) return null
-                  return (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        href={`/categories/${c.handle}`}
-                        className="hover:text-white transition-colors duration-300"
-                      >
-                        {c.name}
-                      </LocalizedClientLink>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
+          {footerColumns.map((column) => (
+            <FooterColumn
+              key={column.title}
+              title={column.title}
+              links={column.links}
+            />
+          ))}
 
-         
-          {collections && collections.length > 0 && (
-            <div className="lg:mt-10">
-              <h3 className="text-lg font-medium text-white mb-5">Collections</h3>
-              <ul className="space-y-3 text-lg text-gray-300">
-                {collections.slice(0, 6).map((c) => (
-                  <li key={c.id}>
-                    <LocalizedClientLink
-                      href={`/collections/${c.handle}`}
-                      className="hover:text-white transition-colors duration-300"
-                    >
-                      {c.title}
-                    </LocalizedClientLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="lg:mt-10">
-            <h3 className="text-lg font-medium text-white mb-5">Support</h3>
-            <ul className="space-y-3 text-lg text-gray-300">
-              {[
-                { name: "Contact Us", href: "/contact" },
-                { name: "Shipping Info", href: "/shipping" },
-                { name: "Returns & Exchanges", href: "/returns" },
-                { name: "FAQ", href: "/faq" },
-                { name: "Warranty", href: "/warranty" },
-                { name: "Track Order", href: "/track-order" },
-              ].map((item, i) => (
-                <li key={i}>
-                  <LocalizedClientLink
-                    href={item.href}
-                    className="hover:text-white transition-colors duration-300"
+          <div>
+            <p
+              id="footer-social-heading"
+              className="text-sm font-semibold uppercase tracking-[0.28em]"
+            >
+              Stay in Touch
+            </p>
+            <ul
+              className="mt-5 flex items-center gap-4 text-lg"
+              role="list"
+              aria-labelledby="footer-social-heading"
+            >
+              {socialLinks.map((social) => (
+                <li key={social.label}>
+                  <a
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="transition-colors hover:text-secondary"
                   >
-                    {item.name}
-                  </LocalizedClientLink>
+                    <social.icon aria-hidden />
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
+        </div>
 
-          
-          <div className="lg:mt-10">
-            <h3 className="text-lg font-medium text-white mb-5">Company</h3>
-            <ul className="space-y-3 text-lg text-gray-300">
-              {[
-                { name: "About Us", href: "/about" },
-                { name: "Our Story", href: "/story" },
-                { name: "Sustainability", href: "/sustainability" },
-                { name: "Careers", href: "/careers" },
-                { name: "Press", href: "/press" },
-                { name: "Blog", href: "/blog" },
-              ].map((item, i) => (
-                <li key={i}>
-                  <LocalizedClientLink
-                    href={item.href}
-                    className="hover:text-white transition-colors duration-300"
+        <div className="mt-12 flex flex-col gap-6 border-t border-white/10 pt-6 text-sm text-white/70 md:flex-row md:items-center md:justify-between">
+          <Text as="p">© {currentYear} Novo Furniture. All rights reserved.</Text>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide">
+            <span className="text-white/60">Pay securely with</span>
+            <ul className="flex flex-wrap items-center gap-2" role="list">
+              {paymentMethods.map((method) => (
+                <li key={method.label}>
+                  <span
+                    className="inline-flex h-8 min-w-[70px] items-center justify-center rounded-md bg-white/10 px-3 text-white"
+                    aria-label={method.label}
                   >
-                    {item.name}
-                  </LocalizedClientLink>
+                    {method.short}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
-
-         
-          <div className="lg:mt-10">
-            <p className="text-lg font-medium text-white mb-4">Stay in touch</p>
-            <div className="flex gap-4">
-              {[
-                {
-                  icon: FaFacebookF,
-                  label: "Facebook",
-                  href: "https://facebook.com",
-                },
-                {
-                  icon: FaInstagram,
-                  label: "Instagram",
-                  href: "https://instagram.com",
-                },
-                { icon: FaTiktok, label: "TikTok", href: "https://tiktok.com" },
-                {
-                  icon: FaPinterestP,
-                  label: "Pinterest",
-                  href: "https://pinterest.com",
-                },
-              ].map((social, i) => (
-                <a
-                  key={i}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300"
-                  aria-label={social.label}
-                >
-                  <social.icon className="w-5 h-5" />
-                </a>
-              ))}
-            </div>
-          </div>
         </div>
 
-       
-        <div className="border-t border-gray-600 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-400">
-          <Text>
-            © {new Date().getFullYear()} Nova Furniture. All rights reserved.
-          </Text>
-
-          {/* Payment Methods */}
-          <div className="flex items-center justify-stretch gap-4">
-            {["Apple Pay", "Google Pay", "Mastercard", "Visa"].map(
-              (method) => (
-                <div
-                  key={method}
-                  className="w-20 h-9 bg-gray-800 rounded-md flex items-center justify-center border border-gray-700"
-                >
-                  <span className="text-xs text-gray-400 font-medium">{method}</span>
-                </div>
-              )
-            )}
-          </div>
-        </div>
+        <section
+          aria-labelledby="footer-disclaimer"
+          className="mt-6 text-[0.68rem] leading-relaxed text-white/50"
+        >
+          <p id="footer-disclaimer">
+            Interest free credit agreements provided by third-party providers are
+            not regulated by the Financial Conduct Authority and may not be
+            covered by the Financial Ombudsman Service. Your eligibility is
+            subject to status and terms. Novo Furniture (Retail) Ltd is
+            registered in England & Wales with company number 00000000 and
+            registered office at 1 Modern Way, London, EC2N 4AA.
+          </p>
+        </section>
       </div>
 
-     
       <BackToTop />
     </footer>
+  )
+}
+
+const FooterColumn = ({ title, links }: FooterColumnProps) => {
+  if (!links || links.length === 0) {
+    return null
+  }
+
+  return (
+    <div>
+      <p className="text-sm font-semibold uppercase tracking-[0.28em]">
+        {title}
+      </p>
+      <nav aria-label={title} className="mt-5">
+        <ul className="space-y-3 text-base text-white/80" role="list">
+          {links.map((item) => (
+            <li key={item.name}>
+              <LocalizedClientLink
+                href={item.href}
+                className="transition-colors hover:text-white"
+              >
+                {item.name}
+              </LocalizedClientLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
   )
 }

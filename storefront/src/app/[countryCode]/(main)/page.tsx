@@ -6,8 +6,9 @@ import { getCollectionsWithProducts } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 import BrandsSection from "@modules/home/components/brands"
 import LuxuryShowcase from "@modules/home/components/luxury-showcase"
-import NewsletterSubscription from "@modules/home/components/news-letter"
 import AwardHero from "@modules/home/components/award-hero"
+import ShopByRoom from "@modules/home/components/shop-by-room"
+import TrendingSection from "@modules/home/components/trending-collections"
 
 export const metadata: Metadata = {
   title: "Novo Furniture - Home",
@@ -30,17 +31,17 @@ export default async function Home({
   return (
     <>
       <Hero />
-      
-      <div className="py-12 bg-background">
+      <ShopByRoom />
+        <AwardHero />
+      <div className="py-12">
         <ul className="flex flex-col gap-x-6">
           <FeaturedProducts collections={collections} region={region} />
         </ul>
       </div>
       <div>
-        <AwardHero />
+        <TrendingSection />
         <BrandsSection />
         <LuxuryShowcase />
-        <NewsletterSubscription />
       </div>
     </>
   )

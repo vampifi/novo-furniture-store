@@ -31,7 +31,7 @@ const SearchBar = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="hidden h-12 w-full max-w-3xl items-center overflow-hidden rounded-full bg-white/90 pl-6 pr-3 shadow-inner ring-1 ring-white/40 focus-within:ring-2 focus-within:ring-primary md:flex"
+      className="hidden h-12 w-full min-w-96 items-center overflow-hidden rounded-full bg-white/90 pl-6 pr-3 shadow-inner ring-1 ring-white/40 focus-within:ring-2 focus-within:ring-primary md:flex"
     >
       <input
         type="text"

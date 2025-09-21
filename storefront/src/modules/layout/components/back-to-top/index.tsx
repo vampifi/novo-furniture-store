@@ -1,21 +1,40 @@
 "use client"
 
-import { FaArrowRight, FaArrowUp } from "react-icons/fa"
+import { useEffect, useState } from "react"
+import { FaArrowUp } from "react-icons/fa"
 
 const BackToTop = () => {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      setIsVisible(window.scrollY > 250)
+    }
+
+    toggleVisibility()
+
+    window.addEventListener("scroll", toggleVisibility, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", toggleVisibility)
+    }
+  }, [])
+
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-8 right-8 w-12 h-12 bg-primary hover:bg-primary-dark text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl z-50 group"
+      className={`fixed bottom-8 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#3f3c3d] hover:bg-primary-dark hover:shadow-xl ${
+        isVisible
+          ? "pointer-events-auto opacity-100 translate-y-0"
+          : "pointer-events-none opacity-0 translate-y-4"
+      }`}
       aria-label="Back to top"
     >
-      <span className="transform group-hover:-translate-y-1 transition-transform">
-        <FaArrowUp className="w-5 h-5" />
-      </span>
+      <FaArrowUp className="h-5 w-5" aria-hidden />
     </button>
   )
 }
