@@ -59,7 +59,7 @@ export default async function Nav() {
 
               <LocalizedClientLink
                 href="/search"
-                className="md:hidden rounded-full border border-[#3b2f2f]/10 bg-white/80 p-2 text-[#3b2f2f] shadow-sm"
+                className="md:hidden rounded-full bg-white/80 p-2 text-black shadow-sm"
               >
                 <HiOutlineSearch className="h-5 w-5" />
               </LocalizedClientLink>

@@ -31,19 +31,19 @@ const SearchBar = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="hidden h-12 w-full min-w-96 items-center overflow-hidden rounded-full bg-white/90 pl-6 pr-3 shadow-inner ring-1 ring-white/40 focus-within:ring-2 focus-within:ring-primary md:flex"
+      className="hidden h-12 w-full min-w-[34rem] max-w-[42rem] items-center overflow-hidden rounded-full bg-[#FFFFFF] pl-6 pr-3 shadow-inner focus-within:ring-2 focus-within:ring-black md:flex"
     >
       <input
         type="text"
         value={searchValue}
         onChange={(event) => setSearchValue(event.target.value)}
         placeholder="Search"
-        className="flex-1 bg-transparent text-sm text-[#3b2f2f] placeholder:text-[#a08f8f] focus:outline-none"
+        className="flex-1 bg-transparent text-sm text-black placeholder:text-black focus:outline-none"
         aria-label="Search products"
       />
       <button
         type="submit"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white transition-colors hover:bg-primary/90"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-black/5"
         aria-label="Search"
       >
         <HiOutlineSearch className="h-5 w-5" />

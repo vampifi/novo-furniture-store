@@ -29,29 +29,23 @@ export default async function Footer() {
     (category) => !category.parent_category
   )
 
-  const duskStyleLinks: FooterLink[] = [
-    { name: "About Us", href: "/about" },
-    { name: "Inspiration", href: "/inspiration" },
-    { name: "Blog", href: "/blog" },
-    { name: "Buying Guides", href: "/buying-guides" },
-    { name: "Best Sellers", href: "/collections/best-sellers" },
-  ]
-
   const customerCareLinks: FooterLink[] = [
     { name: "Track My Order", href: "/track-order" },
-    { name: "Help & FAQs", href: "/faq" },
+    { name: "Help & FAQs", href: "/content/faqs" },
     { name: "Delivery", href: "/shipping" },
     { name: "Returns", href: "/returns" },
     { name: "Warranty", href: "/warranty" },
   ]
 
   const websiteLinks: FooterLink[] = [
+    { name: "About Us", href: "/content/about" },
+    { name: "Blog", href: "/blog" },
     { name: "Terms & Conditions", href: "/terms" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Cookies", href: "/cookies" },
   ]
 
-  const bestSellerLinks: FooterLink[] = rootCategories.slice(0, 6).map(
+  const categoryLinks: FooterLink[] = rootCategories.slice(0, 6).map(
     (category) => ({
       name: category.name,
       href: `/categories/${category.handle}`,
@@ -66,10 +60,9 @@ export default async function Footer() {
     }))
 
   const footerColumns: FooterColumnProps[] = [
-    { title: "DUSK Style", links: duskStyleLinks },
     { title: "Customer Care", links: customerCareLinks },
     { title: "Our Website", links: websiteLinks },
-    { title: "Best Sellers", links: bestSellerLinks },
+    { title: "Categories", links: categoryLinks },
     { title: "Collections", links: collectionLinks },
   ].filter((column) => column.links.length > 0)
 
