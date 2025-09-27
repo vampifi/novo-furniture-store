@@ -34,10 +34,10 @@ module.exports = {
           80: "#1F2937",
           90: "#111827",
         },
-        primary: "#BB2649", // Set this as per the Dusk theme's color
+        primary: "#BB2649", // Set this as per the NOVO theme's color
         secondary: "#4a4a4a", // Adjust the secondary colors too
-        background: "#f6ece6", // Background color based on Dusk theme
-        textColor: "#474546", // Text color based on Dusk theme
+        background: "#f6ece6", // Background color based on NOVO theme
+        textColor: "#474546", // Text color based on NOVO theme
       },
       borderRadius: {
         none: "0px",

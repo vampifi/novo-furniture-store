@@ -23,7 +23,7 @@ const NewsletterSubscription = () => {
           
           {/* Subheading */}
           <h3 className="text-xl md:text-2xl lg:text-4xl font-medium text-[#474546] mb-6">
-            Illuminate your inbox with DUSK
+            Illuminate your inbox with NOVO
           </h3>
           
           {/* Description */}

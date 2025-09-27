@@ -17,8 +17,20 @@ import PromoCountdown from "@modules/layout/components/promo-countdown"
 import SearchBar from "@modules/layout/components/search-bar"
 
 export default async function Nav() {
-  const { product_categories } = await getCategoriesList(0, 6)
+  const { product_categories } = await getCategoriesList(0, 200)
   const { collections } = await getCollectionsList(0, 6)
+
+  const topLevelCategories = (product_categories ?? [])
+    .filter((category) => !category.parent_category_id)
+    .sort((a, b) => {
+      const rankDiff = (a.rank ?? 999) - (b.rank ?? 999)
+      if (rankDiff !== 0) {
+        return rankDiff
+      }
+      return (a.name || "").localeCompare(b.name || "")
+    })
+    .slice(0, 6)
+
   return (
     <>
       <div className="bg-primary text-white">
@@ -142,7 +154,7 @@ export default async function Nav() {
         <div>
           <div className="content-container">
             <div className="hidden md:block py-5">
-              <MiddleNavLinks categories={product_categories ?? null} />
+              <MiddleNavLinks categories={topLevelCategories ?? null} />
             </div>
             <div className="hidden md:flex items-center gap-8 pb-5 text-sm text-[#6b5b5b]">
               <LocalizedClientLink

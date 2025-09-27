@@ -7,7 +7,7 @@ const LuxuryShowcase = () => {
         <div className=" text-center">
           {/* Heading */}
           <h1 className="text-2xl font-bold text-[#474546] mb-6 leading-tight">
-            DUSK | Luxury Bedding, Bed Frames, Mattresses, Sofas & Dining Furniture
+            NOVO | Luxury Bedding, Bed Frames, Mattresses, Sofas & Dining Furniture
           </h1>
           
           {/* Description Text with Inline Links */}
@@ -52,7 +52,7 @@ const LuxuryShowcase = () => {
             <LocalizedClientLink href="/throws" className="text-[#474546] border-b border-[#474546] hover:border-b-2 hover:text-gray-700 transition-all duration-200">
               textured throws
             </LocalizedClientLink>
-            . Designed with high-quality materials hand-picked by the DUSK team, our{' '}
+            . Designed with high-quality materials hand-picked by the NOVO team, our{' '}
             <LocalizedClientLink href="/dining-room" className="text-[#474546] border-b border-[#474546] hover:border-b-2 hover:text-gray-700 transition-all duration-200">
               dining room
             </LocalizedClientLink>
