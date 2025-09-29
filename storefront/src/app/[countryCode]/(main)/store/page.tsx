@@ -26,6 +26,7 @@ export default async function StorePage({ searchParams, params }: Params) {
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
+      searchParams={searchParams}
     />
   )
 }

@@ -85,6 +85,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
+      searchParams={searchParams}
     />
   )
 }

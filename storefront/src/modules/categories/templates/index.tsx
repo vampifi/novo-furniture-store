@@ -1,26 +1,62 @@
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
+import { listCategories } from "@lib/data/categories"
+import { getCollectionsList } from "@lib/data/collections"
 import InteractiveLink from "@modules/common/components/interactive-link"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@modules/store/components/refinement-list"
+import MobileFilters from "@modules/store/components/mobile-filters"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { COLOR_FILTERS } from "@modules/store/constants/filters"
 import { HttpTypes } from "@medusajs/types"
 
-export default function CategoryTemplate({
+const mapCollectionsToFilter = (collections: any[] | undefined) =>
+  (collections || [])
+    .filter((collection) => !!collection?.id)
+    .map((collection) => ({
+      id: collection.id,
+      label: collection.title ?? "Untitled collection",
+      value: collection.handle ?? collection.id,
+      count:
+        typeof collection?.product_count === "number"
+          ? collection.product_count
+          : Array.isArray(collection?.products)
+            ? collection.products.length
+            : undefined,
+    }))
+
+const mapCategoriesToFilter = (categories: any[] | undefined) =>
+  (categories || [])
+    .filter((category) => !!category?.id)
+    .map((category) => ({
+      id: category.id,
+      label: category.name ?? "Untitled category",
+      value: category.handle ?? category.id,
+      count:
+        typeof category?.product_count === "number"
+          ? category.product_count
+          : Array.isArray(category?.products)
+            ? category.products.length
+            : undefined,
+    }))
+
+export default async function CategoryTemplate({
   categories,
   sortBy,
   page,
   countryCode,
+  searchParams,
 }: {
   categories: HttpTypes.StoreProductCategory[]
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  searchParams?: Record<string, string | string[] | undefined>
 }) {
-  const pageNumber = page ? parseInt(page) : 1
+  const pageNumber = page ? parseInt(page, 10) : 1
   const sort = sortBy || "created_at"
 
   const category = categories[categories.length - 1]
@@ -28,41 +64,80 @@ export default function CategoryTemplate({
 
   if (!category || !countryCode) notFound()
 
+  let categoryFilters = [] as ReturnType<typeof mapCategoriesToFilter>
+  let collectionFilters = [] as ReturnType<typeof mapCollectionsToFilter>
+
+  try {
+    const [allCategories, collectionsResult] = await Promise.all([
+      listCategories(),
+      getCollectionsList(0, 50),
+    ])
+
+    categoryFilters = mapCategoriesToFilter(allCategories as any[])
+    collectionFilters = mapCollectionsToFilter(collectionsResult?.collections as any[])
+  } catch (error) {
+    categoryFilters = []
+    collectionFilters = []
+  }
+
   return (
     <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container"
+      className="content-container flex flex-col gap-8 py-10 lg:flex-row lg:gap-10"
       data-testid="category-container"
     >
-      <RefinementList sortBy={sort} data-testid="sort-by-container" />
-      <div className="w-full">
-        <div className="flex flex-row mb-8 text-2xl-semi gap-4">
-          {parents &&
-            parents.map((parent) => (
-              <span key={parent.id} className="text-ui-fg-subtle">
+      <MobileFilters
+        sortBy={sort}
+        categories={categoryFilters}
+        collections={collectionFilters}
+        colors={COLOR_FILTERS}
+        lockedCategoryIds={category.id ? [category.id] : []}
+      />
+      <div className="hidden lg:block lg:max-w-[320px] lg:shrink-0">
+        <RefinementList
+          categories={categoryFilters}
+          collections={collectionFilters}
+          colors={COLOR_FILTERS}
+          lockedCategoryIds={category.id ? [category.id] : []}
+        />
+      </div>
+      <div className="flex-1 lg:pl-4">
+        <div className="mb-8">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-ui-fg-subtle">
+            {parents?.map((parent) => (
+              <span key={parent.id} className="flex items-center gap-2">
                 <LocalizedClientLink
-                  className="mr-4 hover:text-black"
+                  className="font-medium text-ui-fg-subtle transition-colors hover:text-primary"
                   href={`/categories/${parent.handle}`}
                   data-testid="sort-by-link"
                 >
                   {parent.name}
                 </LocalizedClientLink>
-                /
+                <span aria-hidden>/</span>
               </span>
             ))}
-          <h1 data-testid="category-page-title">{category.name}</h1>
-        </div>
-        {category.description && (
-          <div className="mb-8 text-base-regular">
-            <p>{category.description}</p>
           </div>
-        )}
-        {category.category_children && (
-          <div className="mb-8 text-base-large">
-            <ul className="grid grid-cols-1 gap-2">
-              {category.category_children?.map((c) => (
-                <li key={c.id}>
-                  <InteractiveLink href={`/categories/${c.handle}`}>
-                    {c.name}
+          <h1
+            className="mt-3 text-3xl font-semibold tracking-tight text-ui-fg-base"
+            data-testid="category-page-title"
+          >
+            {category.name}
+          </h1>
+          {category.description && (
+            <p className="mt-3 max-w-prose text-sm text-ui-fg-muted">
+              {category.description}
+            </p>
+          )}
+        </div>
+        {category.category_children && category.category_children.length > 0 && (
+          <div className="mb-10 rounded-2xl border border-ui-border-subtle/60 bg-ui-bg-base/90 p-6 shadow-[0_10px_24px_rgba(17,24,39,0.08)]">
+            <h2 className="mb-4 text-base font-semibold text-ui-fg-base">
+              Explore subcategories
+            </h2>
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {category.category_children.map((child) => (
+                <li key={child.id}>
+                  <InteractiveLink href={`/categories/${child.handle}`}>
+                    {child.name}
                   </InteractiveLink>
                 </li>
               ))}
@@ -75,6 +150,7 @@ export default function CategoryTemplate({
             page={pageNumber}
             categoryId={category.id}
             countryCode={countryCode}
+            searchParams={searchParams}
           />
         </Suspense>
       </div>

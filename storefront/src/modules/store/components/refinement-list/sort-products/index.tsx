@@ -1,47 +1,104 @@
 "use client"
 
-import FilterRadioGroup from "@modules/common/components/filter-radio-group"
+import { useCallback } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+
+import { clx } from "@medusajs/ui"
 
 export type SortOptions = "price_asc" | "price_desc" | "created_at"
 
 type SortProductsProps = {
   sortBy: SortOptions
-  setQueryParams: (name: string, value: SortOptions) => void
-  "data-testid"?: string
+  label?: string
+  variant?: "default" | "pill"
+  className?: string
 }
 
-const sortOptions = [
+const sortOptions: { value: SortOptions; label: string }[] = [
   {
     value: "created_at",
-    label: "Latest Arrivals",
+    label: "Relevance",
   },
   {
     value: "price_asc",
-    label: "Price: Low -> High",
+    label: "Price: Low to High",
   },
   {
     value: "price_desc",
-    label: "Price: High -> Low",
+    label: "Price: High to Low",
   },
 ]
 
 const SortProducts = ({
-  "data-testid": dataTestId,
   sortBy,
-  setQueryParams,
+  label = "Sort By",
+  variant = "default",
+  className,
 }: SortProductsProps) => {
-  const handleChange = (value: SortOptions) => {
-    setQueryParams("sortBy", value)
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const onSortChange = useCallback(
+    (value: SortOptions) => {
+      const params = new URLSearchParams(searchParams)
+
+      if (value === "created_at") {
+        params.delete("sortBy")
+      } else {
+        params.set("sortBy", value)
+      }
+
+      params.delete("page")
+
+      const query = params.toString()
+      router.push(query ? `${pathname}?${query}` : pathname)
+    },
+    [router, pathname, searchParams]
+  )
+
+  if (variant === "pill") {
+    return (
+      <div className={clx("relative", className)}>
+        <select
+          aria-label={label}
+          value={sortBy}
+          onChange={(event) => onSortChange(event.target.value as SortOptions)}
+          className="peer w-full appearance-none rounded-full border border-ui-border-subtle/70 bg-[#f8f1eb] px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-ui-fg-muted shadow-sm transition-all focus:border-primary focus:outline-none focus:text-primary"
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ui-fg-muted transition-colors peer-focus:text-primary">
+          ▾
+        </span>
+      </div>
+    )
   }
 
   return (
-    <FilterRadioGroup
-      title="Sort by"
-      items={sortOptions}
-      value={sortBy}
-      handleChange={handleChange}
-      data-testid={dataTestId}
-    />
+    <label
+      className={clx(
+        "flex items-center gap-3 text-sm font-medium text-ui-fg-muted",
+        className
+      )}
+    >
+      {label}
+      <select
+        value={sortBy}
+        onChange={(event) => onSortChange(event.target.value as SortOptions)}
+        className="rounded-full border border-ui-border-subtle bg-ui-bg-base px-4 py-2 text-sm font-medium text-ui-fg-base shadow-sm transition-colors focus:border-primary focus:outline-none"
+      >
+        {sortOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
