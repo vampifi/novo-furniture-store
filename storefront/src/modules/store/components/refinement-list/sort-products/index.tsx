@@ -64,7 +64,7 @@ const SortProducts = ({
           aria-label={label}
           value={sortBy}
           onChange={(event) => onSortChange(event.target.value as SortOptions)}
-          className="peer w-full appearance-none rounded-full border border-ui-border-subtle/70 bg-[#f8f1eb] px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-ui-fg-muted shadow-sm transition-all focus:border-primary focus:outline-none focus:text-primary"
+          className="peer w-full appearance-none rounded-full border border-[#E3DAD3] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5C5149] transition-all focus:border-[#C9B7A8] focus:outline-none focus:text-[#3F3C3D]"
         >
           {sortOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -72,7 +72,7 @@ const SortProducts = ({
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ui-fg-muted transition-colors peer-focus:text-primary">
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#6F6157] transition-colors peer-focus:text-[#3F3C3D]">
           ▾
         </span>
       </div>

@@ -89,34 +89,34 @@ export default async function ProductPreview({
         className="relative flex h-full flex-col overflow-hidden rounded-[20px] border border-ui-border-subtle/60 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-primary/50 hover:shadow-[0_28px_60px_rgba(36,99,235,0.18)] sm:rounded-[24px]"
         data-testid="product-wrapper"
       >
-        <div className="relative overflow-hidden rounded-[20px] rounded-b-none bg-ui-bg-subtle sm:rounded-[24px]">
+        <div className="relative overflow-hidden rounded-t-[20px] bg-ui-bg-subtle sm:rounded-t-[24px]">
           <Thumbnail
             thumbnail={product.thumbnail}
             images={product.images}
             size="full"
             isFeatured={isFeatured}
-            className="!p-0 shadow-none"
+            className="!p-0 !rounded-t-[20px] !rounded-b-none shadow-none sm:!rounded-t-[24px]"
           />
 
           {cheapestPrice?.price_type === "sale" && saleLabel && (
             <Badge
-              className="absolute left-3 top-3 rounded-full bg-[#c3355b] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white shadow-lg sm:left-4 sm:top-4 sm:text-[11px] sm:tracking-[0.22em]"
+              className="absolute left-2.5 top-2.5 rounded-full bg-[#c3355b] px-2.5 py-[6px] text-[9px] font-semibold uppercase tracking-[0.18em] text-white shadow-md sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.22em]"
             >
               {saleLabel}
             </Badge>
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 rounded-t-[20px] border-t border-ui-border-subtle/40 bg-white px-4 pb-4 pt-4 sm:rounded-t-[24px] sm:gap-5 sm:px-6 sm:pb-6 sm:pt-6">
+        <div className="flex flex-1 flex-col gap-2.5 rounded-b-[20px] border-t border-ui-border-subtle/40 bg-white px-4 pb-4 pt-3 sm:gap-5 sm:rounded-b-[24px] sm:px-6 sm:pb-6 sm:pt-6">
           {accentLabel && (
-            <span className="inline-flex w-max items-center gap-2 rounded-full border border-ui-border-subtle/70 bg-ui-bg-subtle/60 px-3 py-[6px] text-[10px] font-semibold uppercase tracking-[0.26em] text-ui-fg-muted sm:text-[11px] sm:py-1 sm:tracking-[0.28em]">
+            <span className="inline-flex w-max items-center gap-1.5 rounded-full border border-ui-border-subtle/60 bg-ui-bg-subtle/60 px-2.5 py-[5px] text-[9px] font-semibold uppercase tracking-[0.22em] text-ui-fg-muted sm:gap-2 sm:px-3 sm:py-[6px] sm:text-[11px] sm:tracking-[0.28em]">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/70" aria-hidden />
               {accentLabel}
             </span>
           )}
 
           <Text
-            className="line-clamp-2 text-base font-semibold leading-tight text-ui-fg-base sm:text-lg lg:text-xl"
+            className="line-clamp-2 text-[15px] font-semibold leading-snug text-ui-fg-base sm:text-lg lg:text-xl"
             data-testid="product-title"
           >
             {product.title}
@@ -124,7 +124,7 @@ export default async function ProductPreview({
 
           <div className="flex flex-col gap-2 sm:gap-3">
             {hasMultipleColourways && (
-              <span className="inline-flex items-center gap-2 text-xs font-medium text-ui-fg-muted sm:text-sm">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-ui-fg-muted sm:gap-2 sm:text-sm">
                 <span
                   className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-ui-border-subtle/60 bg-white sm:h-5 sm:w-5"
                   aria-hidden
@@ -136,16 +136,16 @@ export default async function ProductPreview({
             )}
 
             {cheapestPrice && (
-              <div className="flex items-baseline gap-2 sm:gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <PreviewPrice
                   price={cheapestPrice}
-                  className="text-lg font-semibold text-[#c3355b] sm:text-xl"
-                  originalClassName="text-xs font-medium text-ui-fg-muted sm:text-sm"
+                  className="text-base font-semibold text-[#c3355b] sm:text-xl"
+                  originalClassName="text-[11px] font-medium text-ui-fg-muted sm:text-sm"
                 />
                 {cheapestPrice.price_type === "sale" &&
                   typeof cheapestPrice.percentage_diff === "number" &&
                   cheapestPrice.percentage_diff > 0 && (
-                    <span className="rounded-full bg-primary/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.18em] text-primary sm:text-xs sm:tracking-[0.2em]">
+                    <span className="rounded-full bg-primary/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.16em] text-primary sm:text-xs sm:tracking-[0.2em]">
                       Save {Math.round(cheapestPrice.percentage_diff)}%
                     </span>
                   )}
@@ -154,7 +154,7 @@ export default async function ProductPreview({
           </div>
 
           {showRatingRow && (
-            <div className="flex items-center gap-[6px] text-[11px] text-ui-fg-muted sm:gap-3 sm:text-sm">
+            <div className="flex items-center gap-2 text-[11px] text-ui-fg-muted sm:gap-3 sm:text-sm">
               {roundedRating && (
                 <span className="flex items-center gap-[2px] text-base text-[#f5a623] sm:gap-1" aria-label={`Rated ${roundedRating} out of 5`}>
                   {Array.from({ length: 5 }).map((_, index) => (

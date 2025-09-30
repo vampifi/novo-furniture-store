@@ -49,25 +49,24 @@ const Item: React.FC<AccordionItemProps> = ({
     <AccordionPrimitive.Item
       {...props}
       className={clx(
-        "border-grey-20 group border-t last:mb-0 last:border-b",
-        "py-3",
+        "group rounded-2xl border border-[#E3DAD3] bg-white shadow-sm transition-shadow duration-200 hover:shadow-md",
         className
       )}
     >
       {/* x@ts-expect-error */}
-      <AccordionPrimitive.Header className="px-1">
-        <div className="flex flex-col">
-          <div className="flex w-full items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Text className="text-ui-fg-subtle text-sm">{title}</Text>
-            </div>
+      <AccordionPrimitive.Header className="px-2">
+        <div className="flex flex-col gap-2 px-4 py-5">
+          <div className="flex w-full items-center justify-between gap-4">
+            <Text className="text-sm font-semibold uppercase tracking-[0.16em] text-[#2F2721]">
+              {title}
+            </Text>
             {/* x@ts-expect-error */}
-            <AccordionPrimitive.Trigger>
+            <AccordionPrimitive.Trigger className="group inline-flex items-center justify-center rounded-full">
               {customTrigger || <MorphingTrigger />}
             </AccordionPrimitive.Trigger>
           </div>
           {subtitle && (
-            <Text as="span" size="small" className="mt-1">
+            <Text as="span" size="small" className="text-[#77685D]">
               {subtitle}
             </Text>
           )}
@@ -77,10 +76,10 @@ const Item: React.FC<AccordionItemProps> = ({
       <AccordionPrimitive.Content
         forceMount={forceMountContent}
         className={clx(
-          "radix-state-closed:animate-accordion-close radix-state-open:animate-accordion-open radix-state-closed:pointer-events-none px-1"
+          "radix-state-closed:animate-accordion-close radix-state-open:animate-accordion-open radix-state-closed:pointer-events-none px-2 pb-5"
         )}
       >
-        <div className="inter-base-regular group-radix-state-closed:animate-accordion-close">
+        <div className="inter-base-regular group-radix-state-closed:animate-accordion-close px-4 text-[#4A4038]">
           {description && <Text>{description}</Text>}
           <div className="w-full">{children}</div>
         </div>
@@ -93,10 +92,10 @@ Accordion.Item = Item
 
 const MorphingTrigger = () => {
   return (
-    <div className="text-grey-90 hover:bg-grey-5 active:bg-grey-5 active:text-violet-60 focus:border-violet-60 disabled:text-grey-30 bg-transparent disabled:bg-transparent rounded-rounded group relative p-[6px]">
-      <div className="h-5 w-5">
-        <span className="bg-grey-50 rounded-circle group-radix-state-open:rotate-90 absolute inset-y-[31.75%] left-[48%] right-1/2 w-[1.5px] duration-300" />
-        <span className="bg-grey-50 rounded-circle group-radix-state-open:rotate-90 group-radix-state-open:left-1/2 group-radix-state-open:right-1/2 absolute inset-x-[31.75%] top-[48%] bottom-1/2 h-[1.5px] duration-300" />
+    <div className="rounded-full border border-[#E3DAD3] bg-[#FAF6F3] p-1 text-[#2F2721] transition-colors group-hover:bg-[#F0E7E0]">
+      <div className="relative h-7 w-7">
+        <span className="absolute left-1/2 top-1.5 bottom-1.5 w-[1.5px] -translate-x-1/2 rounded-full bg-[#C4B6AA] transition-all duration-200 group-radix-state-open:opacity-0" />
+        <span className="absolute top-1/2 left-1.5 right-1.5 h-[1.5px] -translate-y-1/2 rounded-full bg-[#C4B6AA] transition-all duration-200" />
       </div>
     </div>
   )

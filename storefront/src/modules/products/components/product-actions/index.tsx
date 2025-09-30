@@ -13,6 +13,7 @@ import MobileActions from "./mobile-actions"
 import ProductPrice from "../product-price"
 import { addToCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
+import { ADD_TO_CART_BUTTON_CLASS } from "../../constants/theme"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -138,8 +139,8 @@ export default function ProductActions({
         <Button
           onClick={handleAddToCart}
           disabled={!inStock || !selectedVariant || !!disabled || isAdding}
-          variant="primary"
-          className="w-full h-10"
+          variant="transparent"
+          className={ADD_TO_CART_BUTTON_CLASS}
           isLoading={isAdding}
           data-testid="add-product-button"
         >

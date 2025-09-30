@@ -9,6 +9,10 @@ import X from "@modules/common/icons/x"
 import { getProductPrice } from "@lib/util/get-product-price"
 import OptionSelect from "./option-select"
 import { HttpTypes } from "@medusajs/types"
+import {
+  ADD_TO_CART_BUTTON_CLASS,
+  PRODUCT_ACCENT_TEXT_CLASS,
+} from "../../constants/theme"
 
 type MobileActionsProps = {
   product: HttpTypes.StoreProduct
@@ -83,10 +87,10 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                     </p>
                   )}
                   <span
-                    className={clx({
-                      "text-ui-fg-interactive":
-                        selectedPrice.price_type === "sale",
-                    })}
+                    className={clx(
+                      selectedPrice.price_type === "sale" &&
+                        PRODUCT_ACCENT_TEXT_CLASS
+                    )}
                   >
                     {selectedPrice.calculated_price}
                   </span>
@@ -114,7 +118,8 @@ const MobileActions: React.FC<MobileActionsProps> = ({
               <Button
                 onClick={handleAddToCart}
                 disabled={!inStock || !variant}
-                className="w-full"
+                variant="transparent"
+                className={ADD_TO_CART_BUTTON_CLASS}
                 isLoading={isAdding}
                 data-testid="mobile-cart-button"
               >

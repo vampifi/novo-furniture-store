@@ -120,17 +120,17 @@ const MobileFilters = ({ sortBy, ...refinementProps }: MobileFiltersProps) => {
 
   return (
     <div className="space-y-4 lg:hidden">
-      <div className="rounded-full bg-[#f9f1eb] p-2 shadow-[0_10px_24px_rgba(17,24,39,0.08)]">
+      <div className="rounded-3xl border border-[#E3DAD3] bg-[#fdf8f3]/90 p-2">
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={handleOpen}
             aria-expanded={open}
             aria-controls={DRAWER_ID}
-            className="flex items-center justify-between gap-3 rounded-full border border-ui-border-subtle/60 bg-[#f9f1eb] px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-ui-fg-muted shadow-sm transition-all hover:border-primary/40 hover:text-primary"
+            className="flex items-center justify-between gap-3 rounded-full border border-[#E3DAD3] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5C5149] transition-all hover:border-[#C9B7A8] hover:text-[#3F3C3D]"
           >
             <span className="flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-ui-border-subtle/50 bg-white/80 text-[10px] font-semibold text-ui-fg-muted">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#E3DAD3] bg-[#fdf8f3] text-[10px] font-semibold text-[#6F6157]">
                 ⊕
               </span>
               Filter

@@ -98,43 +98,45 @@ const StoreTemplate = async ({
   }
 
   return (
-    <div
-      className="content-container flex flex-col gap-8 py-10 lg:flex-row lg:gap-10"
-      data-testid="category-container"
-    >
-      <MobileFilters
-        sortBy={sort}
-        categories={categoryFilters}
-        collections={collectionFilters}
-        colors={COLOR_FILTERS}
-      />
-      <div className="hidden lg:block lg:max-w-[320px] lg:shrink-0">
-        <RefinementList
+    <div className="bg-[#FAF6F3] text-[#352F2B]">
+      <div
+        className="content-container flex flex-col gap-8 py-10 lg:flex-row lg:gap-10"
+        data-testid="category-container"
+      >
+        <MobileFilters
+          sortBy={sort}
           categories={categoryFilters}
           collections={collectionFilters}
           colors={COLOR_FILTERS}
         />
-      </div>
-      <div className="flex-1 lg:pl-4">
-        <div className="mb-8">
-          <h1
-            className="text-3xl font-semibold tracking-tight text-ui-fg-base"
-            data-testid="store-page-title"
-          >
-            All Products
-          </h1>
-          <p className="mt-2 max-w-prose text-sm text-ui-fg-muted">
-            Discover curated sofas, loungers, and home accents designed to elevate every room in your home.
-          </p>
-        </div>
-        <Suspense fallback={<SkeletonProductGrid />}>
-          <PaginatedProducts
-            sortBy={sort}
-            page={pageNumber}
-            countryCode={countryCode}
-            searchParams={searchParams}
+        <div className="hidden lg:block lg:max-w-[320px] lg:shrink-0">
+          <RefinementList
+            categories={categoryFilters}
+            collections={collectionFilters}
+            colors={COLOR_FILTERS}
           />
-        </Suspense>
+        </div>
+        <div className="flex-1 lg:pl-4">
+          <div className="mb-8">
+            <h1
+              className="text-3xl font-semibold tracking-tight text-[#221C18]"
+              data-testid="store-page-title"
+            >
+              All Products
+            </h1>
+            <p className="mt-2 max-w-prose text-sm text-[#5C5149]">
+              Discover curated sofas, loungers, and home accents designed to elevate every room in your home.
+            </p>
+          </div>
+          <Suspense fallback={<SkeletonProductGrid />}>
+            <PaginatedProducts
+              sortBy={sort}
+              page={pageNumber}
+              countryCode={countryCode}
+              searchParams={searchParams}
+            />
+          </Suspense>
+        </div>
       </div>
     </div>
   )

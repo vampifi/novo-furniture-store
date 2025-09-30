@@ -1,5 +1,6 @@
 import { Text, clx } from "@medusajs/ui"
 import { VariantPrice } from "types/global"
+import { PRODUCT_ACCENT_TEXT_CLASS } from "../../constants/theme"
 
 type PreviewPriceProps = {
   price: VariantPrice
@@ -21,7 +22,7 @@ export default async function PreviewPrice({
     ? clx("transition-colors", className)
     : clx(
         "text-ui-fg-muted transition-colors",
-        showSaleDetails && "text-ui-fg-interactive"
+        showSaleDetails && PRODUCT_ACCENT_TEXT_CLASS
       )
 
   return (
