@@ -1,6 +1,7 @@
 import { listCategories } from "@lib/data/categories"
 import { getCollectionsList } from "@lib/data/collections"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import SearchPageInput from "@modules/search/components/search-page-input"
 import RefinementList from "@modules/store/components/refinement-list"
 import MobileFilters from "@modules/store/components/mobile-filters"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -73,50 +74,95 @@ const SearchResultsTemplate = async ({
     collectionFilters = []
   }
 
+  const decodedQuery = (() => {
+    try {
+      return decodeURIComponent(query)
+    } catch (error) {
+      return query
+    }
+  })()
+
   return (
-    <div className="content-container flex flex-col gap-8 py-10 lg:flex-row lg:gap-10">
-      <MobileFilters
-        sortBy={sortBy || "created_at"}
-        categories={categoryFilters}
-        collections={collectionFilters}
-        colors={COLOR_FILTERS}
-      />
-      <div className="hidden lg:block lg:max-w-[320px] lg:shrink-0">
-        <RefinementList
-          categories={categoryFilters}
-          collections={collectionFilters}
-          colors={COLOR_FILTERS}
-        />
-      </div>
-      <div className="flex-1 lg:pl-4">
-        <div className="mb-8 flex flex-col gap-2 rounded-3xl border border-ui-border-subtle/60 bg-ui-bg-base/95 px-6 py-5 shadow-[0_12px_28px_rgba(17,24,39,0.08)]">
-          <Text className="text-sm uppercase tracking-[0.28em] text-ui-fg-muted">
-            Search results for
-          </Text>
-          <Heading className="text-3xl font-semibold text-ui-fg-base">
-            {decodeURI(query)}
-          </Heading>
-          <Text className="text-sm text-ui-fg-muted">
-            {ids.length} matching products
-          </Text>
-          <LocalizedClientLink
-            href="/store"
-            className="text-sm font-medium text-ui-fg-interactive transition-colors hover:text-primary"
-          >
-            Clear search
-          </LocalizedClientLink>
-        </div>
-        {ids.length > 0 ? (
-          <PaginatedProducts
-            productsIds={ids}
-            sortBy={sortBy}
-            page={pageNumber}
-            countryCode={countryCode}
-            searchParams={searchParams}
-          />
-        ) : (
-          <Text className="mt-6 text-sm text-ui-fg-muted">No results found. Try updating your filters.</Text>
-        )}
+    <div className="bg-[#FAF6F3] text-[#352F2B]">
+      <div className="content-container flex flex-col gap-8 py-10 lg:flex-row lg:gap-12">
+        <aside className="hidden lg:block lg:w-[320px] lg:shrink-0">
+          <div className="sticky top-24 rounded-3xl border border-[#E4D5C8] bg-white/95 p-5 shadow-[0_10px_24px_rgba(31,26,23,0.08)]">
+            <RefinementList
+              categories={categoryFilters}
+              collections={collectionFilters}
+              colors={COLOR_FILTERS}
+            />
+          </div>
+        </aside>
+        <main className="flex-1 lg:pl-2">
+          <div className="mb-6 lg:hidden">
+            <MobileFilters
+              sortBy={sortBy || "created_at"}
+              categories={categoryFilters}
+              collections={collectionFilters}
+              colors={COLOR_FILTERS}
+            />
+          </div>
+          <section className="flex flex-col gap-5 rounded-3xl border border-[#E4D5C8] bg-white/97 px-6 py-6 shadow-[0_12px_28px_rgba(31,26,23,0.1)]">
+            <SearchPageInput initialValue={decodedQuery} />
+            <div className="flex flex-col gap-1">
+              <Text className="text-xs font-semibold uppercase tracking-[0.3em] text-[#8C7B6F]">
+                Search results
+              </Text>
+              <Heading className="text-3xl font-semibold text-[#201A16]">
+                {decodedQuery}
+              </Heading>
+              <Text className="text-sm text-[#5C5149]">
+                {ids.length} matching product{ids.length === 1 ? "" : "s"}
+              </Text>
+            </div>
+            <LocalizedClientLink
+              href="/store"
+              className="inline-flex w-max items-center gap-2 rounded-full border border-transparent bg-[#F6EDE6] px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#3F3C3D] transition hover:bg-[#ecdccd]"
+            >
+              Clear search
+            </LocalizedClientLink>
+          </section>
+          {ids.length > 0 ? (
+            <PaginatedProducts
+              productsIds={ids}
+              sortBy={sortBy}
+              page={pageNumber}
+              countryCode={countryCode}
+              searchParams={searchParams}
+            />
+          ) : (
+            <section className="mt-6 rounded-3xl border border-[#E4D5C8] bg-white/95 px-6 py-8 shadow-[0_12px_26px_rgba(31,26,23,0.12)]">
+              <Heading className="text-2xl font-semibold text-[#201A16]">
+                No results for “{decodedQuery}”
+              </Heading>
+              <p className="mt-3 text-sm text-[#5C5149]">
+                Refine your wording or browse our curated collections.
+              </p>
+              <ul className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
+                {[
+                  "Living Room",
+                  "Bedroom",
+                  "Workspace",
+                  "Lighting",
+                ].map((suggestion) => (
+                  <li
+                    key={suggestion}
+                    className="rounded-2xl border border-[#E4D5C8] bg-[#FBF3ED] px-4 py-3 text-center font-medium text-[#3F3C3D]"
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+              <LocalizedClientLink
+                href="/store"
+                className="mt-5 inline-flex items-center justify-center rounded-full border border-[#E4D5C8] bg-white px-5 py-2 text-sm font-semibold text-[#3F3C3D] transition hover:border-[#CBB6A8] hover:text-[#201A16]"
+              >
+                Browse all products
+              </LocalizedClientLink>
+            </section>
+          )}
+        </main>
       </div>
     </div>
   )

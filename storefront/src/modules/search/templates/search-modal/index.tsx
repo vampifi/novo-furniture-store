@@ -56,22 +56,39 @@ export default function SearchModal() {
 
   return (
     <div className="relative z-[75]">
-      <div className="fixed inset-0 bg-opacity-75 backdrop-blur-md opacity-100 h-screen w-screen" />
-      <div className="fixed inset-0 px-5 sm:p-0" ref={searchRef}>
-        <div className="flex flex-col justify-start w-full h-fit transform p-5 items-center text-left align-middle transition-all max-h-[75vh] bg-transparent shadow-none">
+      <div
+        className="fixed inset-0 h-screen w-screen bg-[#1F1A17]/55 backdrop-blur-sm"
+        role="presentation"
+        onClick={() => router.back()}
+      />
+      <div
+        className="fixed inset-0 overflow-y-auto px-4 py-10 sm:py-16"
+        ref={searchRef}
+        onClick={() => router.back()}
+      >
+        <div
+          className="mx-auto flex w-full max-w-3xl flex-col gap-6"
+          onClick={(event) => event.stopPropagation()}
+        >
           <InstantSearch
             indexName={SEARCH_INDEX_NAME}
             searchClient={searchClient}
           >
             <div
-              className="flex absolute flex-col h-fit w-full sm:w-fit"
+              className="flex h-fit w-full flex-col gap-5"
               data-testid="search-modal-container"
             >
-              <div className="w-full flex items-center gap-x-2 p-4 bg-[rgba(3,7,18,0.5)] text-ui-fg-on-color backdrop-blur-2xl rounded-rounded">
-                <MagnifyingGlassMini />
-                <SearchBox />
+              <div className="rounded-3xl border border-[#E4D5C8] bg-white/97 px-6 py-6 shadow-[0_18px_38px_rgba(31,26,23,0.16)]">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F6EDE6] text-[#6F6157] shadow-inner aspect-square sm:h-11 sm:w-11">
+                      <MagnifyingGlassMini className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </span>
+                    <div className="flex-1">
+                      <SearchBox />
+                    </div>
+                  </div>
               </div>
-              <div className="flex-1 mt-6">
+              <div className="rounded-3xl border border-[#E4D5C8] bg-[#FAF6F3]/95 p-5 shadow-[0_16px_34px_rgba(31,26,23,0.12)]">
                 <Hits hitComponent={Hit} />
               </div>
             </div>

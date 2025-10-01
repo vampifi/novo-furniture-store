@@ -144,8 +144,8 @@ export default async function PaginatedProducts({
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col items-start gap-4 rounded-3xl border border-ui-border-subtle/60 bg-ui-bg-base/90 px-6 py-5 shadow-[0_12px_28px_rgba(17,24,39,0.08)] sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-ui-fg-muted">
+      <header className="flex flex-col items-start gap-4 rounded-3xl border border-[#E4D5C8] bg-white/97 px-6 py-5 text-[#5C5149] shadow-[0_12px_26px_rgba(31,26,23,0.1)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm">
           {count === 0 ? (
             <span>No products found</span>
           ) : (
@@ -160,23 +160,27 @@ export default async function PaginatedProducts({
         />
       </header>
 
-      <ul
-        className="grid w-full grid-cols-2 gap-5 max-[360px]:grid-cols-1 small:grid-cols-2 medium:grid-cols-3 xl:grid-cols-4"
-        data-testid="products-list"
-      >
-        {products.map((product) => (
-          <li key={product.id} className="h-full">
-            <ProductPreview product={product} region={region} />
-          </li>
-        ))}
-      </ul>
+      <div className="rounded-[32px] border border-[#E3DAD3] bg-white/92 p-5 shadow-[0_18px_40px_rgba(53,47,43,0.14)] sm:p-6">
+        <ul
+          className="grid w-full grid-cols-2 gap-5 max-[360px]:grid-cols-1 small:grid-cols-2 medium:grid-cols-3 xl:grid-cols-4"
+          data-testid="products-list"
+        >
+          {products.map((product) => (
+            <li key={product.id} className="h-full">
+              <ProductPreview product={product} region={region} />
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {totalPages > 1 && (
-        <Pagination
-          data-testid="product-pagination"
-          page={boundedPage}
-          totalPages={totalPages}
-        />
+        <div className="flex justify-center">
+          <Pagination
+            data-testid="product-pagination"
+            page={boundedPage}
+            totalPages={totalPages}
+          />
+        </div>
       )}
     </div>
   )
