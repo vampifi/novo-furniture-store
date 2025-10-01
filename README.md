@@ -1,3 +1,3 @@
 <p align="center">
-Furniture Eco Solution
+Furniture Ecommerce Store
 </p>
