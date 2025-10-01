@@ -1,6 +1,7 @@
 import { getProductsListWithSort, ProductListFilters } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import ProductPreview from "@modules/products/components/product-preview"
+import SearchResultCard from "@modules/search/components/search-result-card"
 import { Pagination } from "@modules/store/components/pagination"
 import SortProducts, {
   SortOptions,
@@ -50,6 +51,7 @@ type PaginatedProductsProps = {
   productsIds?: string[]
   countryCode: string
   searchParams?: SearchParamRecord
+  cardVariant?: "default" | "search"
 }
 
 export default async function PaginatedProducts({
@@ -60,6 +62,7 @@ export default async function PaginatedProducts({
   productsIds,
   countryCode,
   searchParams = {},
+  cardVariant = "default",
 }: PaginatedProductsProps) {
   const queryParams: {
     limit: number
@@ -142,6 +145,8 @@ export default async function PaginatedProducts({
   const startIndex = count === 0 ? 0 : (boundedPage - 1) * PRODUCT_LIMIT + 1
   const endIndex = count === 0 ? 0 : startIndex + products.length - 1
 
+  const isSearchVariant = cardVariant === "search"
+
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col items-start gap-4 rounded-3xl border border-[#E4D5C8] bg-white/97 px-6 py-5 text-[#5C5149] shadow-[0_12px_26px_rgba(31,26,23,0.1)] sm:flex-row sm:items-center sm:justify-between">
@@ -160,18 +165,26 @@ export default async function PaginatedProducts({
         />
       </header>
 
-      <div className="rounded-[32px] border border-[#E3DAD3] bg-white/92 p-5 shadow-[0_18px_40px_rgba(53,47,43,0.14)] sm:p-6">
-        <ul
-          className="grid w-full grid-cols-2 gap-5 max-[360px]:grid-cols-1 small:grid-cols-2 medium:grid-cols-3 xl:grid-cols-4"
-          data-testid="products-list"
-        >
+      {isSearchVariant ? (
+        <div className="flex flex-col gap-4" data-testid="products-list">
           {products.map((product) => (
-            <li key={product.id} className="h-full">
-              <ProductPreview product={product} region={region} />
-            </li>
+            <SearchResultCard key={product.id} product={product} />
           ))}
-        </ul>
-      </div>
+        </div>
+      ) : (
+        <div className="rounded-[32px] border border-[#E3DAD3] bg-white/92 p-5 shadow-[0_18px_40px_rgba(53,47,43,0.14)] sm:p-6">
+          <ul
+            className="grid w-full grid-cols-2 gap-5 max-[360px]:grid-cols-1 small:grid-cols-2 medium:grid-cols-3 xl:grid-cols-4"
+            data-testid="products-list"
+          >
+            {products.map((product) => (
+              <li key={product.id} className="h-full">
+                <ProductPreview product={product} region={region} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex justify-center">

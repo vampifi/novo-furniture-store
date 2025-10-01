@@ -38,8 +38,8 @@ const SearchPageInput = ({ initialValue }: SearchPageInputProps) => {
       onSubmit={handleSubmit}
       className="flex w-full flex-col gap-3 sm:flex-row sm:items-center"
     >
-      <div className="flex w-full flex-1 items-center gap-3 rounded-full border border-[#E4D5C8] bg-[#FBF3ED] px-4 py-2 text-[#352F2B] shadow-[0_6px_18px_rgba(31,26,23,0.1)] transition focus-within:border-[#CBB6A8] focus-within:shadow-[0_12px_28px_rgba(31,26,23,0.12)] sm:px-5">
-        <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/80 text-[#7A6B61] shadow-inner aspect-square sm:h-10 sm:w-10">
+      <div className="flex w-full flex-1 items-center gap-3 rounded-full border border-[#3F3C3D] bg-[#262224] px-4 py-2 text-white shadow-[0_6px_18px_rgba(31,26,23,0.2)] transition focus-within:border-white/70 focus-within:shadow-[0_12px_28px_rgba(31,26,23,0.24)] sm:px-5">
+        <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-white shadow-[inset_0_3px_6px_rgba(0,0,0,0.2)] aspect-square sm:h-10 sm:w-10">
           <HiOutlineSearch className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
         </span>
         <input
@@ -47,7 +47,7 @@ const SearchPageInput = ({ initialValue }: SearchPageInputProps) => {
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="Search for furniture, lighting, decor..."
-          className="flex-1 bg-transparent text-sm font-medium text-[#352F2B] placeholder:text-[#95887F] focus:outline-none"
+          className="flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/60 focus:outline-none"
           aria-label="Search products on page"
         />
       </div>

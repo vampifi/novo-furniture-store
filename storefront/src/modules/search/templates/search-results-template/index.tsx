@@ -130,6 +130,7 @@ const SearchResultsTemplate = async ({
               page={pageNumber}
               countryCode={countryCode}
               searchParams={searchParams}
+              cardVariant="search"
             />
           ) : (
             <section className="mt-6 rounded-3xl border border-[#E4D5C8] bg-white/95 px-6 py-8 shadow-[0_12px_26px_rgba(31,26,23,0.12)]">
