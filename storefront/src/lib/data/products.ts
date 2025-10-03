@@ -5,6 +5,18 @@ import { getRegion } from "./regions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { sortProducts } from "@lib/util/sort-products"
 
+export type StoreProductCustomAttribute = {
+  id: string
+  value?: string | null
+  options?: string | null
+  category_custom_attribute?: {
+    id: string
+    label?: string | null
+    key?: string | null
+    type?: string | null
+  } | null
+}
+
 export type ProductListFilters = {
   priceRange?: {
     min?: number
@@ -49,6 +61,27 @@ export const getProductByHandle = cache(async function (
       { next: { tags: ["products"] } }
     )
     .then(({ products }) => products[0])
+})
+
+export const getProductCustomAttributes = cache(async function (
+  productId: string | undefined
+) {
+  if (!productId) {
+    return [] as StoreProductCustomAttribute[]
+  }
+
+  try {
+    const response = await sdk.client.fetch<{
+      product_custom_attributes?: StoreProductCustomAttribute[]
+    }>(`/store/products/${productId}/custom-attributes`, undefined, {
+      next: { tags: ["products", productId, "custom-attributes"] },
+    })
+
+    return response.product_custom_attributes ?? []
+  } catch (error) {
+    console.error("Failed to load product custom attributes", error)
+    return [] as StoreProductCustomAttribute[]
+  }
 })
 
 export const getProductsList = cache(async function ({

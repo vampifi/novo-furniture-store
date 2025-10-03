@@ -11,17 +11,20 @@ import { Heading, Text } from "@medusajs/ui"
 import { notFound } from "next/navigation"
 import ProductActionsWrapper from "./product-actions-wrapper"
 import { HttpTypes } from "@medusajs/types"
+import { StoreProductCustomAttribute } from "@lib/data/products"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   countryCode: string
+  customAttributes?: StoreProductCustomAttribute[]
 }
 
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
   product,
   region,
   countryCode,
+  customAttributes,
 }) => {
   if (!product || !product.id) {
     return notFound()
@@ -69,7 +72,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               {product.description || "No description available for this product yet."}
             </Text>
           </section>
-          <ProductTabs product={product} />
+          <ProductTabs product={product} customAttributes={customAttributes} />
         </div>
       </div>
       <div

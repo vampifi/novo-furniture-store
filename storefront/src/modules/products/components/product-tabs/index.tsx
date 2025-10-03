@@ -3,26 +3,37 @@ import FastDelivery from "@modules/common/icons/fast-delivery"
 import Refresh from "@modules/common/icons/refresh"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
+import { StoreProductCustomAttribute } from "@lib/data/products"
 
 import Accordion from "./accordion"
 
 type ProductTabsProps = {
   product: HttpTypes.StoreProduct
+  customAttributes?: StoreProductCustomAttribute[]
 }
 
-const ProductTabs = ({ product }: ProductTabsProps) => {
+const ProductTabs = ({ product, customAttributes = [] }: ProductTabsProps) => {
   const sections = [
     {
       label: "Product information",
       value: "product-information",
       content: <ProductInfoPanel product={product} />,
     },
-    {
-      label: "Shipping & returns",
-      value: "shipping-and-returns",
-      content: <ShippingInfoPanel />,
-    },
   ]
+
+  if (customAttributes.length) {
+    sections.push({
+      label: "Specifications",
+      value: "product-specifications",
+      content: <ProductCustomAttributesPanel attributes={customAttributes} />,
+    })
+  }
+
+  sections.push({
+    label: "Shipping & returns",
+    value: "shipping-and-returns",
+    content: <ShippingInfoPanel />,
+  })
 
   return (
     <section className="rounded-3xl border border-[#E3DAD3] bg-white p-5 xsmall:p-6 sm:p-7 medium:p-8 shadow-sm">
@@ -132,6 +143,105 @@ const ShippingInfoPanel = () => {
       ))}
     </div>
   )
+}
+
+const ProductCustomAttributesPanel = ({
+  attributes,
+}: {
+  attributes: StoreProductCustomAttribute[]
+}) => {
+  return (
+    <div className="space-y-4 text-[#4A4038]">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {attributes.map((attribute) => {
+          const type = attribute.category_custom_attribute?.type ?? undefined
+          const label =
+            attribute.category_custom_attribute?.label ||
+            attribute.category_custom_attribute?.key ||
+            "Attribute"
+          const value = formatAttributeValue(attribute)
+
+          return (
+            <div key={attribute.id} className="flex flex-col gap-1">
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8C7B6F]">
+                {label}
+              </span>
+              {renderAttributeValue(value, type)}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+const renderAttributeValue = (value: string | null, type?: string) => {
+  if (!value) {
+    return <Text className="text-base text-[#4A4038]">-</Text>
+  }
+
+  if (type === "file" && isLikelyUrl(value)) {
+    return (
+      <a
+        href={value}
+        target="_blank"
+        rel="noreferrer"
+        className="text-base text-[#2F6ADE] underline hover:text-[#1A4FAA]"
+      >
+        Download
+      </a>
+    )
+  }
+
+  return <Text className="text-base text-[#4A4038]">{value}</Text>
+}
+
+const formatAttributeValue = (
+  attribute: StoreProductCustomAttribute
+): string | null => {
+  if (!attribute.value && !attribute.options) {
+    return null
+  }
+
+  const raw = attribute.value ?? attribute.options ?? null
+
+  if (typeof raw !== "string") {
+    return raw ?? null
+  }
+
+  const trimmed = raw.trim()
+
+  if (!trimmed.length) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed)
+
+    if (Array.isArray(parsed)) {
+      return parsed.join(", ") || null
+    }
+
+    if (parsed && typeof parsed === "object") {
+      return Object.values(parsed)
+        .filter((value) => value !== undefined && value !== null)
+        .map(String)
+        .join(", ")
+    }
+  } catch (error) {
+    // Value is not JSON formatted; fall back to raw string
+  }
+
+  return trimmed
+}
+
+const isLikelyUrl = (value: string) => {
+  try {
+    const url = new URL(value)
+    return Boolean(url.protocol && url.host)
+  } catch (error) {
+    return false
+  }
 }
 
 const formatSpecValue = (
