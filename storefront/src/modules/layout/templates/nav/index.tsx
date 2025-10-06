@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import User from "@modules/common/icons/user"
-import { BiSupport, BiUser } from "react-icons/bi"
+import { BiSupport } from "react-icons/bi"
 import { getCategoriesList } from "@lib/data/categories"
 import { getCollectionsList } from "@lib/data/collections"
 import {

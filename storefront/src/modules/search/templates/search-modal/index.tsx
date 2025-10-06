@@ -2,7 +2,7 @@
 
 import { InstantSearch } from "react-instantsearch-hooks-web"
 import { useRouter } from "next/navigation"
-import { MagnifyingGlassMini } from "@medusajs/icons"
+import { HiOutlineX } from "react-icons/hi"
 
 import { SEARCH_INDEX_NAME, searchClient } from "@lib/search-client"
 import Hit from "@modules/search/components/hit"
@@ -14,10 +14,14 @@ export default function SearchModal() {
   const router = useRouter()
   const searchRef = useRef(null)
 
+  const handleClose = () => {
+    router.push("/")
+  }
+
   // close modal on outside click
   const handleOutsideClick = (event: MouseEvent) => {
     if (event.target === searchRef.current) {
-      router.back()
+      handleClose()
     }
   }
 
@@ -42,7 +46,7 @@ export default function SearchModal() {
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        router.back()
+        handleClose()
       }
     }
     window.addEventListener("keydown", handleEsc)
@@ -59,12 +63,12 @@ export default function SearchModal() {
       <div
         className="fixed inset-0 h-screen w-screen bg-[#1F1A17]/55 backdrop-blur-sm"
         role="presentation"
-        onClick={() => router.back()}
+        onClick={handleClose}
       />
       <div
         className="fixed inset-0 overflow-y-auto px-4 py-10 sm:py-16"
         ref={searchRef}
-        onClick={() => router.back()}
+        onClick={handleClose}
       >
         <div
           className="mx-auto flex w-full max-w-3xl flex-col gap-6"
@@ -78,15 +82,28 @@ export default function SearchModal() {
               className="flex h-fit w-full flex-col gap-5"
               data-testid="search-modal-container"
             >
-              <div className="rounded-3xl border border-[#E4D5C8] bg-white/97 px-6 py-6 shadow-[0_18px_38px_rgba(31,26,23,0.16)]">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F6EDE6] text-[#6F6157] shadow-inner aspect-square sm:h-11 sm:w-11">
-                      <MagnifyingGlassMini className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </span>
-                    <div className="flex-1">
-                      <SearchBox />
-                    </div>
+              <div className="rounded-3xl border border-[#E4D5C8] bg-white/95 px-5 py-5 shadow-[0_18px_32px_rgba(31,26,23,0.12)] sm:px-6 sm:py-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-base font-semibold text-[#3F3A36] sm:text-lg">
+                      Search products
+                    </h2>
+                    <p className="mt-1 text-xs text-[#8C7C71] sm:text-sm">
+                      Start typing to discover pieces you’ll love.
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    aria-label="Close search and return home"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#E4D5C8] bg-white text-[#5C4F46] shadow-sm transition-transform duration-150 hover:-translate-y-0.5 hover:bg-[#FFF7F1] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6F6157] sm:h-10 sm:w-10"
+                  >
+                    <HiOutlineX className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="mt-4 sm:mt-5">
+                  <SearchBox />
+                </div>
               </div>
               <div className="rounded-3xl border border-[#E4D5C8] bg-[#FAF6F3]/95 p-5 shadow-[0_16px_34px_rgba(31,26,23,0.12)]">
                 <Hits hitComponent={Hit} />
