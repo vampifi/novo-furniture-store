@@ -1,4 +1,5 @@
 import { loadEnv, Modules, defineConfig } from '@medusajs/utils';
+import './src/utils/register-product-custom-attribute-import.js';
 import {
   ADMIN_CORS,
   AUTH_CORS,
