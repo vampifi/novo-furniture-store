@@ -14,7 +14,6 @@ import { HiShieldCheck, HiUsers, HiStar } from "react-icons/hi"
 import SideMenu from "@modules/layout/components/side-menu"
 import MiddleNavLinks from "@modules/layout/components/middle-nav-links"
 import PromoCountdown from "@modules/layout/components/promo-countdown"
-import SearchBar from "@modules/layout/components/search-bar"
 
 export default async function Nav() {
   const { product_categories } = await getCategoriesList(0, 200)
@@ -57,7 +56,7 @@ export default async function Nav() {
 
             <LocalizedClientLink
               href="/"
-              className="text-2xl font-semibold uppercase tracking-[0.3em] text-textColor transition-colors hover:text-ui-fg-base sm:text-3xl md:text-6xl"
+              className="text-2xl font-semibold uppercase tracking-[0.3em] text-textColor transition-colors hover:text-ui-fg-base sm:text-3xl md:text-5xl"
               data-testid="nav-store-link"
             >
               NOVO
@@ -65,8 +64,12 @@ export default async function Nav() {
 
             {/* Right: Icons (mobile) and Search (desktop) */}
             <div className="flex flex-1 items-center justify-end gap-2 md:gap-5">
-              <LocalizedClientLink href="/search" className="hidden md:block">
-                <SearchBar />
+              <LocalizedClientLink
+                href="/search"
+                aria-label="Search"
+                className="hidden md:flex  text-textColor transition-transform duration-150 hover:-translate-y-0.5 "
+              >
+                <HiOutlineSearch className="h-6 w-6" />
               </LocalizedClientLink>
 
               <LocalizedClientLink
