@@ -4,13 +4,13 @@ import { Suspense } from "react"
 import { listCategories } from "@lib/data/categories"
 import { getCollectionsList } from "@lib/data/collections"
 import InteractiveLink from "@modules/common/components/interactive-link"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@modules/store/components/refinement-list"
 import MobileFilters from "@modules/store/components/mobile-filters"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import { COLOR_FILTERS } from "@modules/store/constants/filters"
+import Breadcrumb from "@modules/common/components/breadcrumb"
 import { HttpTypes } from "@medusajs/types"
 
 const mapCollectionsToFilter = (collections: any[] | undefined) =>
@@ -101,29 +101,26 @@ export default async function CategoryTemplate({
         />
       </div>
       <div className="flex-1 lg:pl-4">
-        <div className="mb-8">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-ui-fg-subtle">
-            {parents?.map((parent) => (
-              <span key={parent.id} className="flex items-center gap-2">
-                <LocalizedClientLink
-                  className="font-medium text-ui-fg-subtle transition-colors hover:text-primary"
-                  href={`/categories/${parent.handle}`}
-                  data-testid="sort-by-link"
-                >
-                  {parent.name}
-                </LocalizedClientLink>
-                <span aria-hidden>/</span>
-              </span>
-            ))}
-          </div>
+        <div className="mb-8 space-y-4">
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Store", href: "/store" },
+              ...parents.map((parent) => ({
+                label: parent.name ?? "Category",
+                href: parent.handle ? `/categories/${parent.handle}` : undefined,
+              })),
+              { label: category.name ?? "Category" },
+            ]}
+          />
           <h1
-            className="mt-3 text-3xl font-semibold tracking-tight text-ui-fg-base"
+            className="text-3xl font-semibold tracking-tight text-ui-fg-base"
             data-testid="category-page-title"
           >
             {category.name}
           </h1>
           {category.description && (
-            <p className="mt-3 max-w-prose text-sm text-ui-fg-muted">
+            <p className="max-w-prose text-sm text-ui-fg-muted">
               {category.description}
             </p>
           )}

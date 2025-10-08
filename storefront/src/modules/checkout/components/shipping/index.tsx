@@ -3,8 +3,6 @@
 import { RadioGroup } from "@headlessui/react"
 import { CheckCircleSolid } from "@medusajs/icons"
 import { Button, Heading, Text, clx } from "@medusajs/ui"
-
-import Divider from "@modules/common/components/divider"
 import Radio from "@modules/common/components/radio"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
@@ -60,12 +58,12 @@ const Shipping: React.FC<ShippingProps> = ({
   }, [isOpen])
 
   return (
-    <div className="bg-white">
-      <div className="flex flex-row items-center justify-between mb-6">
+    <div className="rounded-[28px] border border-[#E8DCD2] bg-white px-5 py-6 text-[#443B33] shadow-[0px_20px_40px_rgba(68,59,51,0.08)] sm:px-8 sm:py-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EDE1D8] pb-4">
         <Heading
           level="h2"
           className={clx(
-            "flex flex-row text-3xl-regular gap-x-2 items-baseline",
+            "flex items-center gap-2 text-[20px] font-semibold uppercase tracking-[0.12em] text-[#221C18]",
             {
               "opacity-50 pointer-events-none select-none":
                 !isOpen && cart.shipping_methods?.length === 0,
@@ -84,7 +82,7 @@ const Shipping: React.FC<ShippingProps> = ({
             <Text>
               <button
                 onClick={handleEdit}
-                className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8C7B6F] transition hover:text-[#443B33]"
                 data-testid="edit-delivery-button"
               >
                 Edit
@@ -93,9 +91,9 @@ const Shipping: React.FC<ShippingProps> = ({
           )}
       </div>
       {isOpen ? (
-        <div data-testid="delivery-options-container">
-          <div className="pb-8">
-            <RadioGroup value={selectedShippingMethod?.id} onChange={set}>
+        <div className="pt-4" data-testid="delivery-options-container">
+          <RadioGroup value={selectedShippingMethod?.id} onChange={set}>
+            <div className="flex flex-col gap-3">
               {availableShippingMethods?.map((option) => {
                 return (
                   <RadioGroup.Option
@@ -103,30 +101,30 @@ const Shipping: React.FC<ShippingProps> = ({
                     value={option.id}
                     data-testid="delivery-option-radio"
                     className={clx(
-                      "flex items-center justify-between text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
+                      "flex flex-col gap-3 rounded-2xl border border-[#E8DCD2] bg-white px-4 py-4 transition hover:border-[#CBB8A9] sm:flex-row sm:items-center sm:justify-between sm:px-6",
                       {
-                        "border-ui-border-interactive":
+                        "border-[#443B33] shadow-[0px_12px_28px_rgba(68,59,51,0.12)]":
                           option.id === selectedShippingMethod?.id,
                       }
                     )}
                   >
                     <div className="flex items-center gap-x-4">
-                      <Radio
-                        checked={option.id === selectedShippingMethod?.id}
-                      />
-                      <span className="text-base-regular">{option.name}</span>
+                      <Radio checked={option.id === selectedShippingMethod?.id} />
+                      <Text className="text-base font-semibold text-[#221C18]">
+                        {option.name}
+                      </Text>
                     </div>
-                    <span className="justify-self-end text-ui-fg-base">
+                    <Text className="text-sm font-semibold text-[#221C18]">
                       {convertToLocale({
                         amount: option.amount!,
                         currency_code: cart?.currency_code,
                       })}
-                    </span>
+                    </Text>
                   </RadioGroup.Option>
                 )
               })}
-            </RadioGroup>
-          </div>
+            </div>
+          </RadioGroup>
 
           <ErrorMessage
             error={error}
@@ -135,7 +133,7 @@ const Shipping: React.FC<ShippingProps> = ({
 
           <Button
             size="large"
-            className="mt-6"
+            className="mt-6 h-12 w-full rounded-full bg-[#221C18] text-sm font-semibold uppercase tracking-[0.16em] text-[#EFE4DC] transition hover:bg-[#2E261F]"
             onClick={handleSubmit}
             isLoading={isLoading}
             disabled={!cart.shipping_methods?.[0]}
@@ -145,26 +143,32 @@ const Shipping: React.FC<ShippingProps> = ({
           </Button>
         </div>
       ) : (
-        <div>
-          <div className="text-small-regular">
-            {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
-              <div className="flex flex-col w-1/3">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">
+        <div className="pt-4">
+          {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
+            <div className="grid gap-2 text-sm text-[#6A5C52] sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8C7B6F]">
                   Method
                 </Text>
-                <Text className="txt-medium text-ui-fg-subtle">
-                  {selectedShippingMethod?.name}{" "}
+                <Text>
+                  {selectedShippingMethod?.name}
+                </Text>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8C7B6F]">
+                  Cost
+                </Text>
+                <Text>
                   {convertToLocale({
                     amount: selectedShippingMethod?.amount!,
                     currency_code: cart?.currency_code,
                   })}
                 </Text>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
-      <Divider className="mt-8" />
     </div>
   )
 }

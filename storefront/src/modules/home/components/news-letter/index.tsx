@@ -39,12 +39,12 @@ const NewsletterSubscription = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full px-6 py-3 pr-32 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#474546] focus:border-transparent text-[#474546] placeholder-gray-400 transition-all duration-300"
+                className="w-full rounded-full border border-gray-300 px-4 py-2.5 pr-28 text-sm text-[#474546] placeholder-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#474546] focus:border-transparent sm:px-6 sm:py-3 sm:pr-36 sm:text-base"
                 required
               />
               <button
                 type="submit"
-                className="absolute right-1 bg-[#474546] hover:bg-gray-700 text-white py-3 px-6 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                className="absolute right-1 rounded-full bg-[#474546] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-all duration-300 shadow-sm hover:bg-gray-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#474546] sm:px-6 sm:py-3 sm:text-sm"
               >
                 SUBSCRIBE
               </button>

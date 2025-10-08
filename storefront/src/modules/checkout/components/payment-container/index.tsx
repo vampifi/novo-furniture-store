@@ -30,27 +30,25 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
         value={paymentProviderId}
         disabled={disabled}
         className={clx(
-          "flex flex-col gap-y-2 text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
+          "flex cursor-pointer flex-col gap-3 rounded-2xl border border-[#E8DCD2] bg-white px-4 py-4 transition hover:border-[#CBB8A9] sm:flex-row sm:items-center sm:justify-between sm:px-6",
           {
-            "border-ui-border-interactive":
+            "border-[#443B33] shadow-[0px_12px_28px_rgba(68,59,51,0.12)]":
               selectedPaymentOptionId === paymentProviderId,
           }
         )}
       >
-        <div className="flex items-center justify-between ">
-          <div className="flex items-center gap-x-4">
-            <Radio checked={selectedPaymentOptionId === paymentProviderId} />
-            <Text className="text-base-regular">
-              {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
-            </Text>
-            {isManual(paymentProviderId) && isDevelopment && (
-              <PaymentTest className="hidden small:block" />
-            )}
-          </div>
-          <span className="justify-self-end text-ui-fg-base">
-            {paymentInfoMap[paymentProviderId]?.icon}
-          </span>
+        <div className="flex items-center gap-x-4">
+          <Radio checked={selectedPaymentOptionId === paymentProviderId} />
+          <Text className="text-base font-semibold text-[#221C18]">
+            {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
+          </Text>
+          {isManual(paymentProviderId) && isDevelopment && (
+            <PaymentTest className="hidden small:block" />
+          )}
         </div>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F3EAE2] text-[#443B33]">
+          {paymentInfoMap[paymentProviderId]?.icon}
+        </span>
         {isManual(paymentProviderId) && isDevelopment && (
           <PaymentTest className="small:hidden text-[10px]" />
         )}

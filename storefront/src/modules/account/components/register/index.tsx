@@ -111,7 +111,7 @@ const Register = ({ setCurrentView }: Props) => {
         <ErrorMessage error={message} data-testid="register-error" />
 
         <p className="text-sm leading-6 text-[#6f6660]">
-          By creating an account, you agree to Medusa Store&apos;s{" "}
+          By creating an account, you agree to NOVO Store&apos;s{" "}
           <LocalizedClientLink
             href="/content/privacy-policy"
             className="underline"

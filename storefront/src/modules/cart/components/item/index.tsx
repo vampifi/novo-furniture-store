@@ -47,8 +47,11 @@ const Item = ({ item, type = "full" }: ItemProps) => {
   const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
 
   return (
-    <Table.Row className="w-full" data-testid="product-row">
-      <Table.Cell className="!pl-0 p-4 w-24">
+    <Table.Row
+      className="w-full border-b border-[#EDE1D8] last:border-b-0 bg-transparent"
+      data-testid="product-row"
+    >
+      <Table.Cell className="!pl-0 w-24 px-0 py-6">
         <LocalizedClientLink
           href={`/products/${handle}`}
           className={clx("flex", {
@@ -64,9 +67,9 @@ const Item = ({ item, type = "full" }: ItemProps) => {
         </LocalizedClientLink>
       </Table.Cell>
 
-      <Table.Cell className="text-left">
+      <Table.Cell className="px-4 py-6 text-left">
         <Text
-          className="txt-medium-plus text-ui-fg-base"
+          className="txt-medium-plus text-[#221C18]"
           data-testid="product-title"
         >
           {item.product_title}
@@ -75,8 +78,8 @@ const Item = ({ item, type = "full" }: ItemProps) => {
       </Table.Cell>
 
       {type === "full" && (
-        <Table.Cell>
-          <div className="flex gap-2 items-center w-28">
+        <Table.Cell className="px-4 py-6">
+          <div className="flex w-28 items-center gap-2">
             <DeleteButton id={item.id} data-testid="product-delete-button" />
             <CartItemSelect
               value={item.quantity}
@@ -107,12 +110,12 @@ const Item = ({ item, type = "full" }: ItemProps) => {
       )}
 
       {type === "full" && (
-        <Table.Cell className="hidden small:table-cell">
+        <Table.Cell className="hidden py-6 pl-4 pr-2 text-[#443B33] small:table-cell">
           <LineItemUnitPrice item={item} style="tight" />
         </Table.Cell>
       )}
 
-      <Table.Cell className="!pr-0">
+      <Table.Cell className="!pr-0 px-4 py-6">
         <span
           className={clx("!pr-0", {
             "flex flex-col items-end h-full justify-center": type === "preview",

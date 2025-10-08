@@ -27,7 +27,7 @@ const LoginTemplate = () => {
             <Register setCurrentView={setCurrentView} />
           )}
         </div>
-        <div className="relative w-full overflow-hidden rounded-3xl border border-[#e6ddd5] bg-white/20 shadow-[0px_30px_80px_rgba(64,58,51,0.15)] lg:w-[50%]">
+        <div className="relative w-full overflow-hidden border border-[#e6ddd5] bg-white/20 shadow-[0px_30px_80px_rgba(64,58,51,0.15)] lg:w-[50%]">
           <div className="relative h-[260px] w-full sm:h-[340px] md:h-[420px] lg:h-full lg:min-h-[540px]">
             <Image
               src={AUTH_IMAGE_SRC}

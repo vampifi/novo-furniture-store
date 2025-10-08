@@ -11,6 +11,9 @@ import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { isManual, isPaypal, isStripe } from "@lib/constants"
 
+const primaryActionClass =
+  "h-12 w-full rounded-full bg-[#221C18] text-sm font-semibold uppercase tracking-[0.16em] text-[#EFE4DC] transition hover:bg-[#2E261F]"
+
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
   "data-testid": string
@@ -59,7 +62,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         />
       )
     default:
-      return <Button disabled>Select a payment method</Button>
+      return <Button disabled className={primaryActionClass}>Select a payment method</Button>
   }
 }
 
@@ -76,6 +79,7 @@ const GiftCardPaymentButton = () => {
       onClick={handleOrder}
       isLoading={submitting}
       data-testid="submit-order-button"
+      className={primaryActionClass}
     >
       Place order
     </Button>
@@ -178,6 +182,7 @@ const StripePaymentButton = ({
         size="large"
         isLoading={submitting}
         data-testid={dataTestId}
+        className={primaryActionClass}
       >
         Place order
       </Button>
@@ -287,6 +292,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         onClick={handlePayment}
         size="large"
         data-testid="submit-order-button"
+        className={primaryActionClass}
       >
         Place order
       </Button>

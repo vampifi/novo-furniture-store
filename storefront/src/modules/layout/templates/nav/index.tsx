@@ -5,12 +5,8 @@ import User from "@modules/common/icons/user"
 import { BiSupport } from "react-icons/bi"
 import { getCategoriesList } from "@lib/data/categories"
 import { getCollectionsList } from "@lib/data/collections"
-import {
-  HiOutlineHeart,
-  HiOutlineSearch,
-  HiOutlineShoppingBag,
-} from "react-icons/hi"
-import { HiShieldCheck, HiUsers, HiStar } from "react-icons/hi"
+import { HiOutlineSearch, HiOutlineShoppingBag } from "react-icons/hi"
+import { HiShieldCheck, HiOutlineBriefcase, HiStar } from "react-icons/hi"
 import SideMenu from "@modules/layout/components/side-menu"
 import MiddleNavLinks from "@modules/layout/components/middle-nav-links"
 import PromoCountdown from "@modules/layout/components/promo-countdown"
@@ -47,7 +43,7 @@ export default async function Nav() {
       <div className="bg-background">
         {/* First Section: Logo, Search, Icons */}
         <header className="relative mx-auto">
-          <nav className="content-container flex w-full items-center justify-between gap-3 py-3 md:gap-5 md:py-9">
+          <nav className="content-container flex w-full items-center justify-between gap-4 py-3 md:gap-6 md:py-9">
             {/* Left: Mobile menu button (visible on mobile only) */}
             <SideMenu
               product_categories={product_categories}
@@ -63,35 +59,35 @@ export default async function Nav() {
             </LocalizedClientLink>
 
             {/* Right: Icons (mobile) and Search (desktop) */}
-            <div className="flex flex-1 items-center justify-end gap-2 md:gap-5">
+            <div className="flex flex-1 items-center justify-end gap-3 md:gap-6">
               <LocalizedClientLink
                 href="/search"
                 aria-label="Search"
-                className="hidden md:flex  text-textColor transition-transform duration-150 hover:-translate-y-0.5 "
+                className="hidden md:flex text-[#3b2f2f]/80 transition-transform transition-colors duration-150 hover:-translate-y-0.5 hover:text-[#3b2f2f]"
               >
-                <HiOutlineSearch className="h-6 w-6" />
+                <HiOutlineSearch className="h-6 w-6 stroke-[1.2]" />
               </LocalizedClientLink>
 
               <LocalizedClientLink
                 href="/search"
-                className="md:hidden rounded-full border border-[#3b2f2f]/10 bg-white/80 p-2 text-[#3b2f2f] shadow-sm"
+                className="md:hidden rounded-full border border-[#3b2f2f]/10 bg-white/80 p-2 text-[#3b2f2f]/80 shadow-sm transition-colors hover:text-[#3b2f2f]"
               >
-                <HiOutlineSearch className="h-5 w-5" />
+                <HiOutlineSearch className="h-5 w-5 stroke-[1.2]" />
               </LocalizedClientLink>
 
-              <div className="flex items-center gap-2 md:hidden">
+              <div className="flex items-center gap-3 md:hidden">
                 <LocalizedClientLink
-                  className="rounded-full border border-[#3b2f2f]/10 bg-white/80 p-2 text-textColor transition-colors hover:bg-white"
+                  className="rounded-full border border-[#3b2f2f]/10 bg-white/80 p-2 text-[#3b2f2f]/80 transition-colors hover:bg-white hover:text-[#3b2f2f]"
                   href="/account"
                   data-testid="nav-account-link-mobile"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-5 w-5 stroke-[1.2]" />
                 </LocalizedClientLink>
 
                 <Suspense
                   fallback={
                     <LocalizedClientLink
-                      className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f] transition-colors hover:bg-white"
+                      className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f]/80 transition-colors hover:bg-white hover:text-[#3b2f2f]"
                       href="/cart"
                       data-testid="nav-cart-link-mobile"
                     >
@@ -99,7 +95,7 @@ export default async function Nav() {
                       <span className="absolute -top-1 -right-1 min-w-[1.2rem] rounded-full bg-primary px-1 text-center text-[0.6rem] font-semibold text-white shadow">
                         0
                       </span>
-                      <HiOutlineShoppingBag className="h-5 w-5" />
+                      <HiOutlineShoppingBag className="h-5 w-5 stroke-[1.2]" />
                     </LocalizedClientLink>
                   }
                 >
@@ -108,33 +104,26 @@ export default async function Nav() {
                 </Suspense>
               </div>
 
-              <div className="hidden items-center gap-9 md:flex">
+              <div className="hidden items-center gap-8 md:flex">
                 <LocalizedClientLink
-                  className="rounded-full p-2 text-textColor transition-colors hover:bg-white/70"
-                  href="/wishlist"
-                >
-                  <HiOutlineHeart className="h-6 w-6" />
-                </LocalizedClientLink>
-
-                <LocalizedClientLink
-                  className="rounded-full p-2 text-textColor transition-colors hover:bg-white/70"
+                  className="rounded-full p-2 text-[#3b2f2f]/70 transition-colors hover:bg-white/70 hover:text-[#3b2f2f]"
                   href="/support"
                 >
                   <BiSupport className="h-6 w-6" />
                 </LocalizedClientLink>
 
                 <LocalizedClientLink
-                  className="rounded-full border border-[#3b2f2f]/10 bg-white/80 p-2 text-textColor transition-colors hover:bg-white"
+                  className="rounded-full border border-[#3b2f2f]/10 bg-white/80 p-2 text-[#3b2f2f]/70 transition-colors hover:bg-white hover:text-[#3b2f2f]"
                   href="/account"
                   data-testid="nav-account-link"
                 >
-                  <User className="h-6 w-6" />
+                  <User className="h-6 w-6 stroke-[1.2]" />
                 </LocalizedClientLink>
 
                 <Suspense
                   fallback={
                     <LocalizedClientLink
-                      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f] transition-colors hover:bg-white"
+                      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f]/70 transition-colors hover:bg-white hover:text-[#3b2f2f]"
                       href="/cart"
                       data-testid="nav-cart-link"
                     >
@@ -142,7 +131,7 @@ export default async function Nav() {
                       <span className="absolute -top-1 -right-1 min-w-[1.4rem] rounded-full bg-primary px-1 text-center text-[0.65rem] font-semibold text-white shadow">
                         0
                       </span>
-                      <HiOutlineShoppingBag className="h-6 w-6" />
+                      <HiOutlineShoppingBag className="h-6 w-6 stroke-[1.2]" />
                     </LocalizedClientLink>
                   }
                 >
@@ -173,24 +162,23 @@ export default async function Nav() {
         {/* Third Section: Informational Bar */}
         <div className="hidden md:block text-[#3b2f2f]">
           <div className="content-container">
-            <div className="flex flex-col gap-4 py-4 text-center text-sm md:flex-row md:items-center md:justify-evenly">
+            <div className="flex flex-col gap-5 py-5 text-center text-base md:flex-row md:items-center md:justify-evenly md:gap-10">
               <div className="flex items-center justify-center gap-3">
-                <HiShieldCheck className="h-6 w-6 text-green-600" />
+                <HiShieldCheck className="h-6 w-6 stroke-[1.2] text-green-600" />
                 <p>
-                  <span className="font-semibold">0% Finance</span> Available
+                  <span className="font-semibold">Finance</span> Available
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3">
-                <HiUsers className="h-6 w-6 text-purple-600" />
+                <HiOutlineBriefcase className="h-6 w-6 stroke-[1.2] text-purple-600" />
                 <p>
-                  Over <span className="font-semibold">1,000,000</span> Happy
-                  Customers
+                  <span className="font-semibold">10+</span> years of experience
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3">
                 <HiStar className="h-6 w-6 text-yellow-500" />
                 <p>
-                  85,000+ <span className="font-semibold">5 Star Reviews</span>
+                  Thousands <span className="font-semibold">of happy reviewers</span>
                 </p>
               </div>
             </div>

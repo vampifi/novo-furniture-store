@@ -16,10 +16,6 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
 
   const meta: MetaItem[] = [
     {
-      label: "SKU",
-      value: product.handle,
-    },
-    {
       label: "Product type",
       value: product.type?.value,
     },

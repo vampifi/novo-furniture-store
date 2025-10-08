@@ -2,7 +2,6 @@ import React, { Suspense } from "react"
 
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
-import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
@@ -12,6 +11,7 @@ import { notFound } from "next/navigation"
 import ProductActionsWrapper from "./product-actions-wrapper"
 import { HttpTypes } from "@medusajs/types"
 import { StoreProductCustomAttribute } from "@lib/data/products"
+import Breadcrumb, { type BreadcrumbItem } from "@modules/common/components/breadcrumb"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -30,12 +30,34 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     return notFound()
   }
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Home", href: "/" },
+    { label: "Store", href: "/store" },
+  ]
+
+  const primaryCategory = product.categories?.find((category) => category?.handle)
+
+  if (primaryCategory) {
+    breadcrumbItems.push({
+      label: primaryCategory.name || "Category",
+      href: `/categories/${primaryCategory.handle}`,
+    })
+  } else if (product.collection?.handle) {
+    breadcrumbItems.push({
+      label: product.collection.title || "Collection",
+      href: `/collections/${product.collection.handle}`,
+    })
+  }
+
+  breadcrumbItems.push({ label: product.title })
+
   return (
     <div className="bg-[#FAF6F3] text-[#352F2B]">
       <div
-        className="content-container space-y-10 py-8 xsmall:py-10 xsmall:space-y-12 lg:space-y-16"
+        className="content-container space-y-6 py-8 xsmall:space-y-8 xsmall:py-10 lg:space-y-12"
         data-testid="product-container"
       >
+        <Breadcrumb items={breadcrumbItems} />
         <div className="grid gap-8 xsmall:gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-14">
           <div className="min-w-0 border border-[#E3DAD3] bg-[#FDF8F4] p-3 xsmall:p-4 sm:p-6 shadow-sm">
             <ImageGallery images={product?.images || []} />
@@ -56,9 +78,6 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               >
                 <ProductActionsWrapper id={product.id} region={region} />
               </Suspense>
-            </section>
-            <section className="rounded-3xl border border-dashed border-[#E3DAD3] bg-[#FDF8F4] p-6 text-left shadow-sm sm:p-8">
-              <ProductOnboardingCta />
             </section>
           </aside>
         </div>

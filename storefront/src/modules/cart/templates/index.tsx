@@ -2,7 +2,7 @@ import ItemsTemplate from "./items"
 import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
 import SignInPrompt from "../components/sign-in-prompt"
-import Divider from "@modules/common/components/divider"
+import { Heading } from "@medusajs/ui"
 import { HttpTypes } from "@medusajs/types"
 
 const CartTemplate = ({
@@ -12,36 +12,39 @@ const CartTemplate = ({
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
 }) => {
+  const hasItems = Boolean(cart?.items?.length)
+
   return (
-    <div className="py-12">
-      <div className="content-container" data-testid="cart-container">
-        {cart?.items?.length ? (
-          <div className="grid grid-cols-1 small:grid-cols-[1fr_360px] gap-x-40">
-            <div className="flex flex-col bg-white py-6 gap-y-6">
-              {!customer && (
-                <>
-                  <SignInPrompt />
-                  <Divider />
-                </>
-              )}
+    <div className="bg-[#F8F3EE] py-12 sm:py-20">
+      <div
+        className="content-container text-[#443B33]"
+        data-testid="cart-container"
+      >
+        <div className="mb-10 flex flex-col gap-2 sm:gap-3">
+          <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#8C7B6F]">
+            {hasItems ? "Your cart" : "Nothing in your cart yet"}
+          </span>
+          <Heading
+            level="h1"
+            className="text-[28px] leading-[38px] font-semibold uppercase tracking-[0.1em] text-[#221C18] sm:text-[40px] sm:leading-[52px]"
+          >
+            {hasItems ? "Review your selections" : "Let's find something beautiful"}
+          </Heading>
+        </div>
+
+        {hasItems ? (
+          <div className="grid grid-cols-1 gap-10 small:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="flex flex-col gap-6">
+              {!customer && <SignInPrompt />}
               <ItemsTemplate items={cart?.items} />
             </div>
-            <div className="relative">
-              <div className="flex flex-col gap-y-8 sticky top-12">
-                {cart && cart.region && (
-                  <>
-                    <div className="bg-white py-6">
-                      <Summary cart={cart as any} />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+
+            <aside className="small:sticky small:top-24">
+              {cart && cart.region && <Summary cart={cart as any} />}
+            </aside>
           </div>
         ) : (
-          <div>
-            <EmptyCartMessage />
-          </div>
+          <EmptyCartMessage />
         )}
       </div>
     </div>

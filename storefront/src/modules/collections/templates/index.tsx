@@ -9,6 +9,7 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import { HttpTypes } from "@medusajs/types"
 import { COLOR_FILTERS } from "@modules/store/constants/filters"
+import Breadcrumb from "@modules/common/components/breadcrumb"
 
 const mapCollectionsToFilter = (collections: any[] | undefined) =>
   (collections || [])
@@ -90,12 +91,19 @@ export default async function CollectionTemplate({
         />
       </div>
       <div className="flex-1 lg:pl-4">
-        <div className="mb-8">
+        <div className="mb-8 space-y-4">
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Store", href: "/store" },
+              { label: collection.title ?? "Collection" },
+            ]}
+          />
           <h1 className="text-3xl font-semibold tracking-tight text-ui-fg-base">
             {collection.title}
           </h1>
           {collection.description && (
-            <p className="mt-3 max-w-prose text-sm text-ui-fg-muted">
+            <p className="max-w-prose text-sm text-ui-fg-muted">
               {collection.description}
             </p>
           )}

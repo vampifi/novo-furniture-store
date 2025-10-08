@@ -160,18 +160,16 @@ export default async function PaginatedProducts({
         />
       </header>
 
-      <div className="rounded-[32px] border border-[#E3DAD3] bg-white/92 p-5 shadow-[0_18px_40px_rgba(53,47,43,0.14)] sm:p-6">
-        <ul
-          className="grid w-full grid-cols-2 gap-5 max-[360px]:grid-cols-1 small:grid-cols-2 medium:grid-cols-3 xl:grid-cols-4"
-          data-testid="products-list"
-        >
-          {products.map((product) => (
-            <li key={product.id} className="h-full">
-              <ProductPreview product={product} region={region} />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul
+        className="grid w-full grid-cols-2 gap-5 max-[360px]:grid-cols-1 small:grid-cols-2 medium:grid-cols-3 xl:grid-cols-4"
+        data-testid="products-list"
+      >
+        {products.map((product) => (
+          <li key={product.id} className="h-full">
+            <ProductPreview product={product} region={region} />
+          </li>
+        ))}
+      </ul>
 
       {totalPages > 1 && (
         <div className="flex justify-center">

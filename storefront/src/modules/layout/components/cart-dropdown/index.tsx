@@ -27,7 +27,7 @@ const CartDropdown = ({
   if (variant === "mobile") {
     return (
       <LocalizedClientLink
-        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f] transition-colors hover:bg-white"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f]/80 transition-colors hover:bg-white hover:text-[#3b2f2f]"
         href="/cart"
         data-testid="nav-cart-link-mobile"
       >
@@ -35,7 +35,7 @@ const CartDropdown = ({
         <span className="absolute -top-1 -right-1 min-w-[1.2rem] rounded-full bg-primary px-1 text-center text-[0.6rem] font-semibold text-white shadow">
           {totalItems}
         </span>
-        <HiOutlineShoppingBag className="h-5 w-5" />
+        <HiOutlineShoppingBag className="h-5 w-5 stroke-[1.2]" />
       </LocalizedClientLink>
     )
   }
@@ -95,7 +95,7 @@ const CartDropdown = ({
       <Popover className="relative h-full">
         <Popover.Button className="h-full">
           <LocalizedClientLink
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f] transition-colors hover:bg-white md:h-11 md:w-11"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f]/70 transition-colors hover:bg-white hover:text-[#3b2f2f] md:h-11 md:w-11"
             href="/cart"
             data-testid="nav-cart-link"
           >
@@ -103,7 +103,7 @@ const CartDropdown = ({
             <span className="absolute -top-1 -right-1 min-w-[1.4rem] rounded-full bg-primary px-1 text-center text-[0.65rem] font-semibold text-white shadow">
               {totalItems}
             </span>
-            <HiOutlineShoppingBag className="h-5 w-5 md:h-6 md:w-6" />
+            <HiOutlineShoppingBag className="h-5 w-5 stroke-[1.2] md:h-6 md:w-6" />
           </LocalizedClientLink>
         </Popover.Button>
         <Transition
