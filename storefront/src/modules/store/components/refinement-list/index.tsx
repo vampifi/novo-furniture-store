@@ -37,8 +37,6 @@ const splitValues = (value: string | null) =>
 
 const DEFAULT_VISIBLE_COUNT = 6
 
-const priceQuickFilters = PRICE_RANGE_FILTERS.slice(0, 3)
-
 const SECTION_ICONS: Record<SectionKey, string> = {
   price: "£",
   collections: "◎",
@@ -130,16 +128,15 @@ const RefinementList = ({
   const removableColorIds = selectedColors
 
   const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
-    price: true,
-    collections: true,
-    categories: true,
-    colors: true,
-    availability: true,
+    price: false,
+    collections: false,
+    categories: false,
+    colors: false,
+    availability: false,
   })
 
   const [collectionsQuery, setCollectionsQuery] = useState("")
   const [categoriesQuery, setCategoriesQuery] = useState("")
-  const [showAllCollections, setShowAllCollections] = useState(false)
   const [showAllCategories, setShowAllCategories] = useState(false)
   const [colorQuery, setColorQuery] = useState("")
 
@@ -273,7 +270,6 @@ const RefinementList = ({
     setCollectionsQuery("")
     setCategoriesQuery("")
     setColorQuery("")
-    setShowAllCollections(false)
     setShowAllCategories(false)
   }, [applyQuery, hasActiveFilters, lockedCategoryIds, lockedCollectionIds])
 
@@ -386,18 +382,13 @@ const RefinementList = ({
 
   const filteredCollections = useMemo(() => {
     const normalizedQuery = collectionsQuery.trim().toLowerCase()
-    const filtered = normalizedQuery
+
+    return normalizedQuery
       ? collections.filter((collection) =>
           collection.label.toLowerCase().includes(normalizedQuery)
         )
       : collections
-
-    if (showAllCollections || filtered.length <= DEFAULT_VISIBLE_COUNT) {
-      return filtered
-    }
-
-    return filtered.slice(0, DEFAULT_VISIBLE_COUNT)
-  }, [collections, collectionsQuery, showAllCollections])
+  }, [collections, collectionsQuery])
 
   const filteredCategories = useMemo(() => {
     const normalizedQuery = categoriesQuery.trim().toLowerCase()
@@ -471,15 +462,15 @@ const RefinementList = ({
   return (
     <aside
       className={clx(
-        "w-full shrink-0 bg-ui-bg-base small:max-w-[320px]",
-        isDrawer && "max-w-none bg-transparent"
+        "w-full shrink-0 small:max-w-[320px]",
+        isDrawer ? "bg-ui-bg-base" : "bg-transparent"
       )}
     >
       <div
         className={clx(
           isDrawer
             ? "relative flex flex-col gap-6 rounded-[28px] border border-ui-border-subtle/50 bg-ui-bg-base/95 p-5 shadow-[0_18px_42px_rgba(17,24,39,0.12)]"
-            : "sticky top-24 flex flex-col gap-6 rounded-[32px] border border-ui-border-subtle/60 bg-gradient-to-br from-ui-bg-base via-ui-bg-base/95 to-primary/5 p-6 shadow-[0_18px_42px_rgba(17,24,39,0.12)] backdrop-blur-sm"
+            : "sticky top-24 flex flex-col gap-6 rounded-[32px] border border-ui-border-subtle/60 bg-transparent p-6 shadow-[0_18px_42px_rgba(17,24,39,0.12)]"
         )}
       >
         <div className="flex items-center justify-between">
@@ -630,30 +621,6 @@ const RefinementList = ({
           />
           {openSections.price && (
             <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap gap-2">
-                {priceQuickFilters.map((option) => {
-                  const isActive = selectedPrice === option.value
-
-                  return (
-                    <button
-                      key={`quick-price-${option.value}`}
-                      type="button"
-                      onClick={() =>
-                        setPriceRange(isActive ? undefined : option.value)
-                      }
-                      className={clx(
-                        "rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] transition-colors",
-                        isActive
-                          ? "border-primary bg-primary/10 text-primary shadow-[0_6px_14px_rgba(36,99,235,0.12)]"
-                          : "border-ui-border-subtle/70 bg-ui-bg-base text-ui-fg-muted hover:border-primary/40 hover:text-primary"
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  )
-                })}
-              </div>
-
               {PRICE_RANGE_FILTERS.map((option) => {
                 const isActive = selectedPrice === option.value
                 return (
@@ -710,7 +677,6 @@ const RefinementList = ({
                     value={collectionsQuery}
                     onChange={(event) => {
                       setCollectionsQuery(event.target.value)
-                      setShowAllCollections(false)
                     }}
                     placeholder="Search collections"
                     className="w-full rounded-full border border-ui-border-subtle bg-transparent px-3 py-2 text-sm text-ui-fg-subtle transition-colors focus:border-primary focus:outline-none"
@@ -742,15 +708,6 @@ const RefinementList = ({
                     </p>
                   )}
                 </div>
-                {collections.length > DEFAULT_VISIBLE_COUNT && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAllCollections((prev) => !prev)}
-                    className="self-start text-sm font-medium text-ui-fg-interactive transition-colors hover:text-primary"
-                  >
-                    {showAllCollections ? "Show fewer" : "Show all"} collections
-                  </button>
-                )}
               </div>
             )}
           </section>

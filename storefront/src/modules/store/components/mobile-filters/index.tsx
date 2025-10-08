@@ -167,12 +167,13 @@ const MobileFilters = ({ sortBy, ...refinementProps }: MobileFiltersProps) => {
             aria-label="Filters"
             id={DRAWER_ID}
             className={clx(
-              "relative ml-auto flex h-full w-full max-w-[360px] overflow-hidden rounded-l-[32px] bg-[#fdf8f3] shadow-[0_28px_56px_rgba(15,23,42,0.25)] transition-transform duration-200 ease-out",
+              "relative ml-auto flex h-full w-full max-w-full overflow-hidden bg-[#fdf8f3] shadow-[0_28px_56px_rgba(15,23,42,0.25)] transition-transform duration-200 ease-out",
+              "sm:max-w-[360px] sm:rounded-l-[32px]",
               open ? "translate-x-0" : "translate-x-full"
             )}
           >
             <div className="flex h-full flex-col">
-              <header className="relative flex items-center justify-between gap-4 bg-gradient-to-br from-[#f9ede1] via-[#fdf8f3] to-[#f3e5d9] px-5 pb-4 pt-6 shadow-[inset_0_-1px_0_rgba(15,23,42,0.08)]">
+              <header className="relative flex items-center justify-between gap-4 bg-gradient-to-br from-[#f9ede1] via-[#fdf8f3] to-[#f3e5d9] px-4 pb-4 pt-5 shadow-[inset_0_-1px_0_rgba(15,23,42,0.08)] sm:px-5 sm:pt-6">
                 <div className="flex flex-col">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/70">
                     Filters
@@ -197,10 +198,10 @@ const MobileFilters = ({ sortBy, ...refinementProps }: MobileFiltersProps) => {
                   <span aria-hidden>{CLOSE}</span>
                 </button>
               </header>
-              <div className="flex-1 overflow-y-auto px-4 pb-8 pt-6">
+              <div className="flex-1 overflow-y-auto px-4 pb-8 pt-5 sm:pt-6">
                 <RefinementList {...refinementProps} variant="drawer" />
               </div>
-              <footer className="border-t border-ui-border-subtle/60 bg-white/80 px-4 py-4 shadow-[0_-10px_24px_rgba(17,24,39,0.06)] backdrop-blur-sm">
+              <footer className="border-t border-ui-border-subtle/60 bg-white/90 px-4 py-4 shadow-[0_-10px_24px_rgba(17,24,39,0.06)] backdrop-blur-sm sm:bg-white/80">
                 <button
                   type="button"
                   onClick={handleClose}

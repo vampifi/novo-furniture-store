@@ -7,6 +7,7 @@ import RefinementList from "@modules/store/components/refinement-list"
 import MobileFilters from "@modules/store/components/mobile-filters"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { COLOR_FILTERS } from "@modules/store/constants/filters"
+import Breadcrumb from "@modules/common/components/breadcrumb"
 
 import PaginatedProducts from "./paginated-products"
 
@@ -117,7 +118,14 @@ const StoreTemplate = async ({
           />
         </div>
         <div className="flex-1 lg:pl-4">
-          <div className="mb-8">
+          <div className="mb-8 space-y-4">
+            <Breadcrumb
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Store", href: "/store" },
+                { label: "All Products" },
+              ]}
+            />
             <h1
               className="text-3xl font-semibold tracking-tight text-[#221C18]"
               data-testid="store-page-title"
