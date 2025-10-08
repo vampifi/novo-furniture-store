@@ -6,9 +6,9 @@ import NextJs from "../../../common/icons/nextjs"
 const MedusaCTA = () => {
   return (
     <Text className="flex gap-x-2 txt-compact-small-plus items-center">
-      <a href="https://www.medusajs.com" target="_blank" rel="noreferrer">
+      {/* <a href="https://www.medusajs.com" target="_blank" rel="noreferrer">
         <Medusa fill="#9ca3af" className="fill-[#9ca3af]" />
-      </a>
+      </a> */}
       <a href="https://nextjs.org" target="_blank" rel="noreferrer">
         <NextJs fill="#9ca3af" />
       </a>
