@@ -121,7 +121,7 @@ const MobileFilters = ({ sortBy, ...refinementProps }: MobileFiltersProps) => {
   return (
     <div className="space-y-4 lg:hidden">
       <div className="rounded-3xl border border-[#E3DAD3] bg-[#fdf8f3]/90 p-2">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <button
             type="button"
             onClick={handleOpen}
