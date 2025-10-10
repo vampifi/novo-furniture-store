@@ -148,14 +148,14 @@ export default async function Nav() {
             <div className="hidden md:block py-5">
               <MiddleNavLinks categories={topLevelCategories ?? null} />
             </div>
-            <div className="hidden md:flex items-center gap-8 pb-5 text-sm text-[#6b5b5b]">
+            {/* <div className="hidden md:flex items-center gap-8 pb-5 text-sm text-[#6b5b5b]">
               <LocalizedClientLink
                 className="font-normal tracking-[0.2em] text-[#3b2f2f] hover:text-ui-fg-base"
                 href="/inspiration"
               >
                 Inspiration
               </LocalizedClientLink>
-            </div>
+            </div> */}
           </div>
         </div>
 
