@@ -18,22 +18,47 @@ const getTimeParts = (target: number) => {
   }
 }
 
-const PromoCountdown = () => {
-  const targetTime = useMemo(() => {
-    const target = new Date()
-    target.setHours(23, 59, 59, 999)
-    return target.getTime()
-  }, [])
+type PromoCountdownProps = {
+  target?: string | null
+}
 
-  const [timeParts, setTimeParts] = useState(() => getTimeParts(targetTime))
+const PromoCountdown = ({ target }: PromoCountdownProps) => {
+  const targetTime = useMemo(() => {
+    if (!target) {
+      return null
+    }
+
+    const parsed = new Date(target)
+
+    if (Number.isNaN(parsed.getTime())) {
+      return null
+    }
+
+    return parsed.getTime()
+  }, [target])
+
+  const [timeParts, setTimeParts] = useState(() =>
+    typeof targetTime === "number" ? getTimeParts(targetTime) : null
+  )
 
   useEffect(() => {
+    if (typeof targetTime !== "number") {
+      setTimeParts(null)
+      return
+    }
+
+    setTimeParts(getTimeParts(targetTime))
+
     const interval = setInterval(() => {
       setTimeParts(getTimeParts(targetTime))
     }, 1000)
 
     return () => clearInterval(interval)
   }, [targetTime])
+
+  if (!targetTime || !timeParts) {
+    return null
+  }
 
   return (
     <div className="flex items-center gap-1 text-xs font-semibold uppercase text-white">

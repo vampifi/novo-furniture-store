@@ -10,10 +10,12 @@ import { HiShieldCheck, HiOutlineBriefcase, HiStar } from "react-icons/hi"
 import SideMenu from "@modules/layout/components/side-menu"
 import MiddleNavLinks from "@modules/layout/components/middle-nav-links"
 import PromoCountdown from "@modules/layout/components/promo-countdown"
+import { getNavPromotion } from "@lib/data/nav-promotion"
 
 export default async function Nav() {
   const { product_categories } = await getCategoriesList(0, 200)
   const { collections } = await getCollectionsList(0, 6)
+  const navPromotion = await getNavPromotion()
 
   const topLevelCategories = (product_categories ?? [])
     .filter((category) => !category.parent_category_id)
@@ -26,19 +28,48 @@ export default async function Nav() {
     })
     .slice(0, 6)
 
+  const primaryAnnouncementText = [
+    navPromotion?.headline,
+    navPromotion?.description,
+  ]
+    .filter((part) => typeof part === "string" && part.trim().length)
+    .map((part) => part!.trim())
+
+  const shouldDisplayBanner =
+    navPromotion &&
+    (primaryAnnouncementText.length > 0 || navPromotion.code || navPromotion.is_automatic)
+
+  const shouldShowCodePill =
+    !!navPromotion?.code || Boolean(navPromotion?.is_automatic)
+
   return (
     <>
-      <div className="bg-primary text-white">
-        <div className="content-container flex flex-col items-center justify-center gap-3 py-3 text-center text-sm font-semibold uppercase md:flex-row md:justify-center md:text-left">
-          <span className="tracking-[0.2em]">
-            Daily Deal + Extra 15% Off Selected Lines
-          </span>
-          <PromoCountdown />
-          <span className="rounded-full bg-white px-4 py-1 text-primary shadow-sm">
-            Use Code: <span className="font-bold">EXTRA15</span>
-          </span>
+      {shouldDisplayBanner && (
+        <div className="bg-primary text-white">
+          <div className="content-container flex flex-col items-center justify-center gap-3 py-3 text-center text-sm font-semibold uppercase md:flex-row md:justify-center md:text-left">
+            {primaryAnnouncementText.length > 0 && (
+              <span className="tracking-[0.2em]">
+                {primaryAnnouncementText.join(" · ")}
+              </span>
+            )}
+
+            <PromoCountdown target={navPromotion?.ends_at ?? undefined} />
+
+            {shouldShowCodePill && (
+              <span className="rounded-full bg-white px-4 py-1 text-primary shadow-sm">
+                {navPromotion.is_automatic ? (
+                  <span className="font-bold">Auto-applied at checkout</span>
+                ) : (
+                  <>
+                    Use Code:{" "}
+                    <span className="font-bold">{navPromotion.code}</span>
+                  </>
+                )}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="bg-background">
         {/* First Section: Logo, Search, Icons */}
