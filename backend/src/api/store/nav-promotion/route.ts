@@ -3,7 +3,7 @@ import {
   MedusaResponse,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
-import type { IPromotionModuleService } from "@medusajs/types"
+import type { IPromotionModuleService } from "@medusajs/framework/types"
 
 type CampaignLike = {
   starts_at?: Date | string | null
