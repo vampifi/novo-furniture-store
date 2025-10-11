@@ -42,6 +42,7 @@
     "medusajs-launch-utils": "0.0.18",
     "minio": "^8.0.3",
     "pg": "^8.13.1",
+    "react-i18next": "^16.0.0",
     "resend": "4.0.1",
     "ulid": "^2.3.0"
   },
