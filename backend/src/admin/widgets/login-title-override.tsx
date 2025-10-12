@@ -12,38 +12,42 @@ const LoginTitleOverride = () => {
 
   useEffect(() => {
     const lang = i18n.language || "en"
-    const resources: Record<string, string> = {
-      "login.title": TARGET_TRANSLATION,
-      "login.hint": "Sign in to your NOVO dashboard",
+    const resources = {
+      login: {
+        title: TARGET_TRANSLATION,
+        hint: "Sign in to your NOVO dashboard",
+      },
     }
 
-    let needsUpdate = false
-
-    KEYS.forEach((key) => {
-      const existing = i18n.getResource(lang, NAMESPACE, key)
-      if (existing !== resources[key]) {
-        needsUpdate = true
+    const existingValues = KEYS.map((key) => {
+      if (typeof i18n.t !== "function") {
+        return ""
       }
+
+      return i18n.t(key, { lng: lang, defaultValue: "" })
     })
+
+    const desiredValues = [resources.login.title, resources.login.hint]
+
+    const needsUpdate = desiredValues.some(
+      (value, index) => value !== existingValues[index]
+    )
 
     if (!needsUpdate) {
       return
     }
 
-    i18n.addResourceBundle(
-      lang,
-      NAMESPACE,
-      {
-        login: {
-          title: resources["login.title"],
-          hint: resources["login.hint"],
-        },
-      },
-      true,
-      true
-    )
+    if (typeof i18n.addResourceBundle === "function") {
+      i18n.addResourceBundle(lang, NAMESPACE, resources, true, true)
+    } else if (typeof i18n.addResource === "function") {
+      Object.entries(resources.login).forEach(([key, value]) => {
+        i18n.addResource(lang, NAMESPACE, `login.${key}`, value)
+      })
+    }
 
-    i18n.changeLanguage(lang)
+    if (typeof i18n.changeLanguage === "function") {
+      i18n.changeLanguage(lang)
+    }
   }, [i18n])
 
   return null
