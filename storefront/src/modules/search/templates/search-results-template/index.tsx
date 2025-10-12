@@ -232,13 +232,16 @@ const SearchResultsTemplate = async ({
             )}
           </section>
           {ids.length > 0 ? (
-            <PaginatedProducts
-              productsIds={ids}
-              sortBy={sortBy}
-              page={pageNumber}
-              countryCode={countryCode}
-              searchParams={searchParams}
-            />
+            <div className="mt-6 lg:mt-8">
+              <PaginatedProducts
+                productsIds={ids}
+                sortBy={sortBy}
+                page={pageNumber}
+                countryCode={countryCode}
+                searchParams={searchParams}
+                showSortControls={false}
+              />
+            </div>
           ) : (
             <section className="mt-6 rounded-3xl border border-[#E4D5C8] bg-white/95 px-6 py-8 shadow-[0_12px_26px_rgba(31,26,23,0.12)]">
               <Heading className="text-2xl font-semibold text-[#201A16]">

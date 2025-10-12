@@ -1,6 +1,7 @@
-import { useEffect } from "react"
+'use client'
 import { useTranslation } from "react-i18next"
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
+import { useEffect } from "react"
 
 const TARGET_TRANSLATION = "Welcome to NOVO"
 const NAMESPACE = "translation"

@@ -50,6 +50,7 @@ type PaginatedProductsProps = {
   productsIds?: string[]
   countryCode: string
   searchParams?: SearchParamRecord
+  showSortControls?: boolean
 }
 
 export default async function PaginatedProducts({
@@ -60,6 +61,7 @@ export default async function PaginatedProducts({
   productsIds,
   countryCode,
   searchParams = {},
+  showSortControls = true,
 }: PaginatedProductsProps) {
   const queryParams: {
     limit: number
@@ -142,9 +144,15 @@ export default async function PaginatedProducts({
   const startIndex = count === 0 ? 0 : (boundedPage - 1) * PRODUCT_LIMIT + 1
   const endIndex = count === 0 ? 0 : startIndex + products.length - 1
 
+  const headerAlignment = showSortControls
+    ? "sm:flex-row sm:items-center sm:justify-between"
+    : ""
+
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col items-start gap-4 rounded-3xl border border-[#E4D5C8] bg-white/97 px-6 py-5 text-[#5C5149] shadow-[0_12px_26px_rgba(31,26,23,0.1)] sm:flex-row sm:items-center sm:justify-between">
+      <header
+        className={`flex flex-col items-start gap-4 rounded-3xl border border-[#E4D5C8] bg-white/97 px-6 py-5 text-[#5C5149] shadow-[0_12px_26px_rgba(31,26,23,0.1)] ${headerAlignment}`}
+      >
         <div className="text-sm">
           {count === 0 ? (
             <span>No products found</span>
@@ -154,10 +162,12 @@ export default async function PaginatedProducts({
             </span>
           )}
         </div>
-        <SortProducts
-          sortBy={sortBy || "created_at"}
-          className="hidden sm:flex"
-        />
+        {showSortControls && (
+          <SortProducts
+            sortBy={sortBy || "created_at"}
+            className="hidden sm:flex"
+          />
+        )}
       </header>
 
       <ul

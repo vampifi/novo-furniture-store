@@ -1,21 +1,19 @@
-import { Modules } from '@medusajs/framework/utils'
 import type { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
+import { Modules } from '@medusajs/framework/utils'
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { EmailTemplates } from '../modules/email-notifications/templates'
 import { resolveShippingAddress } from './utils/resolve-shipping-address'
 
-export default async function orderPlacedHandler({
+export default async function orderCanceledHandler({
   event: { data },
   container,
-}: SubscriberArgs<any>) {
+}: SubscriberArgs<{ id: string; reason?: string | null }>) {
   let notificationModuleService: INotificationModuleService | undefined
 
   try {
     notificationModuleService = container.resolve(Modules.NOTIFICATION)
-  } catch (error) {
-    console.warn(
-      `Notification module not configured, skipping confirmation email for order ${data.id}.`
-    )
+  } catch {
+    console.warn(`Notification module not configured, skipping cancel email for order ${data.id}.`)
     return
   }
 
@@ -24,33 +22,30 @@ export default async function orderPlacedHandler({
   const order = await orderModuleService.retrieveOrder(data.id, {
     relations: ['items', 'summary', 'shipping_address'],
   })
-  const shippingAddress = await resolveShippingAddress(orderModuleService, order)
 
-  if (!shippingAddress) {
-    console.warn(`Shipping address missing for order ${order.id}, skipping confirmation email.`)
-    return
-  }
+  const shippingAddress = await resolveShippingAddress(orderModuleService, order)
 
   try {
     await notificationModuleService.createNotifications({
       to: order.email,
       channel: 'email',
-      template: EmailTemplates.ORDER_PLACED,
+      template: EmailTemplates.ORDER_CANCELED,
       data: {
         emailOptions: {
           replyTo: 'info@example.com',
-          subject: 'Your order has been placed'
+          subject: 'Your order has been canceled',
         },
         order,
         shippingAddress,
-        preview: 'Thank you for your order!'
-      }
+        reason: (data as any)?.reason ?? order.metadata?.cancellation_reason ?? null,
+        preview: 'Your order has been canceled.',
+      },
     })
   } catch (error) {
-    console.error('Error sending order confirmation notification:', error)
+    console.error('Error sending order canceled notification:', error)
   }
 }
 
 export const config: SubscriberConfig = {
-  event: 'order.placed'
+  event: 'order.canceled',
 }

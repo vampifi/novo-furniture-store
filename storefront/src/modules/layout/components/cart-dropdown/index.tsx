@@ -24,33 +24,15 @@ const CartDropdown = ({
   const totalItems =
     cartState?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0
 
-  if (variant === "mobile") {
-    return (
-      <LocalizedClientLink
-        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f]/80 transition-colors hover:bg-white hover:text-[#3b2f2f]"
-        href="/cart"
-        data-testid="nav-cart-link-mobile"
-      >
-        <span className="sr-only">Open cart</span>
-        <span className="absolute -top-1 -right-1 min-w-[1.2rem] rounded-full bg-primary px-1 text-center text-[0.6rem] font-semibold text-white shadow">
-          {totalItems}
-        </span>
-        <HiOutlineShoppingBag className="h-5 w-5 stroke-[1.2]" />
-      </LocalizedClientLink>
-    )
-  }
-
-  const [activeTimer, setActiveTimer] = useState<NodeJS.Timer | undefined>(
-    undefined
-  )
+  const [activeTimer, setActiveTimer] = useState<NodeJS.Timer | undefined>()
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
-
-  const open = () => setCartDropdownOpen(true)
-  const close = () => setCartDropdownOpen(false)
-
   const subtotal = cartState?.subtotal ?? 0
   const itemLabel = `${totalItems} item${totalItems === 1 ? "" : "s"}`
   const itemRef = useRef<number>(totalItems || 0)
+  const pathname = usePathname()
+
+  const open = () => setCartDropdownOpen(true)
+  const close = () => setCartDropdownOpen(false)
 
   const timedOpen = () => {
     open()
@@ -77,15 +59,35 @@ const CartDropdown = ({
     }
   }, [activeTimer])
 
-  const pathname = usePathname()
-
   // open cart dropdown when modifying the cart items, but only if we're not on the cart page
   useEffect(() => {
+    if (variant === "mobile") {
+      itemRef.current = totalItems
+      return
+    }
+
     if (itemRef.current !== totalItems && !pathname.includes("/cart")) {
       timedOpen()
     }
+    itemRef.current = totalItems
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalItems, itemRef.current])
+  }, [totalItems, pathname, variant])
+
+  if (variant === "mobile") {
+    return (
+      <LocalizedClientLink
+        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#3b2f2f]/10 bg-white/80 text-[#3b2f2f]/80 transition-colors hover:bg-white hover:text-[#3b2f2f]"
+        href="/cart"
+        data-testid="nav-cart-link-mobile"
+      >
+        <span className="sr-only">Open cart</span>
+        <span className="absolute -top-1 -right-1 min-w-[1.2rem] rounded-full bg-primary px-1 text-center text-[0.6rem] font-semibold text-white shadow">
+          {totalItems}
+        </span>
+        <HiOutlineShoppingBag className="h-5 w-5 stroke-[1.2]" />
+      </LocalizedClientLink>
+    )
+  }
 
   return (
     <div
@@ -222,7 +224,7 @@ const CartDropdown = ({
                   </div>
                   <LocalizedClientLink href="/cart" passHref>
                     <Button
-                      className="w-full rounded-full border border-[#E4D5C8] bg-primary text-sm font-semibold uppercase tracking-[0.26em] text-white shadow-[0_16px_32px_rgba(187,38,73,0.28)] transition hover:bg-[#a11f3d] hover:shadow-[0_22px_42px_rgba(187,38,73,0.32)]"
+                      className="w-full rounded-full border border-black bg-black text-sm font-semibold uppercase tracking-[0.24em] text-white shadow-[0_18px_36px_rgba(0,0,0,0.28)] transition hover:border-[#111111] hover:bg-[#111111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2"
                       size="large"
                       data-testid="go-to-cart-button"
                     >
