@@ -196,14 +196,33 @@ const HoverMegaMenu = ({ categories }: HoverMegaMenuProps) => {
               </div>
 
               {subcategories.length ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-y-4 gap-x-3 sm:grid-cols-2 lg:grid-cols-3">
                   {subcategories.map((subcategory) => (
                     <LocalizedClientLink
                       key={subcategory.id}
-                      className="text-sm font-medium text-[#3b2f2f] transition-colors hover:text-ui-fg-base"
+                      className="group flex items-center justify-between rounded-2xl border border-transparent bg-white/85 px-5 py-4 text-sm font-medium text-[#2F2620] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-[#E8DACE] hover:bg-white hover:text-ui-fg-base hover:shadow-[0_12px_28px_rgba(34,28,24,0.12)]"
                       href={subcategory.href}
                     >
-                      {subcategory.label}
+                      <span className="tracking-wide">
+                        {subcategory.label}
+                      </span>
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F0E6DD] text-[#2E261F] transition-all duration-150 group-hover:bg-[#221C18] group-hover:text-[#EFE4DC] group-hover:translate-x-1">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M5.3335 3.99984L10.6668 8.00034L5.3335 12.0008"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
                     </LocalizedClientLink>
                   ))}
                 </div>
