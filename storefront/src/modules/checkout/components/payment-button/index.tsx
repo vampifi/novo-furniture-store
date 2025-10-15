@@ -10,6 +10,7 @@ import Spinner from "@modules/common/icons/spinner"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { isManual, isPaypal, isStripe } from "@lib/constants"
+import { useRouter } from "next/navigation"
 
 const primaryActionClass =
   "h-12 w-full rounded-full bg-[#221C18] text-sm font-semibold uppercase tracking-[0.16em] text-[#EFE4DC] transition hover:bg-[#2E261F]"
@@ -69,6 +70,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 const GiftCardPaymentButton = () => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   const handleOrder = async () => {
     setSubmitting(true)
@@ -79,12 +81,11 @@ const GiftCardPaymentButton = () => {
 
       if (result?.success === false) {
         setErrorMessage(result.error)
+      } else if (result?.success && result.redirectTo) {
+        router.push(result.redirectTo)
+        return
       }
     } catch (err: any) {
-      if (err?.digest === "NEXT_REDIRECT") {
-        throw err
-      }
-
       setErrorMessage(
         err?.message ?? "An unexpected error occurred. Please try again."
       )
@@ -119,6 +120,7 @@ const StripePaymentButton = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   const onPaymentCompleted = async () => {
     try {
@@ -126,12 +128,11 @@ const StripePaymentButton = ({
 
       if (result?.success === false) {
         setErrorMessage(result.error)
+      } else if (result?.success && result.redirectTo) {
+        router.push(result.redirectTo)
+        return
       }
     } catch (err: any) {
-      if (err?.digest === "NEXT_REDIRECT") {
-        throw err
-      }
-
       setErrorMessage(
         err?.message ?? "An unexpected error occurred. Please try again."
       )
@@ -238,6 +239,7 @@ const PayPalPaymentButton = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   const onPaymentCompleted = async () => {
     try {
@@ -245,12 +247,11 @@ const PayPalPaymentButton = ({
 
       if (result?.success === false) {
         setErrorMessage(result.error)
+      } else if (result?.success && result.redirectTo) {
+        router.push(result.redirectTo)
+        return
       }
     } catch (err: any) {
-      if (err?.digest === "NEXT_REDIRECT") {
-        throw err
-      }
-
       setErrorMessage(
         err?.message ?? "An unexpected error occurred. Please try again."
       )
@@ -313,6 +314,7 @@ const PayPalPaymentButton = ({
 const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   const onPaymentCompleted = async () => {
     try {
@@ -320,12 +322,11 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 
       if (result?.success === false) {
         setErrorMessage(result.error)
+      } else if (result?.success && result.redirectTo) {
+        router.push(result.redirectTo)
+        return
       }
     } catch (err: any) {
-      if (err?.digest === "NEXT_REDIRECT") {
-        throw err
-      }
-
       setErrorMessage(
         err?.message ?? "An unexpected error occurred. Please try again."
       )

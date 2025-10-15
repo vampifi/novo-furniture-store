@@ -351,7 +351,8 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 
 type PlaceOrderSuccess = {
   success: true
-  cart?: HttpTypes.StoreCart
+  redirectTo: string
+  cart?: HttpTypes.StoreCart | null
 }
 
 type PlaceOrderFailure = {
@@ -427,21 +428,14 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
       }`
 
       removeCartId()
-      redirect(confirmationPath)
-    }
-
-    if ((completion as any)?.error) {
-      const errorMessage =
-        (completion as any).error?.message ||
-        "We couldn't complete your order. Please double-check your payment details and try again."
-
       return {
-        success: false,
-        error: errorMessage,
+        success: true,
+        redirectTo: confirmationPath,
+        cart: null,
       }
     }
 
-    if (completionType === "cart" || cartData) {
+    if ((completion as any)?.error || completionType === "cart" || cartData) {
       const errorMessage =
         (completion as any).error?.message ||
         "We couldn't complete your order. Please double-check your payment details and try again."
@@ -453,14 +447,11 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
     }
 
     return {
-      success: true,
-      cart: cartData,
+      success: false,
+      error:
+        "We couldn't determine the checkout result. Please refresh and check your email before retrying.",
     }
   } catch (error: any) {
-    if (error?.digest === "NEXT_REDIRECT") {
-      throw error
-    }
-
     const message = extractMedusaErrorMessage(error)
 
     return {
