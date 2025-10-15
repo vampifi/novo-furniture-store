@@ -426,11 +426,26 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
       redirect(confirmationPath)
     }
 
+    if (completionType === "cart") {
+      const errorMessage =
+        (completion as any).error?.message ||
+        "We couldn't complete your order. Please double-check your payment details and try again."
+
+      return {
+        success: false,
+        error: errorMessage,
+      }
+    }
+
     return {
       success: true,
       cart: cartData,
     }
   } catch (error: any) {
+    if (error?.digest === "NEXT_REDIRECT") {
+      throw error
+    }
+
     const message = extractMedusaErrorMessage(error)
 
     return {
