@@ -20,7 +20,10 @@ export const retrieveOrder = cache(async function (id: string, email?: string) {
 
     return response.order
   } catch (err) {
-    return medusaError(err)
+    if (process.env.NODE_ENV !== "production") {
+      console.error("retrieveOrder failed", err)
+    }
+    return null
   }
 })
 

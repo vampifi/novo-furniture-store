@@ -376,14 +376,18 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
     revalidateTag("cart")
 
     const completionType = completion?.type
+
+    const rawOrder =
+      (completion as any)?.order ??
+      (completionType === "order" ? (completion as any)?.data : undefined)
+
+    const rawCart =
+      (completion as any)?.cart ??
+      (completionType === "cart" ? (completion as any)?.data : undefined)
+
     const orderData =
-      completionType === "order"
-        ? ((completion as any).order ?? (completion as any).data ?? null)
-        : null
-    const cartData =
-      completionType === "cart"
-        ? ((completion as any).cart ?? (completion as any).data ?? null)
-        : null
+      rawOrder && typeof rawOrder === "object" ? rawOrder : null
+    const cartData = rawCart && typeof rawCart === "object" ? rawCart : null
 
     if (orderData) {
       if (!orderData.id) {
@@ -426,7 +430,18 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
       redirect(confirmationPath)
     }
 
-    if (completionType === "cart") {
+    if ((completion as any)?.error) {
+      const errorMessage =
+        (completion as any).error?.message ||
+        "We couldn't complete your order. Please double-check your payment details and try again."
+
+      return {
+        success: false,
+        error: errorMessage,
+      }
+    }
+
+    if (completionType === "cart" || cartData) {
       const errorMessage =
         (completion as any).error?.message ||
         "We couldn't complete your order. Please double-check your payment details and try again."
