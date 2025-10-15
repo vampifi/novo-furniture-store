@@ -1,4 +1,8 @@
-export default function medusaError(error: any): never {
+export const extractMedusaErrorMessage = (error: any): string => {
+  if (error instanceof Error && !("response" in error)) {
+    return error.message || "An unknown error occurred."
+  }
+
   if (error.response) {
     // The request was made and the server responded with a status code
     // that falls out of the range of 2xx
@@ -9,14 +13,28 @@ export default function medusaError(error: any): never {
     console.error("Headers:", error.response.headers)
 
     // Extracting the error message from the response data
-    const message = error.response.data.message || error.response.data
+    const data = error.response.data
+    const message =
+      (typeof data === "string" ? data : data?.message) ||
+      "The server responded with an error."
 
-    throw new Error(message.charAt(0).toUpperCase() + message.slice(1) + ".")
+    const formattedMessage =
+      message.charAt(0).toUpperCase() + message.slice(1) + "."
+
+    return formattedMessage
   } else if (error.request) {
     // The request was made but no response was received
-    throw new Error("No response received: " + error.request)
+    return "No response received: " + error.request
   } else {
     // Something happened in setting up the request that triggered an Error
-    throw new Error("Error setting up the request: " + error.message)
+    const message =
+      error?.message || "Error setting up the request: unknown error."
+    return message.startsWith("Error setting up")
+      ? message
+      : "Error setting up the request: " + message
   }
+}
+
+export default function medusaError(error: any): never {
+  throw new Error(extractMedusaErrorMessage(error))
 }

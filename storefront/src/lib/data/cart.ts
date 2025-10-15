@@ -1,7 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
-import medusaError from "@lib/util/medusa-error"
+import medusaError, { extractMedusaErrorMessage } from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { omit } from "lodash"
 import { revalidateTag } from "next/cache"
@@ -349,28 +349,55 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   )
 }
 
-export async function placeOrder() {
+type PlaceOrderSuccess = {
+  success: true
+  cart?: HttpTypes.StoreCart
+}
+
+type PlaceOrderFailure = {
+  success: false
+  error: string
+}
+
+export type PlaceOrderResult = PlaceOrderSuccess | PlaceOrderFailure
+
+export async function placeOrder(): Promise<PlaceOrderResult> {
   const cartId = getCartId()
   if (!cartId) {
-    throw new Error("No existing cart found when placing an order")
+    return {
+      success: false,
+      error: "No existing cart found when placing an order.",
+    }
   }
 
-  const cartRes = await sdk.store.cart
-    .complete(cartId, {}, getAuthHeaders())
-    .then((cartRes) => {
-      revalidateTag("cart")
-      return cartRes
-    })
-    .catch(medusaError)
+  try {
+    const cartRes = await sdk.store.cart.complete(
+      cartId,
+      {},
+      getAuthHeaders()
+    )
 
-  if (cartRes?.type === "order") {
-    const countryCode =
-      cartRes.order.shipping_address?.country_code?.toLowerCase()
-    removeCartId()
-    redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
+    revalidateTag("cart")
+
+    if (cartRes?.type === "order") {
+      const countryCode =
+        cartRes.order.shipping_address?.country_code?.toLowerCase()
+      removeCartId()
+      redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
+    }
+
+    return {
+      success: true,
+      cart: cartRes.cart,
+    }
+  } catch (error: any) {
+    const message = extractMedusaErrorMessage(error)
+
+    return {
+      success: false,
+      error: message,
+    }
   }
-
-  return cartRes.cart
 }
 
 /**

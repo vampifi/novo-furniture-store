@@ -68,21 +68,43 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 
 const GiftCardPaymentButton = () => {
   const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleOrder = async () => {
     setSubmitting(true)
-    await placeOrder()
+    setErrorMessage(null)
+
+    try {
+      const result = await placeOrder()
+
+      if (result?.success === false) {
+        setErrorMessage(result.error)
+      }
+    } catch (err: any) {
+      if (err?.digest === "NEXT_REDIRECT") {
+        return
+      }
+
+      setErrorMessage(
+        err?.message ?? "An unexpected error occurred. Please try again."
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
-    <Button
-      onClick={handleOrder}
-      isLoading={submitting}
-      data-testid="submit-order-button"
-      className={primaryActionClass}
-    >
-      Place order
-    </Button>
+    <>
+      <Button
+        onClick={handleOrder}
+        isLoading={submitting}
+        data-testid="submit-order-button"
+        className={primaryActionClass}
+      >
+        Place order
+      </Button>
+      <ErrorMessage error={errorMessage} />
+    </>
   )
 }
 
@@ -99,13 +121,23 @@ const StripePaymentButton = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
-    await placeOrder()
-      .catch((err) => {
-        setErrorMessage(err.message)
-      })
-      .finally(() => {
-        setSubmitting(false)
-      })
+    try {
+      const result = await placeOrder()
+
+      if (result?.success === false) {
+        setErrorMessage(result.error)
+      }
+    } catch (err: any) {
+      if (err?.digest === "NEXT_REDIRECT") {
+        return
+      }
+
+      setErrorMessage(
+        err?.message ?? "An unexpected error occurred. Please try again."
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const stripe = useStripe()
@@ -120,6 +152,7 @@ const StripePaymentButton = ({
 
   const handlePayment = async () => {
     setSubmitting(true)
+    setErrorMessage(null)
 
     if (!stripe || !elements || !card || !cart) {
       setSubmitting(false)
@@ -207,13 +240,23 @@ const PayPalPaymentButton = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
-    await placeOrder()
-      .catch((err) => {
-        setErrorMessage(err.message)
-      })
-      .finally(() => {
-        setSubmitting(false)
-      })
+    try {
+      const result = await placeOrder()
+
+      if (result?.success === false) {
+        setErrorMessage(result.error)
+      }
+    } catch (err: any) {
+      if (err?.digest === "NEXT_REDIRECT") {
+        return
+      }
+
+      setErrorMessage(
+        err?.message ?? "An unexpected error occurred. Please try again."
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const session = cart.payment_collection?.payment_sessions?.find(
@@ -224,6 +267,9 @@ const PayPalPaymentButton = ({
     _data: OnApproveData,
     actions: OnApproveActions
   ) => {
+    setSubmitting(true)
+    setErrorMessage(null)
+
     actions?.order
       ?.authorize()
       .then((authorization) => {
@@ -269,17 +315,28 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
-    await placeOrder()
-      .catch((err) => {
-        setErrorMessage(err.message)
-      })
-      .finally(() => {
-        setSubmitting(false)
-      })
+    try {
+      const result = await placeOrder()
+
+      if (result?.success === false) {
+        setErrorMessage(result.error)
+      }
+    } catch (err: any) {
+      if (err?.digest === "NEXT_REDIRECT") {
+        return
+      }
+
+      setErrorMessage(
+        err?.message ?? "An unexpected error occurred. Please try again."
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handlePayment = () => {
     setSubmitting(true)
+    setErrorMessage(null)
 
     onPaymentCompleted()
   }
