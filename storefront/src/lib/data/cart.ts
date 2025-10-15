@@ -371,24 +371,64 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
   }
 
   try {
-    const cartRes = await sdk.store.cart.complete(
-      cartId,
-      {},
-      getAuthHeaders()
-    )
+    const completion = await sdk.store.cart.complete(cartId, {}, getAuthHeaders())
 
     revalidateTag("cart")
 
-    if (cartRes?.type === "order") {
-      const countryCode =
-        cartRes.order.shipping_address?.country_code?.toLowerCase()
+    const completionType = completion?.type
+    const orderData =
+      completionType === "order"
+        ? ((completion as any).order ?? (completion as any).data ?? null)
+        : null
+    const cartData =
+      completionType === "cart"
+        ? ((completion as any).cart ?? (completion as any).data ?? null)
+        : null
+
+    if (orderData) {
+      if (!orderData.id) {
+        return {
+          success: false,
+          error:
+            "Your order was created, but we couldn't determine the confirmation page. Please check your email for the receipt.",
+        }
+      }
+
+      const shippingCountry =
+        orderData.shipping_address?.country_code?.toLowerCase()
+      const billingCountry =
+        orderData.billing_address?.country_code?.toLowerCase()
+      const regionCountry =
+        orderData.region?.countries?.[0]?.iso_2?.toLowerCase()
+      const defaultCountry =
+        process.env.NEXT_PUBLIC_DEFAULT_REGION?.toLowerCase() ?? "us"
+
+      const redirectCountryCode =
+        shippingCountry ?? billingCountry ?? regionCountry ?? defaultCountry
+
+      const searchParams = new URLSearchParams()
+      if (orderData.email) {
+        searchParams.set("email", orderData.email)
+      }
+      if (orderData.display_id) {
+        searchParams.set("orderNo", `${orderData.display_id}`)
+      }
+      if (orderData.id) {
+        searchParams.set("orderId", orderData.id)
+      }
+
+      const queryString = searchParams.toString()
+      const confirmationPath = `/${redirectCountryCode}/order/confirmed/${orderData.id}${
+        queryString ? `?${queryString}` : ""
+      }`
+
       removeCartId()
-      redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
+      redirect(confirmationPath)
     }
 
     return {
       success: true,
-      cart: cartRes.cart,
+      cart: cartData,
     }
   } catch (error: any) {
     const message = extractMedusaErrorMessage(error)
