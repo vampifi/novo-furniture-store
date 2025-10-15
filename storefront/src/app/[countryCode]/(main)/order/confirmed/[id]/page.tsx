@@ -12,23 +12,37 @@ type Props = {
   searchParams?: { email?: string; orderNo?: string; orderId?: string }
 }
 
-async function getOrder(id: string, email?: string) {
-  try {
+export const metadata: Metadata = {
+  title: "Order Confirmed",
+  description: "Your purchase was successful",
+}
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function resolveOrder(
+  id: string,
+  email?: string,
+  attempts: number = 3,
+  delayMs: number = 700
+) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
     const order = await retrieveOrder(id, email)
 
-    if (!order) {
-      return null
+    if (order) {
+      const enrichedItems = await enrichLineItems(order.items, order.region_id!)
+
+      return {
+        ...order,
+        items: enrichedItems,
+      } as unknown as HttpTypes.StoreOrder
     }
 
-    const enrichedItems = await enrichLineItems(order.items, order.region_id!)
-
-    return {
-      ...order,
-      items: enrichedItems,
-    } as unknown as HttpTypes.StoreOrder
-  } catch {
-    return null
+    if (attempt < attempts) {
+      await wait(delayMs)
+    }
   }
+
+  return null
 }
 
 function OrderFallback({
@@ -50,9 +64,9 @@ function OrderFallback({
         </Heading>
         <Text className="text-base">
           We received your order and sent a confirmation email
-          {sanitizedEmail ? ` to ${sanitizedEmail}` : ""}. For security reasons
-          we couldn&apos;t show the full summary here, but the email includes
-          every detail alongside your receipt.
+          {sanitizedEmail ? ` to ${sanitizedEmail}` : ""}. Your receipt has all
+          of the purchase details, and you can use the tracker below to follow
+          the status.
         </Text>
         <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-6">
           <Heading level="h2" className="text-lg">
@@ -63,8 +77,8 @@ function OrderFallback({
           </Text>
         </div>
         <Text className="text-base">
-          Need to check the status later? Use our tracker to check updates with
-          your email and order number.
+          Need to check the status later? Use our tracker with the email and
+          order number above.
         </Text>
         <Link
           href={`/${countryCode}/track-order`}
@@ -77,11 +91,6 @@ function OrderFallback({
   )
 }
 
-export const metadata: Metadata = {
-  title: "Order Confirmed",
-  description: "Your purchase was successful",
-}
-
 export default async function OrderConfirmedPage({
   params,
   searchParams,
@@ -90,7 +99,7 @@ export default async function OrderConfirmedPage({
   const orderIdParam =
     searchParams?.orderId || searchParams?.orderNo || params.id
 
-  const order = await getOrder(params.id, emailParam)
+  const order = await resolveOrder(params.id, emailParam)
 
   if (!order) {
     return (

@@ -5,7 +5,7 @@ import medusaError from "@lib/util/medusa-error"
 import { cache } from "react"
 import { getAuthHeaders } from "./cookies"
 
-export const retrieveOrder = cache(async function (id: string, email?: string) {
+export async function retrieveOrder(id: string, email?: string) {
   try {
     const query: Record<string, any> = { fields: "*payment_collections.payments" }
     if (email) {
@@ -25,7 +25,7 @@ export const retrieveOrder = cache(async function (id: string, email?: string) {
     }
     return null
   }
-})
+}
 
 export const listOrders = cache(async function (
   limit: number = 10,
