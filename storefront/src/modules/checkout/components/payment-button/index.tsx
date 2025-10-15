@@ -82,7 +82,7 @@ const GiftCardPaymentButton = () => {
       }
     } catch (err: any) {
       if (err?.digest === "NEXT_REDIRECT") {
-        return
+        throw err
       }
 
       setErrorMessage(
@@ -129,7 +129,7 @@ const StripePaymentButton = ({
       }
     } catch (err: any) {
       if (err?.digest === "NEXT_REDIRECT") {
-        return
+        throw err
       }
 
       setErrorMessage(
@@ -248,7 +248,7 @@ const PayPalPaymentButton = ({
       }
     } catch (err: any) {
       if (err?.digest === "NEXT_REDIRECT") {
-        return
+        throw err
       }
 
       setErrorMessage(
@@ -323,7 +323,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
       }
     } catch (err: any) {
       if (err?.digest === "NEXT_REDIRECT") {
-        return
+        throw err
       }
 
       setErrorMessage(
