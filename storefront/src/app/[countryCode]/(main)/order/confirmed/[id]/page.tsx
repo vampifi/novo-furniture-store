@@ -77,15 +77,9 @@ function OrderFallback({
           </Text>
         </div>
         <Text className="text-base">
-          Need to check the status later? Use our tracker with the email and
-          order number above.
+          Need to check the status later? Keep this reference handy and reach
+          out to support if you have any questions.
         </Text>
-        <Link
-          href={`/${countryCode}/track-order`}
-          className="w-full sm:w-auto rounded-full bg-[#221C18] px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#EFE4DC] transition hover:bg-[#2E261F]"
-        >
-          Track my order
-        </Link>
       </div>
     </div>
   )
