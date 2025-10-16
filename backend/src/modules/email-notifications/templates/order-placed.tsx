@@ -60,6 +60,23 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
   const heroImage =
     'https://res.cloudinary.com/dhbh2lu21/image/upload/v1758560328/login-register-novo-image_euyyf4.webp'
 
+  const recipientName = [
+    shippingAddress?.first_name ?? order?.customer?.first_name ?? '',
+    shippingAddress?.last_name ?? order?.customer?.last_name ?? ''
+  ]
+    .join(' ')
+    .trim() || 'there'
+
+  const shippingLines = [
+    [shippingAddress?.address_1, shippingAddress?.address_2]
+      .filter(Boolean)
+      .join(' '),
+    [shippingAddress?.city, shippingAddress?.province, shippingAddress?.postal_code]
+      .filter(Boolean)
+      .join(', '),
+    (shippingAddress?.country_code || order?.shipping_address?.country_code)?.toUpperCase()
+  ].filter((line) => Boolean(line && line.trim().length))
+
   return (
     <Base preview={preview}>
       <Section className="overflow-hidden rounded-2xl">
@@ -81,7 +98,7 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
 
         <div className="bg-[#F9F4EE] px-6 py-8 text-[#3F352D]">
           <Text className="m-0 text-sm">
-            Hi {shippingAddress.first_name} {shippingAddress.last_name},
+            Hi {recipientName},
           </Text>
           <Text className="mt-3 text-sm">
             We&apos;re preparing your order and will send another email once it ships. Here&apos;s a quick snapshot of what you purchased.
@@ -142,15 +159,20 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
                 Delivery to
               </Text>
               <div className="mt-3 space-y-1">
-                <Text className="m-0 text-[#221C18]">
-                  {shippingAddress.first_name} {shippingAddress.last_name}
-                </Text>
-                <Text className="m-0 text-[#6A5C52]">{shippingAddress.address_1}</Text>
-                {shippingAddress.address_2 && <Text className="m-0 text-[#6A5C52]">{shippingAddress.address_2}</Text>}
-                <Text className="m-0 text-[#6A5C52]">
-                  {shippingAddress.city}, {shippingAddress.province} {shippingAddress.postal_code}
-                </Text>
-                <Text className="m-0 text-[#6A5C52]">{shippingAddress.country_code?.toUpperCase()}</Text>
+                {shippingLines.length ? (
+                  <>
+                    <Text className="m-0 text-[#221C18]">{recipientName}</Text>
+                    {shippingLines.map((line, index) => (
+                      <Text key={index} className="m-0 text-[#6A5C52]">
+                        {line}
+                      </Text>
+                    ))}
+                  </>
+                ) : (
+                  <Text className="m-0 text-[#6A5C52]">
+                    You&apos;ll receive a notification as soon as your order ships.
+                  </Text>
+                )}
               </div>
             </div>
 
