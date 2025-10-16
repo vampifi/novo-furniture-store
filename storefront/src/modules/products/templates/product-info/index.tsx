@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { variantHasAvailableStock } from "@modules/products/utils/inventory"
 
 type ProductInfoProps = {
   product: HttpTypes.StoreProduct
@@ -73,30 +74,11 @@ const determineAvailability = (product: HttpTypes.StoreProduct): string | undefi
     return undefined
   }
 
-  const isAvailable = product.variants.some((variant) => {
-    if (!variant) {
-      return false
-    }
+  const isAvailable = product.variants.some((variant) =>
+    variantHasAvailableStock(variant)
+  )
 
-    if (!variant.manage_inventory) {
-      return true
-    }
-
-    if (variant.allow_backorder) {
-      return true
-    }
-
-    const hasAssignedLocation = (variant as any)?.inventory_items?.some(
-      (inventoryItem: any) =>
-        (inventoryItem?.inventory_levels ?? []).some(
-          (level: any) => Boolean(level?.location_id)
-        )
-    )
-
-    return hasAssignedLocation && (variant.inventory_quantity ?? 0) > 0
-  })
-
-  return isAvailable ? "In stock" : "Out of stock"
+  return isAvailable ? "In stock" : "OUT OF STOCK"
 }
 
 const formatMetaValue = (value?: string | null) => {

@@ -14,6 +14,7 @@ import ProductPrice from "../product-price"
 import { addToCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { ADD_TO_CART_BUTTON_CLASS } from "../../constants/theme"
+import { variantHasAvailableStock } from "@modules/products/utils/inventory"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -67,17 +68,11 @@ export default function ProductActions({
   }
 
   // check if the selected variant is in stock
-  const hasAssignedStockLocation = useMemo(() => {
-    if (!selectedVariant?.inventory_items?.length) {
-      return false
-    }
-
-    return selectedVariant.inventory_items.some((inventoryItem: any) =>
-      (inventoryItem?.inventory_levels ?? []).some(
-        (level: any) => Boolean(level?.location_id)
-      )
+  const productHasStock = useMemo(() => {
+    return (product.variants || []).some((variant) =>
+      variantHasAvailableStock(variant)
     )
-  }, [selectedVariant])
+  }, [product.variants])
 
   const inStock = useMemo(() => {
     // If we don't manage inventory, we can always add to cart
@@ -93,7 +88,7 @@ export default function ProductActions({
     // If there is inventory available, we can add to cart
     if (
       selectedVariant?.manage_inventory &&
-      hasAssignedStockLocation &&
+      variantHasAvailableStock(selectedVariant) &&
       (selectedVariant?.inventory_quantity || 0) > 0
     ) {
       return true
@@ -101,7 +96,7 @@ export default function ProductActions({
 
     // Otherwise, we can't add to cart
     return false
-  }, [selectedVariant, hasAssignedStockLocation])
+  }, [selectedVariant])
 
   const actionsRef = useRef<HTMLDivElement>(null)
 
@@ -151,13 +146,17 @@ export default function ProductActions({
 
         <Button
           onClick={handleAddToCart}
-          disabled={!inStock || !selectedVariant || !!disabled || isAdding}
+          disabled={
+            !productHasStock || !inStock || !selectedVariant || !!disabled || isAdding
+          }
           variant="transparent"
           className={ADD_TO_CART_BUTTON_CLASS}
           isLoading={isAdding}
           data-testid="add-product-button"
         >
-          {!selectedVariant
+          {!productHasStock
+            ? "OUT OF STOCK"
+            : !selectedVariant
             ? "Select variant"
             : !inStock
             ? "Out of stock"
@@ -165,10 +164,11 @@ export default function ProductActions({
         </Button>
         <MobileActions
           product={product}
-          variant={selectedVariant}
+          variant={selectedVariant as HttpTypes.StoreProductVariant | undefined}
           options={options}
           updateOptions={setOptionValue}
           inStock={inStock}
+          productHasStock={productHasStock}
           handleAddToCart={handleAddToCart}
           isAdding={isAdding}
           show={!inView}

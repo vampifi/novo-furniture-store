@@ -20,6 +20,7 @@ type MobileActionsProps = {
   options: Record<string, string | undefined>
   updateOptions: (title: string, value: string) => void
   inStock?: boolean
+  productHasStock: boolean
   handleAddToCart: () => void
   isAdding?: boolean
   show: boolean
@@ -32,6 +33,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   options,
   updateOptions,
   inStock,
+  productHasStock,
   handleAddToCart,
   isAdding,
   show,
@@ -117,13 +119,15 @@ const MobileActions: React.FC<MobileActionsProps> = ({
               </Button>
               <Button
                 onClick={handleAddToCart}
-                disabled={!inStock || !variant}
+                disabled={!productHasStock || !inStock || !variant}
                 variant="transparent"
                 className={ADD_TO_CART_BUTTON_CLASS}
                 isLoading={isAdding}
                 data-testid="mobile-cart-button"
               >
-                {!variant
+                {!productHasStock
+                  ? "OUT OF STOCK"
+                  : !variant
                   ? "Select variant"
                   : !inStock
                   ? "Out of stock"
