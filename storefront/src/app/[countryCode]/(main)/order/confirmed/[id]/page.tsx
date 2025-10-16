@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import Link from "next/link"
 
 import OrderCompletedTemplate from "@modules/order/templates/order-completed-template"
 import { enrichLineItems } from "@lib/data/cart"
