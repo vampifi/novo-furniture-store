@@ -18,6 +18,10 @@ export const extractMedusaErrorMessage = (error: any): string => {
       (typeof data === "string" ? data : data?.message) ||
       "The server responded with an error."
 
+    if (message.includes("is not stocked at location")) {
+      return "One or more items in your cart aren’t available for the selected shipping location. Please remove the unavailable item or choose a different region/shipping method before placing the order."
+    }
+
     const formattedMessage =
       message.charAt(0).toUpperCase() + message.slice(1) + "."
 

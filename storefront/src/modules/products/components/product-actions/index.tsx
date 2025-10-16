@@ -67,6 +67,18 @@ export default function ProductActions({
   }
 
   // check if the selected variant is in stock
+  const hasAssignedStockLocation = useMemo(() => {
+    if (!selectedVariant?.inventory_items?.length) {
+      return false
+    }
+
+    return selectedVariant.inventory_items.some((inventoryItem: any) =>
+      (inventoryItem?.inventory_levels ?? []).some(
+        (level: any) => Boolean(level?.location_id)
+      )
+    )
+  }, [selectedVariant])
+
   const inStock = useMemo(() => {
     // If we don't manage inventory, we can always add to cart
     if (selectedVariant && !selectedVariant.manage_inventory) {
@@ -81,6 +93,7 @@ export default function ProductActions({
     // If there is inventory available, we can add to cart
     if (
       selectedVariant?.manage_inventory &&
+      hasAssignedStockLocation &&
       (selectedVariant?.inventory_quantity || 0) > 0
     ) {
       return true
@@ -88,7 +101,7 @@ export default function ProductActions({
 
     // Otherwise, we can't add to cart
     return false
-  }, [selectedVariant])
+  }, [selectedVariant, hasAssignedStockLocation])
 
   const actionsRef = useRef<HTMLDivElement>(null)
 

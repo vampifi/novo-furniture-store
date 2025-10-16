@@ -436,7 +436,18 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
     }
 
     if ((completion as any)?.error || completionType === "cart" || cartData) {
+      const unavailableItems = (cartData?.items || [])
+        .map((item: any) => item?.title)
+        .filter(Boolean)
+
+      const unavailableMessage = unavailableItems.length
+        ? `We couldn't complete your order because ${unavailableItems.join(
+            ", "
+          )} ${unavailableItems.length > 1 ? "aren't" : "isn't"} available for the selected shipping location.`
+        : null
+
       const errorMessage =
+        unavailableMessage ||
         (completion as any).error?.message ||
         "We couldn't complete your order. Please double-check your payment details and try again."
 

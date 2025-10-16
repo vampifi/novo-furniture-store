@@ -86,7 +86,14 @@ const determineAvailability = (product: HttpTypes.StoreProduct): string | undefi
       return true
     }
 
-    return (variant.inventory_quantity ?? 0) > 0
+    const hasAssignedLocation = (variant as any)?.inventory_items?.some(
+      (inventoryItem: any) =>
+        (inventoryItem?.inventory_levels ?? []).some(
+          (level: any) => Boolean(level?.location_id)
+        )
+    )
+
+    return hasAssignedLocation && (variant.inventory_quantity ?? 0) > 0
   })
 
   return isAvailable ? "In stock" : "Out of stock"
