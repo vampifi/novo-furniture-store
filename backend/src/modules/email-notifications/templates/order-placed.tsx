@@ -1,212 +1,203 @@
-import { Text, Section, Hr, Img } from '@react-email/components'
+import { Hr, Section, Text } from '@react-email/components'
 import * as React from 'react'
+import type { OrderAddressDTO, OrderDTO, OrderLineItemDTO } from '@medusajs/framework/types'
 import { Base } from './base'
-import type { OrderDTO, OrderAddressDTO, OrderLineItemDTO } from '@medusajs/framework/types'
 
 export const ORDER_PLACED = 'order-placed'
 
 interface OrderPlacedPreviewProps {
-  order: OrderDTO & { display_id: string; summary: { raw_current_order_total: { value: number } } }
+  order: OrderDTO
   shippingAddress: OrderAddressDTO
 }
 
 export interface OrderPlacedTemplateProps {
-  order: OrderDTO & { display_id: string; summary: { raw_current_order_total: { value: number } } }
+  order: OrderDTO
   shippingAddress: OrderAddressDTO
   preview?: string
 }
 
 export const isOrderPlacedTemplateData = (data: any): data is OrderPlacedTemplateProps =>
-  typeof data.order === 'object' && typeof data.shippingAddress === 'object'
+  typeof data === 'object' && data !== null && 'order' in data && 'shippingAddress' in data
+
+const resolvedCurrency = (currency?: string | null) => (currency ? currency.toUpperCase() : 'GBP')
+
+const toCurrency = (value: unknown, currency?: string | null) => {
+  const numeric = Number(value)
+  if (Number.isNaN(numeric)) {
+    return '—'
+  }
+
+  // Medusa often stores totals in minor units.
+  const normalised = numeric > 1000 ? numeric / 100 : numeric
+  try {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: resolvedCurrency(currency),
+    }).format(normalised)
+  } catch {
+    return `£${normalised.toFixed(2)}`
+  }
+}
+
+const formatLineItem = (item: OrderLineItemDTO, currency?: string | null) => {
+  const amount = item.subtotal ?? item.total ?? (item.unit_price ?? 0) * (item.quantity ?? 1)
+  return toCurrency(amount, currency)
+}
+
+const formatAddress = (address?: OrderAddressDTO | null) => {
+  if (!address) {
+    return []
+  }
+
+  const lines: string[] = []
+  const fullName = [address.first_name, address.last_name].filter(Boolean).join(' ').trim()
+  if (fullName) {
+    lines.push(fullName)
+  }
+
+  const street = [address.address_1, address.address_2].filter(Boolean).join(' ').trim()
+  if (street) {
+    lines.push(street)
+  }
+
+  const cityLine = [address.city, address.province, address.postal_code]
+    .filter(Boolean)
+    .join(', ')
+    .trim()
+  if (cityLine) {
+    lines.push(cityLine)
+  }
+
+  if (address.country_code) {
+    lines.push(address.country_code.toUpperCase())
+  }
+
+  return lines
+}
 
 export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
   PreviewProps: OrderPlacedPreviewProps
 } = ({ order, shippingAddress, preview = 'Your order has been placed!' }) => {
-  const currencyCode = (order.currency_code || 'GBP').toUpperCase()
-
-  const formatCurrency = (value: number | null | undefined) => {
-    if (value === null || value === undefined || Number.isNaN(Number(value))) {
-      return '—'
-    }
-
-    const numericValue = Number(value)
-    const normalised = numericValue > 1000 ? numericValue / 100 : numericValue
-
-    try {
-      return new Intl.NumberFormat('en-GB', {
-        style: 'currency',
-        currency: currencyCode
-      }).format(normalised)
-    } catch {
-      return `£${normalised.toFixed(2)}`
-    }
-  }
-
-  const orderTotal =
-    (order as any)?.summary?.raw_current_order_total?.value ??
-    (order.total ? Number(order.total) : undefined)
-
-  const formatLineItemAmount = (item: OrderLineItemDTO) => {
-    const raw = (item.subtotal ?? item.total ?? item.unit_price) ?? 0
-    const numeric = Number(raw)
-    if (Number.isNaN(numeric)) {
-      return formatCurrency(0)
-    }
-
-    const adjusted = numeric > 1000 ? numeric / 100 : numeric
-    return formatCurrency(adjusted)
-  }
-
-  const heroImage =
-    'https://res.cloudinary.com/dhbh2lu21/image/upload/v1758560328/login-register-novo-image_euyyf4.webp'
-
-  const enrichedOrder = order as OrderDTO & {
-    customer?: { first_name?: string | null; last_name?: string | null }
-    shipping_address?: OrderAddressDTO | null
-  }
-
-  const customer = enrichedOrder.customer ?? {}
-  const fallbackAddress = enrichedOrder.shipping_address ?? null
-
-  const recipientName = [
-    shippingAddress?.first_name ?? fallbackAddress?.first_name ?? customer.first_name ?? '',
-    shippingAddress?.last_name ?? fallbackAddress?.last_name ?? customer.last_name ?? ''
-  ]
-    .join(' ')
-    .trim() || 'there'
-
-  const shippingLines = [
-    [
-      shippingAddress?.address_1 ?? fallbackAddress?.address_1,
-      shippingAddress?.address_2 ?? fallbackAddress?.address_2
-    ]
-      .filter(Boolean)
-      .join(' '),
-    [
-      shippingAddress?.city ?? fallbackAddress?.city,
-      shippingAddress?.province ?? fallbackAddress?.province,
-      shippingAddress?.postal_code ?? fallbackAddress?.postal_code
-    ]
-      .filter(Boolean)
-      .join(', '),
-    (shippingAddress?.country_code || fallbackAddress?.country_code)?.toUpperCase()
-  ].filter((line) => Boolean(line && line.trim().length))
+  const orderTotal = (order as any)?.summary?.raw_current_order_total?.value ?? order.total ?? 0
+  const lines = formatAddress(shippingAddress ?? (order as any).shipping_address)
 
   return (
     <Base preview={preview}>
-      <Section className="overflow-hidden rounded-2xl">
-        <div className="relative">
-          <Img src={heroImage} alt="Novo Furniture" className="w-full h-[200px] object-cover" />
-          <div className="absolute inset-0 bg-[#221C18]/75" />
-          <div className="relative px-6 py-8 text-[#EFE4DC]">
-            <Text className="m-0 text-xs uppercase tracking-[0.4em] text-[#C6B9B0]">
-              Order #{order.display_id}
-            </Text>
-            <Text className="mt-2 text-[28px] font-semibold uppercase tracking-[0.14em]">
-              Thank you for shopping with Novo
-            </Text>
-            <Text className="mt-3 text-sm text-[#D6C9BF]">
-              Placed on {new Date(order.created_at).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </Text>
-          </div>
-        </div>
+      <Section>
+        <Text
+          style={{
+            fontSize: '24px',
+            fontWeight: 600,
+            textAlign: 'center',
+            margin: '0 0 24px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em',
+            color: '#221C18',
+          }}
+        >
+          Thank you for your order
+        </Text>
 
-        <div className="bg-[#F9F4EE] px-6 py-8 text-[#3F352D]">
-          <Text className="m-0 text-sm">
-            Hi {recipientName},
-          </Text>
-          <Text className="mt-3 text-sm">
-            We&apos;re preparing your order and will send another email once it ships. Here&apos;s a quick snapshot of what you purchased.
-          </Text>
+        <Text style={{ margin: '0 0 12px', color: '#443B33', fontSize: '14px' }}>
+          Order <strong>#{order.display_id ?? order.id}</strong> is confirmed. We&apos;ll send another email as soon as it ships.
+        </Text>
+        <Text style={{ margin: '0 0 24px', color: '#6A5C52', fontSize: '13px' }}>
+          Placed on {new Date(order.created_at ?? Date.now()).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </Text>
 
-          <div className="mt-6 rounded-2xl border border-[#E8DCD2] bg-white p-5">
-            <Text className="m-0 text-xs font-semibold uppercase tracking-[0.3em] text-[#8C7B6F]">
-              Order summary
-            </Text>
-            <div className="mt-4 space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <Text className="m-0 text-[#6A5C52]">Order number</Text>
-                <Text className="m-0 font-semibold text-[#221C18]">#{order.display_id}</Text>
-              </div>
-              <div className="flex items-center justify-between">
-                <Text className="m-0 text-[#6A5C52]">Total paid</Text>
-                <Text className="m-0 font-semibold text-[#221C18]">
-                  {formatCurrency(orderTotal ?? order.summary.raw_current_order_total?.value ?? 0)}
-                </Text>
-              </div>
-            </div>
-          </div>
+        <Hr style={{ borderColor: '#E8DCD2', margin: '20px 0' }} />
 
-          <div className="mt-6 rounded-2xl border border-[#E8DCD2] bg-white p-5">
-            <Text className="m-0 text-xs font-semibold uppercase tracking-[0.3em] text-[#8C7B6F]">
+        <Text style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 12px', color: '#221C18' }}>
+          Order summary
+        </Text>
+        <Text style={{ margin: '0 0 8px', color: '#443B33', fontSize: '14px' }}>
+          Items: {order.items?.length ?? 0}
+        </Text>
+        <Text style={{ margin: '0 0 20px', color: '#443B33', fontSize: '14px' }}>
+          Total paid: <strong>{toCurrency(orderTotal, order.currency_code)}</strong>
+        </Text>
+
+        <Hr style={{ borderColor: '#E8DCD2', margin: '20px 0' }} />
+
+        {order.items?.length ? (
+          <>
+            <Text style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 12px', color: '#221C18' }}>
               Items in your order
             </Text>
-            <table className="mt-4 w-full border-collapse text-sm">
-              <thead>
-                <tr className="bg-[#F3EAE2] text-left text-xs uppercase tracking-[0.3em] text-[#8C7B6F]">
-                  <th className="p-3 font-semibold">Item</th>
-                  <th className="p-3 font-semibold">Qty</th>
-                  <th className="p-3 font-semibold text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items.map((item) => (
-                  <tr key={item.id} className="border-b border-[#F0E6DD]">
-                    <td className="p-3 align-top text-[#221C18]">
-                      <Text className="m-0 font-semibold">{item.title}</Text>
-                      {item.product_title && (
-                        <Text className="m-0 text-xs text-[#8C7B6F]">{item.product_title}</Text>
-                      )}
-                    </td>
-                    <td className="p-3 align-top text-[#221C18]">{item.quantity}</td>
-                    <td className="p-3 align-top text-right text-[#221C18]">
-                      {formatLineItemAmount(item)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-[#E8DCD2] bg-white p-5 text-sm">
-              <Text className="m-0 text-xs font-semibold uppercase tracking-[0.3em] text-[#8C7B6F]">
-                Delivery to
-              </Text>
-              <div className="mt-3 space-y-1">
-                {shippingLines.length ? (
-                  <>
-                    <Text className="m-0 text-[#221C18]">{recipientName}</Text>
-                    {shippingLines.map((line, index) => (
-                      <Text key={index} className="m-0 text-[#6A5C52]">
-                        {line}
-                      </Text>
-                    ))}
-                  </>
-                ) : (
-                  <Text className="m-0 text-[#6A5C52]">
-                    You&apos;ll receive a notification as soon as your order ships.
-                  </Text>
-                )}
+            <div
+              style={{
+                border: '1px solid #E8DCD2',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                margin: '0 0 24px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  backgroundColor: '#F5EDE5',
+                  color: '#6A5C52',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.2em',
+                }}
+              >
+                <span>Item</span>
+                <span>Qty</span>
+                <span>Total</span>
               </div>
+              {order.items.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '12px 14px',
+                    borderTop: '1px solid #EFE4DC',
+                    color: '#221C18',
+                    fontSize: '13px',
+                  }}
+                >
+                  <span style={{ maxWidth: '55%' }}>
+                    <strong>{item.title}</strong>
+                    {item.variant?.title ? ` • ${item.variant.title}` : ''}
+                  </span>
+                  <span>{item.quantity}</span>
+                  <span style={{ fontWeight: 600 }}>{formatLineItem(item, order.currency_code)}</span>
+                </div>
+              ))}
             </div>
+          </>
+        ) : null}
 
-            <div className="rounded-2xl border border-[#E8DCD2] bg-white p-5 text-sm">
-              <Text className="m-0 text-xs font-semibold uppercase tracking-[0.3em] text-[#8C7B6F]">
-                Need a hand?
+        <Text style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 12px', color: '#221C18' }}>
+          Delivery details
+        </Text>
+        {lines.length ? (
+          <div style={{ color: '#443B33', fontSize: '13px', lineHeight: '20px', marginBottom: '24px' }}>
+            {lines.map((line, idx) => (
+              <Text key={idx} style={{ margin: 0 }}>
+                {line}
               </Text>
-              <Text className="mt-3 text-[#6A5C52]">
-                If you have any questions or need to make a change, simply reply to this email or call our support team.
-              </Text>
-            </div>
+            ))}
           </div>
-
-          <Hr className="my-8 border-[#E8DCD2]" />
-
-          <Text className="m-0 text-xs uppercase tracking-[0.35em] text-[#B4A79D]">
-            Novo Furniture · Crafted for life
+        ) : (
+          <Text style={{ margin: '0 0 24px', color: '#6A5C52', fontSize: '13px' }}>
+            We&apos;ll confirm your delivery details in a follow-up email.
           </Text>
-        </div>
+        )}
+
+        <Hr style={{ borderColor: '#E8DCD2', margin: '20px 0' }} />
+
+        <Text style={{ margin: '0 0 8px', color: '#443B33', fontSize: '13px' }}>
+          Reply to this email if you need to make any changes or have a question—our team is ready to help.
+        </Text>
+        <Text style={{ margin: 0, color: '#8C7B6F', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3em' }}>
+          Novo Furniture · Crafted for life
+        </Text>
       </Section>
     </Base>
   )
@@ -214,35 +205,41 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
 
 OrderPlacedTemplate.PreviewProps = {
   order: {
-    id: 'test-order-id',
-    display_id: 'ORD-123',
+    id: 'ord_test',
+    display_id: '2105',
     created_at: new Date().toISOString(),
-    email: 'test@example.com',
     currency_code: 'GBP',
     items: [
-      { id: 'item-1', title: 'Highland Armchair', product_title: 'Chestnut Leather', quantity: 2, unit_price: 12500 } as any,
-      { id: 'item-2', title: 'Wool Throw', product_title: 'Heather Grey', quantity: 1, unit_price: 8500 } as any
+      {
+        id: 'item-1',
+        title: 'Highland Armchair',
+        quantity: 1,
+        subtotal: 65000,
+        variant: { title: 'Chestnut Leather' },
+      } as unknown as OrderLineItemDTO,
+      {
+        id: 'item-2',
+        title: 'Wool Throw',
+        quantity: 2,
+        subtotal: 18000,
+        variant: { title: 'Heather Grey' },
+      } as unknown as OrderLineItemDTO,
     ],
-    shipping_address: {
-      first_name: 'Test',
-      last_name: 'User',
-      address_1: '123 Main St',
-      city: 'Anytown',
-      province: 'CA',
-      postal_code: '12345',
-      country_code: 'US'
+    summary: {
+      raw_current_order_total: {
+        value: 83000,
+      },
     },
-    summary: { raw_current_order_total: { value: 33500 } }
-  },
+  } as OrderDTO,
   shippingAddress: {
-    first_name: 'Test',
-    last_name: 'User',
+    first_name: 'Amelia',
+    last_name: 'Rowe',
     address_1: '14 Kingly Street',
     city: 'London',
     province: 'London',
     postal_code: 'W1B 5PW',
-    country_code: 'GB'
-  }
+    country_code: 'GB',
+  } as OrderAddressDTO,
 } as OrderPlacedPreviewProps
 
 export default OrderPlacedTemplate
