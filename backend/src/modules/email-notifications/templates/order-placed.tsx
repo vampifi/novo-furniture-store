@@ -60,21 +60,36 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
   const heroImage =
     'https://res.cloudinary.com/dhbh2lu21/image/upload/v1758560328/login-register-novo-image_euyyf4.webp'
 
+  const enrichedOrder = order as OrderDTO & {
+    customer?: { first_name?: string | null; last_name?: string | null }
+    shipping_address?: OrderAddressDTO | null
+  }
+
+  const customer = enrichedOrder.customer ?? {}
+  const fallbackAddress = enrichedOrder.shipping_address ?? null
+
   const recipientName = [
-    shippingAddress?.first_name ?? order?.customer?.first_name ?? '',
-    shippingAddress?.last_name ?? order?.customer?.last_name ?? ''
+    shippingAddress?.first_name ?? fallbackAddress?.first_name ?? customer.first_name ?? '',
+    shippingAddress?.last_name ?? fallbackAddress?.last_name ?? customer.last_name ?? ''
   ]
     .join(' ')
     .trim() || 'there'
 
   const shippingLines = [
-    [shippingAddress?.address_1, shippingAddress?.address_2]
+    [
+      shippingAddress?.address_1 ?? fallbackAddress?.address_1,
+      shippingAddress?.address_2 ?? fallbackAddress?.address_2
+    ]
       .filter(Boolean)
       .join(' '),
-    [shippingAddress?.city, shippingAddress?.province, shippingAddress?.postal_code]
+    [
+      shippingAddress?.city ?? fallbackAddress?.city,
+      shippingAddress?.province ?? fallbackAddress?.province,
+      shippingAddress?.postal_code ?? fallbackAddress?.postal_code
+    ]
       .filter(Boolean)
       .join(', '),
-    (shippingAddress?.country_code || order?.shipping_address?.country_code)?.toUpperCase()
+    (shippingAddress?.country_code || fallbackAddress?.country_code)?.toUpperCase()
   ].filter((line) => Boolean(line && line.trim().length))
 
   return (
