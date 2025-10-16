@@ -48,15 +48,13 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
 
   const formatLineItemAmount = (item: OrderLineItemDTO) => {
     const raw = (item.subtotal ?? item.total ?? item.unit_price) ?? 0
-    const amount = Number(raw) * (raw > 1000 ? 0.01 : 1)
-    try {
-      return new Intl.NumberFormat('en-GB', {
-        style: 'currency',
-        currency: currencyCode
-      }).format(amount)
-    } catch {
-      return `£${amount.toFixed(2)}`
+    const numeric = Number(raw)
+    if (Number.isNaN(numeric)) {
+      return formatCurrency(0)
     }
+
+    const adjusted = numeric > 1000 ? numeric / 100 : numeric
+    return formatCurrency(adjusted)
   }
 
   const heroImage =
