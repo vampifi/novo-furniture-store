@@ -208,7 +208,7 @@ const CartDropdown = ({
                     <span className="text-[#3F3630]">
                       Subtotal{" "}
                       <span className="pl-1 text-sm font-medium text-[#8C7B6F]">
-                        (excl. taxes)
+                        (inc. taxes)
                       </span>
                     </span>
                     <span
