@@ -19,10 +19,6 @@ export const variantHasAvailableStock = (variant?: VariantLike | null) => {
       ? variant.manage_inventory
       : true
 
-  if (!managesInventory) {
-    return true
-  }
-
   const allowsBackorder =
     typeof variant.allow_backorder === "boolean"
       ? variant.allow_backorder
@@ -32,6 +28,11 @@ export const variantHasAvailableStock = (variant?: VariantLike | null) => {
     return true
   }
 
+  const inventoryQuantity =
+    typeof variant.inventory_quantity === "number"
+      ? variant.inventory_quantity
+      : 0
+
   const hasAssignedLocation = (variant?.inventory_items ?? []).some(
     (inventoryItem: any) =>
       (inventoryItem?.inventory_levels ?? []).some(
@@ -39,5 +40,9 @@ export const variantHasAvailableStock = (variant?: VariantLike | null) => {
       )
   )
 
-  return hasAssignedLocation && (variant.inventory_quantity ?? 0) > 0
+  if (!managesInventory) {
+    return hasAssignedLocation && inventoryQuantity > 0
+  }
+
+  return hasAssignedLocation && inventoryQuantity > 0
 }

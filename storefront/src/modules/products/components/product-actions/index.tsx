@@ -74,39 +74,10 @@ export default function ProductActions({
     )
   }, [product.variants])
 
-  const inStock = useMemo(() => {
-    const managesInventory =
-      typeof selectedVariant?.manage_inventory === "boolean"
-        ? selectedVariant.manage_inventory
-        : true
-
-    // If we don't manage inventory, we can always add to cart
-    if (selectedVariant && !managesInventory) {
-      return true
-    }
-
-    const allowsBackorder =
-      typeof selectedVariant?.allow_backorder === "boolean"
-        ? selectedVariant.allow_backorder
-        : false
-
-    // If we allow back orders on the variant, we can add to cart
-    if (allowsBackorder) {
-      return true
-    }
-
-    // If there is inventory available, we can add to cart
-    if (
-      managesInventory &&
-      variantHasAvailableStock(selectedVariant) &&
-      (selectedVariant?.inventory_quantity ?? 0) > 0
-    ) {
-      return true
-    }
-
-    // Otherwise, we can't add to cart
-    return false
-  }, [selectedVariant])
+  const inStock = useMemo(
+    () => variantHasAvailableStock(selectedVariant),
+    [selectedVariant]
+  )
 
   const isVariantOutOfStock = Boolean(selectedVariant && !inStock)
 
@@ -116,7 +87,13 @@ export default function ProductActions({
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
+    if (!selectedVariant?.id) {
+      return null
+    }
+
+    if (!variantHasAvailableStock(selectedVariant)) {
+      return null
+    }
 
     setIsAdding(true)
 
