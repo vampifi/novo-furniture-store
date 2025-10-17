@@ -2,7 +2,6 @@
 
 import { sdk } from "@lib/config"
 import medusaError, { extractMedusaErrorMessage } from "@lib/util/medusa-error"
-import { variantHasAvailableStock } from "@modules/products/utils/inventory"
 import { HttpTypes } from "@medusajs/types"
 import { omit } from "lodash"
 import { revalidateTag } from "next/cache"
@@ -376,50 +375,13 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
   }
 
   try {
-    const { cart: preflightCart } = await sdk.store.cart.retrieve(
+    await sdk.store.cart.retrieve(
       cartId,
       {
         fields: CART_INVENTORY_FIELDS,
       },
       { ...getAuthHeaders() }
     )
-
-    const unresolvedItems = (preflightCart?.items || []).filter((item: any) => {
-      const variant: any = item?.variant
-
-      if (!variant) {
-        return false
-      }
-
-      if (!variant.manage_inventory) {
-        return false
-      }
-
-      const quantity = typeof item?.quantity === "number" ? item.quantity : 0
-      const availableFromVariant =
-        typeof variant.inventory_quantity === "number"
-          ? variant.inventory_quantity
-          : 0
-
-      const variantAvailable = variantHasAvailableStock(variant)
-
-      return !variantAvailable || availableFromVariant < quantity
-    })
-
-    if (unresolvedItems.length) {
-      const names = unresolvedItems
-        .map((item: any) => item?.title)
-        .filter(Boolean)
-        .join(", ")
-
-      return {
-        success: false,
-        error:
-          names.length > 0
-            ? `We couldn't place the order because ${names} isn’t stocked for your selected shipping region. Please remove it or pick another item before checking out.`
-            : "We couldn't place the order because some items are unavailable for the selected shipping region. Please adjust your cart and try again.",
-      }
-    }
 
     const completion = await sdk.store.cart.complete(cartId, {}, getAuthHeaders())
 
