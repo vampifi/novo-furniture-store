@@ -11,6 +11,12 @@ import { getAuthHeaders, getCartId, removeCartId, setCartId } from "./cookies"
 import { getProductsById } from "./products"
 import { getRegion } from "./regions"
 
+const CART_INVENTORY_FIELDS =
+  "items.*,items.variant.*,items.variant.manage_inventory,items.variant.allow_backorder,items.variant.inventory_items.inventory_levels,items.variant.inventory_items.inventory.location_levels"
+
+const CART_INVENTORY_EXPAND =
+  "items.variant.inventory_items.inventory,items.variant.inventory_items.inventory.location_levels,items.variant.inventory_items.inventory_levels"
+
 export async function retrieveCart() {
   const cartId = getCartId()
 
@@ -376,8 +382,8 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
     const { cart: preflightCart } = await sdk.store.cart.retrieve(
       cartId,
       {
-        fields:
-          "items.*,items.variant.*,items.variant.manage_inventory,items.variant.allow_backorder,items.variant.inventory_items.inventory_levels,items.variant.inventory_items.inventory.location_levels",
+        fields: CART_INVENTORY_FIELDS,
+        expand: CART_INVENTORY_EXPAND,
       },
       { ...getAuthHeaders() }
     )

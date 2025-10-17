@@ -5,6 +5,12 @@ import { getRegion } from "./regions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { sortProducts } from "@lib/util/sort-products"
 
+const PRODUCT_INVENTORY_FIELDS =
+  "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder,+variants.inventory_items.inventory_levels,+variants.inventory_items.inventory.location_levels"
+
+const PRODUCT_INVENTORY_EXPAND =
+  "variants.inventory_items.inventory,variants.inventory_items.inventory.location_levels,variants.inventory_items.inventory_levels"
+
 export type StoreProductCustomAttribute = {
   id: string
   value?: string | null
@@ -40,8 +46,8 @@ export const getProductsById = cache(async function ({
       {
         id: ids,
         region_id: regionId,
-        fields:
-          "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder,+variants.inventory_items.inventory_levels,+variants.inventory_items.inventory.location_levels",
+        fields: PRODUCT_INVENTORY_FIELDS,
+        expand: PRODUCT_INVENTORY_EXPAND,
       },
       { next: { tags: ["products"] } }
     )
@@ -57,8 +63,8 @@ export const getProductByHandle = cache(async function (
       {
         handle,
         region_id: regionId,
-        fields:
-          "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder,+variants.inventory_items.inventory_levels,+variants.inventory_items.inventory.location_levels",
+        fields: PRODUCT_INVENTORY_FIELDS,
+        expand: PRODUCT_INVENTORY_EXPAND,
       },
       { next: { tags: ["products"] } }
     )
@@ -116,8 +122,8 @@ export const getProductsList = cache(async function ({
         limit,
         offset,
         region_id: region.id,
-        fields:
-          "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder,+variants.inventory_items.inventory_levels,+variants.inventory_items.inventory.location_levels,+categories",
+        fields: `${PRODUCT_INVENTORY_FIELDS},+categories`,
+        expand: PRODUCT_INVENTORY_EXPAND,
         ...queryParams,
       },
       { next: { tags: ["products"] } }
