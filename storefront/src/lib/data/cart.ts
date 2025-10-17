@@ -2,6 +2,7 @@
 
 import { sdk } from "@lib/config"
 import medusaError, { extractMedusaErrorMessage } from "@lib/util/medusa-error"
+import { variantHasAvailableStock } from "@modules/products/utils/inventory"
 import { HttpTypes } from "@medusajs/types"
 import { omit } from "lodash"
 import { revalidateTag } from "next/cache"
@@ -376,7 +377,7 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
       cartId,
       {
         fields:
-          "items.*,items.variant.*,items.variant.manage_inventory,items.variant.allow_backorder,items.variant.inventory_items.inventory_levels",
+          "items.*,items.variant.*,items.variant.manage_inventory,items.variant.allow_backorder,items.variant.inventory_items.inventory_levels,items.variant.inventory_items.inventory.location_levels",
       },
       { ...getAuthHeaders() }
     )
@@ -392,23 +393,63 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
         return false
       }
 
-      if (variant.allow_backorder) {
-        return false
-      }
+      const inventoryItems = Array.isArray(variant.inventory_items)
+        ? variant.inventory_items
+        : []
 
-      const hasLocation = (variant.inventory_items || []).some(
-        (inventoryItem: any) =>
-          (inventoryItem?.inventory_levels || []).some((level: any) =>
-            Boolean(level?.location_id)
-          )
-      )
+      const hasLocation = inventoryItems.some((inventoryItem: any) => {
+        const directLevels = Array.isArray(inventoryItem?.inventory_levels)
+          ? inventoryItem.inventory_levels
+          : []
+        const nestedLevels = Array.isArray(
+          inventoryItem?.inventory?.location_levels
+        )
+          ? inventoryItem.inventory.location_levels
+          : []
+
+        return [...directLevels, ...nestedLevels].some((level: any) =>
+          Boolean(level?.location_id)
+        )
+      })
 
       const quantity = typeof item?.quantity === "number" ? item.quantity : 0
-      const available = typeof variant.inventory_quantity === "number"
-        ? variant.inventory_quantity
-        : 0
+      const availableFromVariant =
+        typeof variant.inventory_quantity === "number"
+          ? variant.inventory_quantity
+          : inventoryItems.reduce((total: number, inventoryItem: any) => {
+              const levels = [
+                ...(Array.isArray(inventoryItem?.inventory_levels)
+                  ? inventoryItem.inventory_levels
+                  : []),
+                ...(Array.isArray(inventoryItem?.inventory?.location_levels)
+                  ? inventoryItem.inventory.location_levels
+                  : []),
+              ]
 
-      return !hasLocation || available < quantity
+              return (
+                total +
+                levels.reduce((levelTotal: number, level: any) => {
+                  if (typeof level?.available_quantity === "number") {
+                    return levelTotal + level.available_quantity
+                  }
+
+                  const stocked =
+                    typeof level?.stocked_quantity === "number"
+                      ? level.stocked_quantity
+                      : 0
+                  const reserved =
+                    typeof level?.reserved_quantity === "number"
+                      ? level.reserved_quantity
+                      : 0
+
+                  return levelTotal + Math.max(stocked - reserved, 0)
+                }, 0)
+              )
+            }, 0)
+
+      const variantAvailable = variantHasAvailableStock(variant)
+
+      return !hasLocation || !variantAvailable || availableFromVariant < quantity
     })
 
     if (unresolvedItems.length) {

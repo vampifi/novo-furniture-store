@@ -19,30 +19,46 @@ export const variantHasAvailableStock = (variant?: VariantLike | null) => {
       ? variant.manage_inventory
       : true
 
-  const allowsBackorder =
-    typeof variant.allow_backorder === "boolean"
-      ? variant.allow_backorder
-      : false
-
-  if (allowsBackorder) {
+  if (!managesInventory) {
     return true
   }
+
+  const inventoryItems = Array.isArray(variant.inventory_items)
+    ? variant.inventory_items
+    : []
+
+  const inventoryLevels = inventoryItems.flatMap((inventoryItem: any) => [
+    ...(Array.isArray(inventoryItem?.inventory_levels)
+      ? inventoryItem.inventory_levels
+      : []),
+    ...(Array.isArray(inventoryItem?.inventory?.location_levels)
+      ? inventoryItem.inventory.location_levels
+      : []),
+  ])
+
+  const hasAssignedLocation = inventoryLevels.some((level: any) =>
+    Boolean(level?.location_id)
+  )
 
   const inventoryQuantity =
     typeof variant.inventory_quantity === "number"
       ? variant.inventory_quantity
-      : 0
+      : inventoryLevels.reduce((total: number, level: any) => {
+          if (typeof level?.available_quantity === "number") {
+            return total + level.available_quantity
+          }
 
-  const hasAssignedLocation = (variant?.inventory_items ?? []).some(
-    (inventoryItem: any) =>
-      (inventoryItem?.inventory_levels ?? []).some(
-        (level: any) => Boolean(level?.location_id)
-      )
-  )
+          const stocked =
+            typeof level?.stocked_quantity === "number"
+              ? level.stocked_quantity
+              : 0
+          const reserved =
+            typeof level?.reserved_quantity === "number"
+              ? level.reserved_quantity
+              : 0
 
-  if (!managesInventory) {
-    return hasAssignedLocation && inventoryQuantity > 0
-  }
+          return total + Math.max(stocked - reserved, 0)
+        }, 0)
 
   return hasAssignedLocation && inventoryQuantity > 0
 }
