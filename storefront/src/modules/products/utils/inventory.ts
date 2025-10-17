@@ -14,11 +14,21 @@ export const variantHasAvailableStock = (variant?: VariantLike | null) => {
     return false
   }
 
-  if (!variant.manage_inventory) {
+  const managesInventory =
+    typeof variant.manage_inventory === "boolean"
+      ? variant.manage_inventory
+      : true
+
+  if (!managesInventory) {
     return true
   }
 
-  if (variant.allow_backorder) {
+  const allowsBackorder =
+    typeof variant.allow_backorder === "boolean"
+      ? variant.allow_backorder
+      : false
+
+  if (allowsBackorder) {
     return true
   }
 

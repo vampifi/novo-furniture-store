@@ -376,7 +376,7 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
       cartId,
       {
         fields:
-          "items.*,items.variant.*,items.variant.inventory_items.inventory_levels",
+          "items.*,items.variant.*,items.variant.manage_inventory,items.variant.allow_backorder,items.variant.inventory_items.inventory_levels",
       },
       { ...getAuthHeaders() }
     )
