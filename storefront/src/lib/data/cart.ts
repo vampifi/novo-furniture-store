@@ -12,10 +12,7 @@ import { getProductsById } from "./products"
 import { getRegion } from "./regions"
 
 const CART_INVENTORY_FIELDS =
-  "items.*,items.variant.*,items.variant.manage_inventory,items.variant.allow_backorder,items.variant.inventory_items.inventory_levels,items.variant.inventory_items.inventory.location_levels"
-
-const CART_INVENTORY_EXPAND =
-  "items.variant.inventory_items.inventory,items.variant.inventory_items.inventory.location_levels,items.variant.inventory_items.inventory_levels"
+  "items.*,items.variant.*,items.variant.manage_inventory,items.variant.allow_backorder,items.variant.inventory_items.inventory_levels"
 
 export async function retrieveCart() {
   const cartId = getCartId()
@@ -383,7 +380,6 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
       cartId,
       {
         fields: CART_INVENTORY_FIELDS,
-        expand: CART_INVENTORY_EXPAND,
       },
       { ...getAuthHeaders() }
     )
@@ -407,13 +403,16 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
         const directLevels = Array.isArray(inventoryItem?.inventory_levels)
           ? inventoryItem.inventory_levels
           : []
+        const siblingLevels = Array.isArray(inventoryItem?.location_levels)
+          ? inventoryItem.location_levels
+          : []
         const nestedLevels = Array.isArray(
           inventoryItem?.inventory?.location_levels
         )
           ? inventoryItem.inventory.location_levels
           : []
 
-        return [...directLevels, ...nestedLevels].some((level: any) =>
+        return [...directLevels, ...siblingLevels, ...nestedLevels].some((level: any) =>
           Boolean(level?.location_id)
         )
       })
@@ -426,6 +425,9 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
               const levels = [
                 ...(Array.isArray(inventoryItem?.inventory_levels)
                   ? inventoryItem.inventory_levels
+                  : []),
+                ...(Array.isArray(inventoryItem?.location_levels)
+                  ? inventoryItem.location_levels
                   : []),
                 ...(Array.isArray(inventoryItem?.inventory?.location_levels)
                   ? inventoryItem.inventory.location_levels

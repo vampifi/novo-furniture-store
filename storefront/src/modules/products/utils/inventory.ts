@@ -31,6 +31,9 @@ export const variantHasAvailableStock = (variant?: VariantLike | null) => {
     ...(Array.isArray(inventoryItem?.inventory_levels)
       ? inventoryItem.inventory_levels
       : []),
+    ...(Array.isArray(inventoryItem?.location_levels)
+      ? inventoryItem.location_levels
+      : []),
     ...(Array.isArray(inventoryItem?.inventory?.location_levels)
       ? inventoryItem.inventory.location_levels
       : []),
