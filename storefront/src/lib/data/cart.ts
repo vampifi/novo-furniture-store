@@ -395,69 +395,15 @@ export async function placeOrder(): Promise<PlaceOrderResult> {
         return false
       }
 
-      const inventoryItems = Array.isArray(variant.inventory_items)
-        ? variant.inventory_items
-        : []
-
-      const hasLocation = inventoryItems.some((inventoryItem: any) => {
-        const directLevels = Array.isArray(inventoryItem?.inventory_levels)
-          ? inventoryItem.inventory_levels
-          : []
-        const siblingLevels = Array.isArray(inventoryItem?.location_levels)
-          ? inventoryItem.location_levels
-          : []
-        const nestedLevels = Array.isArray(
-          inventoryItem?.inventory?.location_levels
-        )
-          ? inventoryItem.inventory.location_levels
-          : []
-
-        return [...directLevels, ...siblingLevels, ...nestedLevels].some((level: any) =>
-          Boolean(level?.location_id)
-        )
-      })
-
       const quantity = typeof item?.quantity === "number" ? item.quantity : 0
       const availableFromVariant =
         typeof variant.inventory_quantity === "number"
           ? variant.inventory_quantity
-          : inventoryItems.reduce((total: number, inventoryItem: any) => {
-              const levels = [
-                ...(Array.isArray(inventoryItem?.inventory_levels)
-                  ? inventoryItem.inventory_levels
-                  : []),
-                ...(Array.isArray(inventoryItem?.location_levels)
-                  ? inventoryItem.location_levels
-                  : []),
-                ...(Array.isArray(inventoryItem?.inventory?.location_levels)
-                  ? inventoryItem.inventory.location_levels
-                  : []),
-              ]
-
-              return (
-                total +
-                levels.reduce((levelTotal: number, level: any) => {
-                  if (typeof level?.available_quantity === "number") {
-                    return levelTotal + level.available_quantity
-                  }
-
-                  const stocked =
-                    typeof level?.stocked_quantity === "number"
-                      ? level.stocked_quantity
-                      : 0
-                  const reserved =
-                    typeof level?.reserved_quantity === "number"
-                      ? level.reserved_quantity
-                      : 0
-
-                  return levelTotal + Math.max(stocked - reserved, 0)
-                }, 0)
-              )
-            }, 0)
+          : 0
 
       const variantAvailable = variantHasAvailableStock(variant)
 
-      return !hasLocation || !variantAvailable || availableFromVariant < quantity
+      return !variantAvailable || availableFromVariant < quantity
     })
 
     if (unresolvedItems.length) {
