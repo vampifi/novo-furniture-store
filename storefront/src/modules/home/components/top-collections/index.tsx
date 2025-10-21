@@ -2,6 +2,7 @@ import { getCollectionsList } from "@lib/data/collections"
 import { HttpTypes } from "@medusajs/types"
 
 import CollectionsCarousel, { CollectionCard } from "./collections-carousel"
+import { SHOP_BY_ROOM_IDENTIFIERS, normalize as normalizeCollectionId } from "../shop-by-room"
 
 const TRENDING_FLAG_KEYS = [
   "is_trending",
@@ -104,6 +105,16 @@ const getImage = (collection: HttpTypes.StoreCollection) => {
   return DEFAULT_COLLECTION_IMAGE
 }
 
+const isShopByRoomCollection = (collection: HttpTypes.StoreCollection) => {
+  const normalizedHandle = normalizeCollectionId(collection.handle)
+  const normalizedTitle = normalizeCollectionId(collection.title)
+
+  return (
+    (normalizedHandle && SHOP_BY_ROOM_IDENTIFIERS.has(normalizedHandle)) ||
+    (normalizedTitle && SHOP_BY_ROOM_IDENTIFIERS.has(normalizedTitle))
+  )
+}
+
 const mapCollectionToCard = (collection: HttpTypes.StoreCollection): CollectionCard => {
   const label = collection.title || collection.handle || "Collection"
   const href = collection.handle ? `/collections/${collection.handle}` : `/collections/${collection.id}`
@@ -123,9 +134,15 @@ const TopCollections = async () => {
     return null
   }
 
-  const trendingCollections = collections.filter(getIsTrending)
+  const nonRoomCollections = collections.filter((collection) => !isShopByRoomCollection(collection))
 
-  const prioritized = trendingCollections.length ? trendingCollections : collections
+  if (!nonRoomCollections.length) {
+    return null
+  }
+
+  const trendingCollections = nonRoomCollections.filter(getIsTrending)
+
+  const prioritized = trendingCollections.length ? trendingCollections : nonRoomCollections
 
   const uniqueById = new Map<string, HttpTypes.StoreCollection>()
   for (const collection of prioritized) {
@@ -135,7 +152,7 @@ const TopCollections = async () => {
   }
 
   if (uniqueById.size < 8) {
-    for (const collection of collections) {
+    for (const collection of nonRoomCollections) {
       if (!uniqueById.has(collection.id)) {
         uniqueById.set(collection.id, collection)
       }

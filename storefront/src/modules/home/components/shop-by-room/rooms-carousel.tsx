@@ -44,7 +44,7 @@ const RoomsCarousel = ({ rooms }: RoomsCarouselProps) => {
             Shop by room
           </h2>
           <LocalizedClientLink
-            href="/collections"
+            href="/collections/rooms"
             className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary transition-colors hover:text-primary/80"
           >
             All rooms
