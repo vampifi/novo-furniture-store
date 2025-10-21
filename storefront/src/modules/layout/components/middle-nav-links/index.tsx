@@ -7,7 +7,7 @@ interface MiddleNavLinksProps {
 }
 
 const MiddleNavLinks = ({ categories }: MiddleNavLinksProps) => {
-  const visibleCategories = categories?.slice(0, 6) ?? []
+  const visibleCategories = categories ?? []
 
   if (!visibleCategories.length) {
     return null
