@@ -41,6 +41,7 @@ export async function getOrSetCart(countryCode: string) {
     cart = cartResp.cart
     setCartId(cart.id)
     revalidateTag("cart")
+    revalidateTag("order")
   }
 
   if (cart && cart?.region_id !== region.id) {
