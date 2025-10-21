@@ -21,7 +21,6 @@ type MobileActionsProps = {
   updateOptions: (title: string, value: string) => void
   inStock?: boolean
   productHasStock: boolean
-  variantOutOfStock: boolean
   handleAddToCart: () => void
   isAdding?: boolean
   show: boolean
@@ -35,7 +34,6 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   updateOptions,
   inStock,
   productHasStock,
-  variantOutOfStock,
   handleAddToCart,
   isAdding,
   show,
@@ -136,11 +134,6 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   : "Add to cart"}
               </Button>
             </div>
-            {variantOutOfStock && (
-              <span className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-500">
-                Out of stock for this option
-              </span>
-            )}
           </div>
         </Transition>
       </div>

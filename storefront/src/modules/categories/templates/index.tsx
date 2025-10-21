@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
+import { ArrowUpRightMini } from "@medusajs/icons"
 import { listCategories } from "@lib/data/categories"
 import { getCollectionsList } from "@lib/data/collections"
-import InteractiveLink from "@modules/common/components/interactive-link"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@modules/store/components/refinement-list"
 import MobileFilters from "@modules/store/components/mobile-filters"
@@ -126,19 +127,52 @@ export default async function CategoryTemplate({
           )}
         </div>
         {category.category_children && category.category_children.length > 0 && (
-          <div className="mb-10 rounded-2xl border border-ui-border-subtle/60 bg-ui-bg-base/90 p-6 shadow-[0_10px_24px_rgba(17,24,39,0.08)]">
-            <h2 className="mb-4 text-base font-semibold text-ui-fg-base">
-              Explore subcategories
-            </h2>
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {category.category_children.map((child) => (
-                <li key={child.id}>
-                  <InteractiveLink href={`/categories/${child.handle}`}>
-                    {child.name}
-                  </InteractiveLink>
-                </li>
-              ))}
-            </ul>
+          <div className="mb-10">
+            <div className="rounded-[28px] border border-[#efe5db] bg-gradient-to-br from-[#faf5ef] via-[#fffefd] to-[#f4e6da] p-6 shadow-[0_12px_32px_rgba(59,47,47,0.08)] sm:p-8">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.35em] text-[#b08a68]">
+                    Explore
+                  </span>
+                  <h2 className="text-2xl font-semibold text-[#3b2f2f] sm:text-3xl">
+                    Browse subcategories
+                  </h2>
+                  <p className="max-w-2xl text-sm text-[#5b4a4a]/80 sm:text-base">
+                    Narrow your search and jump straight into the collections that match your style.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {category.category_children.map((child) => {
+                  const href = child.handle
+                    ? `/categories/${child.handle}`
+                    : `/categories/${child.id}`
+
+                  return (
+                    <LocalizedClientLink
+                      key={child.id}
+                      href={href}
+                      className="group relative block overflow-hidden rounded-2xl border border-white/70 bg-white/70 p-5 shadow-[0_14px_28px_rgba(59,47,47,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(59,47,47,0.12)]"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#f9e9dd]/40 via-transparent to-[#f1d9c3]/60 opacity-0 transition duration-300 group-hover:opacity-100" />
+                      <div className="relative flex items-start justify-between gap-3">
+                        <span className="block text-lg font-semibold text-[#2f2727] sm:text-xl">
+                          {child.name}
+                        </span>
+                        <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#ead8c8] bg-white/80 text-[#a96c3f] transition duration-300 group-hover:border-[#a96c3f] group-hover:bg-[#a96c3f] group-hover:text-white">
+                          <ArrowUpRightMini className="h-4 w-4 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                        </span>
+                      </div>
+                      {child.description && (
+                        <p className="relative mt-3 text-sm leading-6 text-[#5b4a4a]/80 line-clamp-2">
+                          {child.description}
+                        </p>
+                      )}
+                    </LocalizedClientLink>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
         <Suspense fallback={<SkeletonProductGrid />}>

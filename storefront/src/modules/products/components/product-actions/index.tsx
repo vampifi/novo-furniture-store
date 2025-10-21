@@ -79,8 +79,6 @@ export default function ProductActions({
     [selectedVariant]
   )
 
-  const isVariantOutOfStock = Boolean(selectedVariant && !inStock)
-
   const actionsRef = useRef<HTMLDivElement>(null)
 
   const inView = useIntersection(actionsRef, "0px")
@@ -131,12 +129,6 @@ export default function ProductActions({
           )}
         </div>
 
-        {isVariantOutOfStock && (
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-500">
-            Out of stock for this option
-          </span>
-        )}
-
         <ProductPrice product={product} variant={selectedVariant} />
 
         <Button
@@ -164,7 +156,6 @@ export default function ProductActions({
           updateOptions={setOptionValue}
           inStock={inStock}
           productHasStock={productHasStock}
-          variantOutOfStock={isVariantOutOfStock}
           handleAddToCart={handleAddToCart}
           isAdding={isAdding}
           show={!inView}
