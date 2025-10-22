@@ -11,9 +11,11 @@ export const sanitizeHandle = (
   }
 
   const withoutLeading = trimmed.replace(/^\/+/, "")
-  const sanitized = withoutLeading.replace(/\/+$/, "")
+  const withoutTrailing = withoutLeading.replace(/\/+$/, "")
+  const normalized = withoutTrailing.trim()
+  const withoutWhitespace = normalized.replace(/\s+/g, "")
 
-  return sanitized || undefined
+  return withoutWhitespace || undefined
 }
 
 export const buildCollectionHref = (
