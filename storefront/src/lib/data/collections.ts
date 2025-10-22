@@ -1,4 +1,5 @@
 import { sdk } from "@lib/config"
+import { sanitizeHandle } from "@lib/util/collection-urls"
 import { cache } from "react"
 import { getProductsList } from "./products"
 import { HttpTypes } from "@medusajs/types"
@@ -20,9 +21,15 @@ export const getCollectionsList = cache(async function (
 
 export const getCollectionByHandle = cache(async function (
   handle: string
-): Promise<HttpTypes.StoreCollection> {
+): Promise<HttpTypes.StoreCollection | undefined> {
+  const normalizedHandle = sanitizeHandle(handle)
+
+  if (!normalizedHandle) {
+    return undefined
+  }
+
   return sdk.store.collection
-    .list({ handle }, { next: { tags: ["collections"] } })
+    .list({ handle: normalizedHandle }, { next: { tags: ["collections"] } })
     .then(({ collections }) => collections[0])
 })
 

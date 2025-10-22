@@ -6,6 +6,7 @@ import { Fragment, useMemo, useState } from "react"
 import { HiOutlineChevronLeft, HiOutlineChevronRight, HiOutlineX } from "react-icons/hi"
 import { RxHamburgerMenu } from "react-icons/rx"
 
+import { buildCollectionHref } from "@lib/util/collection-urls"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 interface SideMenuProps {
@@ -90,9 +91,7 @@ const SideMenu = ({ product_categories, collections }: SideMenuProps) => {
     return collections.slice(0, 10).map((collection) => ({
       id: collection.id,
       label: collection.title || collection.handle || "Collection",
-      href: collection.handle
-        ? `/collections/${collection.handle}`
-        : `/collections/${collection.id}`,
+      href: buildCollectionHref(collection.handle, collection.id),
     }))
   }, [collections])
 

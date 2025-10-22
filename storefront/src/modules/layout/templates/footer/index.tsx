@@ -1,5 +1,6 @@
 import { getCategoriesList } from "@lib/data/categories"
 import { getCollectionsList } from "@lib/data/collections"
+import { buildCollectionHref } from "@lib/util/collection-urls"
 import { Text } from "@medusajs/ui"
 import {
   FaFacebookF,
@@ -56,7 +57,7 @@ export default async function Footer() {
     .slice(0, 6)
     .map((collection) => ({
       name: collection.title,
-      href: `/collections/${collection.handle}`,
+      href: buildCollectionHref(collection.handle, collection.id),
     }))
 
   const footerColumns: FooterColumnProps[] = [

@@ -1,4 +1,5 @@
 import { getCollectionsList } from "@lib/data/collections"
+import { buildCollectionHref } from "@lib/util/collection-urls"
 import { HttpTypes } from "@medusajs/types"
 
 import RoomsCarousel from "./rooms-carousel"
@@ -91,7 +92,7 @@ export const buildShopByRoomCards = (
 
     return {
       label,
-      href: match.handle ? `/collections/${match.handle}` : `/collections/${match.id}`,
+      href: buildCollectionHref(match.handle, match.id),
       backgroundImage:
         (match?.metadata?.hero_image as string | undefined) || FALLBACK_IMAGES[label],
     } satisfies ShopByRoomCard

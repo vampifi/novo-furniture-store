@@ -1,4 +1,5 @@
 import { getCollectionsList } from "@lib/data/collections"
+import { buildCollectionHref } from "@lib/util/collection-urls"
 import { HttpTypes } from "@medusajs/types"
 
 import CollectionsCarousel, { CollectionCard } from "./collections-carousel"
@@ -117,7 +118,7 @@ const isShopByRoomCollection = (collection: HttpTypes.StoreCollection) => {
 
 const mapCollectionToCard = (collection: HttpTypes.StoreCollection): CollectionCard => {
   const label = collection.title || collection.handle || "Collection"
-  const href = collection.handle ? `/collections/${collection.handle}` : `/collections/${collection.id}`
+  const href = buildCollectionHref(collection.handle, collection.id)
 
   return {
     id: collection.id,

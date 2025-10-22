@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { getCollectionsList } from "@lib/data/collections"
+import { buildCollectionHref } from "@lib/util/collection-urls"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 import {
@@ -51,9 +52,7 @@ const isRoomCollection = (collection: HttpTypes.StoreCollection) => {
 
 const CollectionGridCard = ({ collection }: { collection: HttpTypes.StoreCollection }) => {
   const backgroundImage = `url(${getCollectionImage(collection)})`
-  const href = collection.handle
-    ? `/collections/${collection.handle}`
-    : `/collections/${collection.id}`
+  const href = buildCollectionHref(collection.handle, collection.id)
 
   return (
     <LocalizedClientLink

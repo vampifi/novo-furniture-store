@@ -12,6 +12,7 @@ import ProductActionsWrapper from "./product-actions-wrapper"
 import { HttpTypes } from "@medusajs/types"
 import { StoreProductCustomAttribute } from "@lib/data/products"
 import Breadcrumb, { type BreadcrumbItem } from "@modules/common/components/breadcrumb"
+import { buildCollectionHref } from "@lib/util/collection-urls"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -45,7 +46,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   } else if (product.collection?.handle) {
     breadcrumbItems.push({
       label: product.collection.title || "Collection",
-      href: `/collections/${product.collection.handle}`,
+      href: buildCollectionHref(product.collection.handle, product.collection.id),
     })
   }
 

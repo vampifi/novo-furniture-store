@@ -1,10 +1,8 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import {
-  getCollectionByHandle,
-  getCollectionsList,
-} from "@lib/data/collections"
+import { sanitizeHandle } from "@lib/util/collection-urls"
+import { getCollectionByHandle, getCollectionsList } from "@lib/data/collections"
 import { listRegions } from "@lib/data/regions"
 import { StoreCollection, StoreRegion } from "@medusajs/types"
 import CollectionTemplate from "@modules/collections/templates"
@@ -35,13 +33,13 @@ export async function generateStaticParams() {
         .filter(Boolean) as string[]
   )
 
-  const collectionHandles = collections.map(
-    (collection: StoreCollection) => collection.handle
-  )
+  const collectionHandles = collections
+    .map((collection: StoreCollection) => sanitizeHandle(collection.handle))
+    .filter(Boolean) as string[]
 
   const staticParams = countryCodes
     ?.map((countryCode: string) =>
-      collectionHandles.map((handle: string | undefined) => ({
+      collectionHandles.map((handle: string) => ({
         countryCode,
         handle,
       }))
@@ -69,9 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CollectionPage({ params, searchParams }: Props) {
   const { sortBy, page } = searchParams
 
-  const collection = await getCollectionByHandle(params.handle).then(
-    (collection: StoreCollection) => collection
-  )
+  const collection = await getCollectionByHandle(params.handle)
 
   if (!collection) {
     notFound()
