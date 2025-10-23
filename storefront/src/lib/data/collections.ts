@@ -4,6 +4,12 @@ import { cache } from "react"
 import { getProductsList } from "./products"
 import { HttpTypes } from "@medusajs/types"
 
+const normalizeForComparison = (value?: string | null) =>
+  (value || "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "")
+
 export const retrieveCollection = cache(async function (id: string) {
   return sdk.store.collection
     .retrieve(id, {}, { next: { tags: ["collections"] } })
@@ -28,9 +34,38 @@ export const getCollectionByHandle = cache(async function (
     return undefined
   }
 
-  return sdk.store.collection
+  const collection = await sdk.store.collection
     .list({ handle: normalizedHandle }, { next: { tags: ["collections"] } })
     .then(({ collections }) => collections[0])
+
+  if (collection) {
+    return collection
+  }
+
+  if (normalizedHandle.startsWith("pcol_")) {
+    try {
+      const byId = await retrieveCollection(normalizedHandle)
+      if (byId) {
+        return byId
+      }
+    } catch (_error) {
+      // Ignore and continue to normalization fallback
+    }
+  }
+
+  const normalizedComparisonHandle = normalizeForComparison(normalizedHandle)
+
+  if (!normalizedComparisonHandle) {
+    return undefined
+  }
+
+  const { collections } = await getCollectionsList(0, 200)
+
+  return collections.find(
+    (candidate) =>
+      normalizeForComparison(candidate.handle) === normalizedComparisonHandle ||
+      normalizeForComparison(candidate.title) === normalizedComparisonHandle
+  )
 })
 
 export const getCollectionsWithProducts = cache(
