@@ -31,7 +31,7 @@ export default async function Footer() {
   )
 
   const customerCareLinks: FooterLink[] = [
-    { name: "Track My Order", href: "/track-order" },
+    // { name: "Track My Order", href: "/track-order" },
     { name: "Help & FAQs", href: "/content/faqs" },
     { name: "Delivery", href: "/shipping" },
     { name: "Returns", href: "/returns" },
