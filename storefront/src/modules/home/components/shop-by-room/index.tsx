@@ -18,7 +18,7 @@ export const ROOM_COLLECTIONS: RoomDefinition[] = [
   { label: "Bedroom", handles: ["bedroom", "bedroom-furniture"] },
   {
     label: "Kids & Baby",
-    handles: ["kids-baby", "kids", "kids-and-baby", "baby", "children"],
+    handles: ["kids-baby", "kids", "kids-and-baby","kids-&-baby", "baby", "children"],
   },
   {
     label: "Home office",
