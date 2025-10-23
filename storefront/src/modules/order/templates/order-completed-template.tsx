@@ -29,7 +29,7 @@ export default function OrderCompletedTemplate({
           className="overflow-hidden rounded-[32px] border border-[#E8DCD2] bg-white shadow-[0_32px_80px_rgba(34,28,24,0.12)]"
           data-testid="order-complete-container"
         >
-          <div className="bg-[#221C18] px-6 py-8 text-[#EFE4DC] sm:px-10">
+          <div className="bg-black px-6 py-8 text-[#EFE4DC] sm:px-10">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2E261F]">
@@ -93,7 +93,7 @@ export default function OrderCompletedTemplate({
 
               <LocalizedClientLink
                 href="/"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[#221C18] px-6 text-sm font-semibold uppercase tracking-[0.16em] text-[#EFE4DC] transition hover:bg-[#2E261F]"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold uppercase tracking-[0.16em] text-[#EFE4DC] transition hover:bg-[#2E261F]"
               >
                 Continue shopping
               </LocalizedClientLink>
