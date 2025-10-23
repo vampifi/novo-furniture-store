@@ -12,11 +12,15 @@ export interface CollectionCard {
 }
 
 const DEFAULT_IMAGE =
-  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1758452078/st-ives-light-weight-knit-cushion-cover-ballet-slipper-175304_1024x1024_crop_center_gtweyq.webp"
+  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1761150615/madison-ottoman-storage-bed-taupe-9_1024x1024_crop_center_et9nj2.webp"
 
 const FALLBACK_IMAGES = [
-  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1758452078/st-ives-light-weight-knit-cushion-cover-ballet-slipper-175304_1024x1024_crop_center_gtweyq.webp",
-  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1758560328/login-register-novo-image_euyyf4.webp",
+  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1761150615/madison-ottoman-storage-bed-taupe-9_1024x1024_crop_center_et9nj2.webp",
+  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1761150701/973136_1024x1024_crop_center_gewj21.webp",
+  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1761150670/verity-accent-chair-smoke-grey-2685475_1024x1024_crop_center_moa2sv.webp",
+  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1761150647/lyon-pouffe-speckled-sand-boucle-89146_1024x1024_crop_center_myllju.jpg",
+  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1761150635/lola-set-of-2-dining-chairs-boucle-taupe-7_1024x1024_crop_center_ymqkf8.webp",
+  "https://res.cloudinary.com/dhbh2lu21/image/upload/v1761150615/madison-ottoman-storage-bed-taupe-9_1024x1024_crop_center_et9nj2.webp",
 ]
 
 interface CollectionsCarouselProps {
@@ -68,8 +72,9 @@ const CollectionsCarousel = ({ collections }: CollectionsCarouselProps) => {
               className="no-scrollbar flex w-full snap-x snap-mandatory gap-4 overflow-x-auto pb-2 pt-1 md:gap-6"
             >
               {collections.map((collection, index) => {
-                const fallbackImage = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length] || DEFAULT_IMAGE
-                const backgroundImage = collection.backgroundImage || fallbackImage || DEFAULT_IMAGE
+                const overrideImage = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length] || DEFAULT_IMAGE
+                const backgroundImage =
+                  overrideImage || collection.backgroundImage || DEFAULT_IMAGE
 
                 return (
                   <LocalizedClientLink
