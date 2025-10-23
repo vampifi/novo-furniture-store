@@ -17,8 +17,13 @@ const StripeWrapper: React.FC<StripeWrapperProps> = ({
   stripePromise,
   children,
 }) => {
+  const locale =
+    (process.env.NEXT_PUBLIC_STRIPE_LOCALE as StripeElementsOptions["locale"]) ??
+    "en-GB"
+
   const options: StripeElementsOptions = {
     clientSecret: paymentSession!.data?.client_secret as string | undefined,
+    locale,
   }
 
   if (!stripeKey) {
