@@ -26,7 +26,6 @@ export default async function Nav() {
       }
       return (a.name || "").localeCompare(b.name || "")
     })
-    .slice(0, 6)
 
   const primaryAnnouncementText = [
     navPromotion?.headline,
