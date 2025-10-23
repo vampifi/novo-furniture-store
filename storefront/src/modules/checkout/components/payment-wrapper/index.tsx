@@ -1,6 +1,6 @@
 "use client"
 
-import { loadStripe } from "@stripe/stripe-js"
+import { loadStripe, type StripeElementLocale } from "@stripe/stripe-js"
 import React from "react"
 import StripeWrapper from "./stripe-wrapper"
 import { PayPalScriptProvider } from "@paypal/react-paypal-js"
@@ -16,7 +16,11 @@ type WrapperProps = {
 export const StripeContext = createContext(false)
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_KEY
-const stripePromise = stripeKey ? loadStripe(stripeKey) : null
+const stripeLocale =
+  (process.env.NEXT_PUBLIC_STRIPE_LOCALE as StripeElementLocale | undefined) ??
+  ("en-GB" as StripeElementLocale)
+
+const stripePromise = stripeKey ? loadStripe(stripeKey, { locale: stripeLocale }) : null
 
 const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
 
