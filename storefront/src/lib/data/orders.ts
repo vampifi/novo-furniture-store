@@ -2,7 +2,6 @@
 
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
-import { cache } from "react"
 import { getAuthHeaders } from "./cookies"
 
 export async function retrieveOrder(id: string, email?: string) {
@@ -27,12 +26,11 @@ export async function retrieveOrder(id: string, email?: string) {
   }
 }
 
-export const listOrders = cache(async function (
-  limit: number = 10,
-  offset: number = 0
-) {
+export async function listOrders(limit: number = 10, offset: number = 0) {
+  const authHeaders = getAuthHeaders()
+
   return sdk.store.order
-    .list({ limit, offset }, { next: { tags: ["order"] }, ...getAuthHeaders() })
+    .list({ limit, offset }, { next: { tags: ["order"] }, ...authHeaders })
     .then(({ orders }) => orders)
     .catch((err) => medusaError(err))
-})
+}
