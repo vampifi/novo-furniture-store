@@ -249,10 +249,9 @@ const blogEditorAppRedirect = async (
 }
 
 export default defineMiddlewares({
-  setup: () => undefined,
   routes: [
     {
-      matcher: [`${ADMIN_BASE_PATH}${ADMIN_BASE_PATH}*`],
+      matcher: `${ADMIN_BASE_PATH}${ADMIN_BASE_PATH}*`,
       middlewares: [
         (req, res, _next) => {
           const rawUrl = req.originalUrl || req.url || req.path || ""
@@ -264,11 +263,11 @@ export default defineMiddlewares({
       ],
     },
     {
-      matcher: ["/admin*"],
+      matcher: "/admin*",
       middlewares: [blogEditorOnly],
     },
     {
-      matcher: ["/app*"],
+      matcher: "/app*",
       middlewares: [normalizeAppPath, blogEditorAppRedirect],
     },
   ],

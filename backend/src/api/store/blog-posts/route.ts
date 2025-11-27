@@ -1,8 +1,9 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { BLOG_MODULE } from "modules/blog"
+import BlogModuleService from "modules/blog/service"
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
-  const blogModule = req.scope.resolve(BLOG_MODULE)
+  const blogModule = req.scope.resolve(BLOG_MODULE) as BlogModuleService
   const limit = Math.min(Number(req.query?.limit) || 10, 50)
   const offset = Math.max(Number(req.query?.offset) || 0, 0)
   const tag = typeof req.query?.tag === "string" ? req.query.tag : undefined

@@ -1,8 +1,4 @@
-import {
-  MedusaError,
-  MedusaService,
-  ModulesSdkUtils,
-} from "@medusajs/framework/utils"
+import { MedusaError, MedusaService } from "@medusajs/framework/utils"
 import { BlogPost } from "./models/blog-post"
 
 type CreateBlogPostDTO = {
@@ -110,7 +106,8 @@ class BlogModuleService extends MedusaService({
 
   async createPost(
     data: CreateBlogPostDTO,
-    sharedContext?: ModulesSdkUtils.SharedContext
+    // use an untyped shared context to avoid coupling to internal types
+    sharedContext?: Record<string, unknown>
   ) {
     const slug = data.slug ? slugify(data.slug) : slugify(data.title)
     await this.ensureSlugAvailable(slug)
@@ -124,7 +121,7 @@ class BlogModuleService extends MedusaService({
         slug,
         status,
         published_at,
-        tags: normalizeTags(data.tags),
+        tags: normalizeTags(data.tags) as any,
         reading_time_minutes: readingTime,
         meta_title: sanitizeString(data.meta_title),
         meta_description: sanitizeString(data.meta_description),
@@ -144,7 +141,7 @@ class BlogModuleService extends MedusaService({
   async updatePost(
     id: string,
     data: UpdateBlogPostDTO,
-    sharedContext?: ModulesSdkUtils.SharedContext
+    sharedContext?: Record<string, unknown>
   ) {
     const payload: Record<string, unknown> = { ...data }
 
@@ -159,7 +156,7 @@ class BlogModuleService extends MedusaService({
     }
 
     if (data.tags !== undefined) {
-      payload.tags = normalizeTags(data.tags)
+      payload.tags = normalizeTags(data.tags) as any
     }
 
     if (data.meta_title !== undefined) {
@@ -212,7 +209,7 @@ class BlogModuleService extends MedusaService({
     return post
   }
 
-  async publishPost(id: string, sharedContext?: ModulesSdkUtils.SharedContext) {
+  async publishPost(id: string, sharedContext?: Record<string, unknown>) {
     return await this.updatePost(
       id,
       { status: "published", published_at: new Date() },
@@ -220,7 +217,7 @@ class BlogModuleService extends MedusaService({
     )
   }
 
-  async unpublishPost(id: string, sharedContext?: ModulesSdkUtils.SharedContext) {
+  async unpublishPost(id: string, sharedContext?: Record<string, unknown>) {
     return await this.updatePost(
       id,
       { status: "draft", published_at: null },

@@ -3,7 +3,6 @@ import type {
   MedusaResponse,
 } from "@medusajs/framework/http"
 import { Modules } from "@medusajs/framework/utils"
-import type { IUserModuleService } from "@medusajs/types"
 
 import { ADMIN_ROLE_KEY, AdminRoles } from "lib/roles"
 
@@ -17,7 +16,7 @@ const parseNumber = (value: unknown, fallback: number) => {
 }
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const userModule = req.scope.resolve(Modules.USER) as IUserModuleService
+  const userModule = req.scope.resolve(Modules.USER) as any
 
   const limit = parseNumber(req.query.limit, 50)
   const offset = parseNumber(req.query.offset, 0)
@@ -35,7 +34,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 }
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
-  const { email, role } = req.body ?? {}
+  const { email, role } = (req.body ?? {}) as {
+    email?: string
+    role?: string
+  }
 
   if (!email || typeof email !== "string") {
     return res
@@ -46,7 +48,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const normalizedRole =
     role === AdminRoles.BLOG_EDITOR ? AdminRoles.BLOG_EDITOR : AdminRoles.ADMIN
 
-  const userModule = req.scope.resolve(Modules.USER) as IUserModuleService
+  const userModule = req.scope.resolve(Modules.USER) as any
 
   const invite = await userModule.createInvites({
     email: email.trim().toLowerCase(),

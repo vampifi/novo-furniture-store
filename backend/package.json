@@ -40,6 +40,7 @@
     "@mikro-orm/postgresql": "6.4.3",
     "@react-email/components": "^0.0.26",
     "@rokmohar/medusa-plugin-meilisearch": "1.2.3",
+    "i18next": "^25.6.3",
     "awilix": "^8.0.1",
     "medusajs-launch-utils": "0.0.18",
     "minio": "^8.0.3",

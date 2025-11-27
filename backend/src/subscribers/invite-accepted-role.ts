@@ -3,7 +3,6 @@ import {
   SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
-import type { IUserModuleService } from "@medusajs/types"
 
 import { ADMIN_ROLE_KEY, AdminRoles, getRoleFromMetadata } from "lib/roles"
 
@@ -11,9 +10,7 @@ export default async function onInviteAccepted({
   event: { data },
   container,
 }: SubscriberArgs<any>) {
-  const userModule = container.resolve(
-    Modules.USER
-  ) as IUserModuleService
+  const userModule = container.resolve(Modules.USER) as any
 
   const inviteId =
     (data?.invite_id as string | undefined) ??

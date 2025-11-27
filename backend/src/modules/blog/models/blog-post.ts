@@ -11,7 +11,7 @@ export const BlogPost = model
     cover_image: model.text().nullable(),
     author_name: model.text().nullable(),
     content: model.text(),
-    status: model.enum(BLOG_POST_STATUS).default("draft"),
+    status: model.enum([...BLOG_POST_STATUS]).default("draft"),
     published_at: model.dateTime().nullable(),
     is_featured: model.boolean().default(false),
     reading_time_minutes: model.number().nullable(),

@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
 import { z } from "zod"
 import { BLOG_MODULE } from "modules/blog"
+import BlogModuleService from "modules/blog/service"
 
 const querySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional().default(20),
@@ -44,7 +45,7 @@ const formatZodError = (error: z.ZodError, fallback: string) => {
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const { limit, offset, status, is_featured } = querySchema.parse(req.query ?? {})
 
-  const blogModule = req.scope.resolve(BLOG_MODULE)
+  const blogModule = req.scope.resolve(BLOG_MODULE) as BlogModuleService
   const filters: Record<string, unknown> = {}
 
   if (status) {
@@ -95,8 +96,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     )
   }
 
-  const blogModule = req.scope.resolve(BLOG_MODULE)
-  const post = await blogModule.createPost(payload.data)
+  const blogModule = req.scope.resolve(BLOG_MODULE) as BlogModuleService
+  const post = await blogModule.createPost(payload.data as any)
 
   res.status(201).json({ post })
 }

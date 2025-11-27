@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
 import { z } from "zod"
 import { BLOG_MODULE } from "modules/blog"
+import BlogModuleService from "modules/blog/service"
 
 const updateSchema = z
   .object({
@@ -35,7 +36,8 @@ const formatZodError = (error: z.ZodError, fallback: string) => {
   return combinedErrors.join(" ") || fallback
 }
 
-const getBlogModule = (req: MedusaRequest) => req.scope.resolve(BLOG_MODULE)
+const getBlogModule = (req: MedusaRequest) =>
+  req.scope.resolve(BLOG_MODULE) as BlogModuleService
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const blogModule = getBlogModule(req)

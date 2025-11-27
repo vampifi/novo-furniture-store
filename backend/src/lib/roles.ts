@@ -17,10 +17,14 @@ export const getRoleFromMetadata = (
   return AdminRoles.ADMIN
 }
 
-export const getActorRole = async (
-  req: import("@medusajs/framework/http").MedusaRequest
-) => {
-  const actorId = req.auth_context?.actor_id
+type RequestWithAuth = import("@medusajs/framework/http").MedusaRequest & {
+  auth_context?: Record<string, unknown>
+  session_context?: Record<string, unknown>
+}
+
+export const getActorRole = async (req: RequestWithAuth) => {
+  const authContext = req.auth_context as Record<string, any> | undefined
+  const actorId = authContext?.actor_id
   if (actorId) {
     try {
       const remoteQuery = req.scope.resolve("remoteQuery")
@@ -48,7 +52,7 @@ export const getActorRole = async (
   }
 
   const sessionRole =
-    (req.auth_context as any)?.app_metadata?.[ADMIN_ROLE_KEY] ||
+    (authContext as any)?.app_metadata?.[ADMIN_ROLE_KEY] ||
     (req.session_context as any)?.app_metadata?.[ADMIN_ROLE_KEY]
   if (sessionRole === AdminRoles.BLOG_EDITOR) {
     return AdminRoles.BLOG_EDITOR
