@@ -31,6 +31,8 @@
     "@medusajs/medusa": "2.8.8",
     "@medusajs/notification-sendgrid": "2.8.8",
     "@medusajs/payment-stripe": "2.8.8",
+    "@medusajs/icons": "2.8.8",
+    "@medusajs/ui": "preview",
     "@medusajs/workflow-engine-redis": "2.8.8",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/knex": "6.4.3",
@@ -44,7 +46,8 @@
     "pg": "^8.13.1",
     "react-i18next": "^16.0.0",
     "resend": "4.0.1",
-    "ulid": "^2.3.0"
+    "ulid": "^2.3.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.8.8",

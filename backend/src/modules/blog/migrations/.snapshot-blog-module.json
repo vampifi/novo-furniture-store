@@ -1,0 +1,328 @@
+{
+  "entities": {
+    "blog_post": {
+      "name": "BlogPost",
+      "collection": "blog_post",
+      "primaryKeys": ["id"],
+      "indexes": [
+        {
+          "name": "IDX_blog_post_slug",
+          "columns": ["slug"],
+          "properties": ["slug"],
+          "type": "index",
+          "unique": true,
+          "expression": "WHERE deleted_at IS NULL"
+        },
+        {
+          "name": "IDX_blog_post_status",
+          "columns": ["status"],
+          "properties": ["status"],
+          "type": "index"
+        },
+        {
+          "name": "IDX_blog_post_published_at",
+          "columns": ["published_at"],
+          "properties": ["published_at"],
+          "type": "index"
+        },
+        {
+          "name": "IDX_blog_post_deleted_at",
+          "columns": ["deleted_at"],
+          "properties": ["deleted_at"],
+          "type": "index",
+          "expression": "WHERE deleted_at IS NULL"
+        }
+      ],
+      "uniques": [],
+      "properties": [
+        {
+          "name": "id",
+          "kind": "scalar",
+          "primary": true,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": false,
+          "unsigned": false,
+          "autoincrement": false,
+          "defaultRaw": "concat('bpost_', replace(cast(uuid_generate_v4() as text), '-', ''))",
+          "length": 255,
+          "array": false
+        },
+        {
+          "name": "title",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": false,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "slug",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": false,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "excerpt",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "cover_image",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "author_name",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "content",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": false,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "status",
+          "kind": "scalar",
+          "primary": false,
+          "enum": "BlogPostStatus",
+          "items": ["draft", "published"],
+          "type": "string",
+          "runtimeType": "BlogPostStatus",
+          "columnTypes": ["text"],
+          "nullable": false,
+          "unsigned": false,
+          "default": "draft",
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "published_at",
+          "kind": "scalar",
+          "primary": false,
+          "type": "Date",
+          "runtimeType": "Date",
+          "columnTypes": ["timestamptz"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "is_featured",
+          "kind": "scalar",
+          "primary": false,
+          "type": "boolean",
+          "runtimeType": "boolean",
+          "columnTypes": ["boolean"],
+          "nullable": false,
+          "unsigned": false,
+          "default": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "reading_time_minutes",
+          "kind": "scalar",
+          "primary": false,
+          "type": "number",
+          "runtimeType": "number",
+          "columnTypes": ["int4"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "meta_title",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "meta_description",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "canonical_url",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "og_image",
+          "kind": "scalar",
+          "primary": false,
+          "type": "string",
+          "runtimeType": "string",
+          "columnTypes": ["text"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "tags",
+          "kind": "scalar",
+          "primary": false,
+          "type": "unknown",
+          "runtimeType": "string[]",
+          "columnTypes": ["jsonb"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "metadata",
+          "kind": "scalar",
+          "primary": false,
+          "type": "unknown",
+          "runtimeType": "Record<string, unknown>",
+          "columnTypes": ["jsonb"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "created_at",
+          "kind": "scalar",
+          "primary": false,
+          "type": "Date",
+          "runtimeType": "Date",
+          "columnTypes": ["timestamptz"],
+          "nullable": false,
+          "unsigned": false,
+          "defaultRaw": "now()",
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "updated_at",
+          "kind": "scalar",
+          "primary": false,
+          "type": "Date",
+          "runtimeType": "Date",
+          "columnTypes": ["timestamptz"],
+          "nullable": false,
+          "unsigned": false,
+          "defaultRaw": "now()",
+          "autoincrement": false,
+          "array": false
+        },
+        {
+          "name": "deleted_at",
+          "kind": "scalar",
+          "primary": false,
+          "type": "Date",
+          "runtimeType": "Date",
+          "columnTypes": ["timestamptz"],
+          "nullable": true,
+          "unsigned": false,
+          "autoincrement": false,
+          "array": false
+        }
+      ]
+    }
+  },
+  "config": {
+    "persist": true,
+    "disableForeignKeys": true,
+    "forceUndefined": false,
+    "ensureIndexes": true,
+    "implicitTransactions": true,
+    "allOrNothing": true,
+    "shareSchema": true,
+    "schemaGenerator": {
+      "createForeignKeyConstraints": true,
+      "ignoreSchema": [],
+      "createSchema": true,
+      "dropTables": true,
+      "safe": false,
+      "wrap": true,
+      "fkChecks": true
+    },
+    "entityGenerator": {
+      "bidirectionalRelations": true,
+      "identifiedReferences": false,
+      "entitySchema": true,
+      "compositePrimaryKeys": true,
+      "forceUndefined": false,
+      "forceNullable": false
+    },
+    "ddl": {
+      "create": true,
+      "allowDrop": true
+    }
+  },
+  "snapshots": {
+    "1685548311382": {
+      "author": "migrations create",
+      "name": "Migration20251116124938",
+      "class": "Migration20251116124938",
+      "version": 1685548311382,
+      "execute": "up"
+    }
+  }
+}

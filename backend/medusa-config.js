@@ -1,5 +1,7 @@
 import { loadEnv, Modules, defineConfig } from '@medusajs/utils';
+import path from 'path';
 import './src/utils/register-product-custom-attribute-import.js';
+import { BLOG_MODULE } from './src/modules/blog';
 import {
   ADMIN_CORS,
   AUTH_CORS,
@@ -47,8 +49,25 @@ const medusaConfig = {
     }
   },
   admin: {
+    path: "/app",
     backendUrl: BACKEND_URL,
     disable: SHOULD_DISABLE_ADMIN,
+    // Enable custom admin sources/plugins (Blog route etc.)
+    sources: [path.join(__dirname, "src", "admin")],
+    plugins: [path.join(__dirname, "src", "admin", "bootstrap-plugin.ts")],
+    vite: (baseConfig) => ({
+      base: "/app",
+      define: {
+        ...(baseConfig?.define || {}),
+        __BASE__: JSON.stringify("/app"),
+      },
+      resolve: {
+        alias: {
+          ...(baseConfig?.resolve?.alias || {}),
+          src: path.join(__dirname, "src"),
+        },
+      },
+    }),
   },
   modules: [
     {
@@ -133,7 +152,11 @@ const medusaConfig = {
           },
         ],
       },
-    }] : [])
+    }] : []),
+    {
+      key: BLOG_MODULE,
+      resolve: './src/modules/blog',
+    }
   ],
   plugins: [
     {
