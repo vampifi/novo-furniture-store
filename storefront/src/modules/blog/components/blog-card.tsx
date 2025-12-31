@@ -1,5 +1,6 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { StorefrontBlogPost } from "@lib/data/blog"
+import { resolveMediaUrl } from "@lib/util/media"
 
 const formatDate = (value?: string | null) => {
   if (!value) {
@@ -22,14 +23,16 @@ type BlogCardProps = {
 }
 
 const BlogCard = ({ post, href, className }: BlogCardProps) => {
+  const coverImage = resolveMediaUrl(post.cover_image)
+
   return (
     <article
       className={`flex h-full flex-col overflow-hidden rounded-2xl border border-ui-border-base bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${className ?? ""}`}
     >
-      {post.cover_image ? (
+      {coverImage ? (
         <LocalizedClientLink href={href} className="relative block h-60 w-full overflow-hidden">
           <img
-            src={post.cover_image}
+            src={coverImage}
             alt={post.title}
             className="h-full w-full object-cover transition duration-300 hover:scale-105"
           />

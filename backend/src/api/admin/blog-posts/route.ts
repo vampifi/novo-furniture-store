@@ -3,6 +3,7 @@ import { MedusaError } from "@medusajs/framework/utils"
 import { z } from "zod"
 import { BLOG_MODULE } from "modules/blog"
 import BlogModuleService from "modules/blog/service"
+import { sendPostNewsletter } from "./utils/send-post-newsletter"
 
 const querySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional().default(20),
@@ -98,6 +99,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
   const blogModule = req.scope.resolve(BLOG_MODULE) as BlogModuleService
   const post = await blogModule.createPost(payload.data as any)
+
+  await sendPostNewsletter(req, post as any)
 
   res.status(201).json({ post })
 }

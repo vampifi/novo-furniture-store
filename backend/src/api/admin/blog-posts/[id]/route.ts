@@ -3,6 +3,7 @@ import { MedusaError } from "@medusajs/framework/utils"
 import { z } from "zod"
 import { BLOG_MODULE } from "modules/blog"
 import BlogModuleService from "modules/blog/service"
+import { sendPostNewsletter } from "../utils/send-post-newsletter"
 
 const updateSchema = z
   .object({
@@ -66,7 +67,19 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   }
 
   const blogModule = getBlogModule(req)
+  const before = await blogModule.retrieveBlogPost(req.params.id, {
+    select: ["id", "status", "slug"],
+  })
+
   const post = await blogModule.updatePost(req.params.id, payload.data)
+
+  const shouldNotify =
+    (before?.status !== "published" && post.status === "published") ||
+    (!before?.slug && post.slug && post.status === "published")
+
+  if (shouldNotify) {
+    await sendPostNewsletter(req, post as any)
+  }
 
   res.status(200).json({ post })
 }

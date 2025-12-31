@@ -1,15 +1,59 @@
 "use client"
 
-import { useState } from 'react'
+import { FormEvent, useState } from "react"
+
+type SubmissionState = "idle" | "loading" | "success" | "error"
 
 const NewsletterSubscription = () => {
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState("")
+  const [status, setStatus] = useState<SubmissionState>("idle")
+  const [message, setMessage] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Handle subscription logic here
-    console.log('Subscribed with email:', email)
-    setEmail('')
+
+    if (!email) {
+      return
+    }
+
+    setStatus("loading")
+    setMessage(null)
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            "We couldn't subscribe you right now. Please try again."
+        )
+      }
+
+      setStatus("success")
+      setMessage(
+        data?.message ||
+          "You're on the list! We'll keep you updated with the latest from Novo."
+      )
+      setEmail("")
+    } catch (error) {
+      setStatus("error")
+      const fallback =
+        error instanceof Error && error.message
+          ? error.message
+          : "We couldn't subscribe you right now. Please try again."
+      setMessage(fallback)
+    }
   }
 
   return (
@@ -39,17 +83,31 @@ const NewsletterSubscription = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full rounded-full border border-gray-300 px-4 py-2.5 pr-28 text-sm text-[#474546] placeholder-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#474546] focus:border-transparent sm:px-6 sm:py-3 sm:pr-36 sm:text-base"
+                className="w-full rounded-full border border-gray-300 px-4 py-2.5 pr-28 text-sm text-[#474546] placeholder-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#474546] focus:border-transparent disabled:cursor-not-allowed disabled:opacity-60 sm:px-6 sm:py-3 sm:pr-36 sm:text-base"
+                disabled={status === "loading"}
                 required
               />
               <button
                 type="submit"
-                className="absolute right-1 rounded-full bg-[#474546] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-all duration-300 shadow-sm hover:bg-gray-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#474546] sm:px-6 sm:py-3 sm:text-sm"
+                className="absolute right-1 rounded-full bg-[#474546] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-all duration-300 shadow-sm hover:bg-gray-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#474546] disabled:cursor-not-allowed disabled:opacity-70 sm:px-6 sm:py-3 sm:text-sm"
+                disabled={status === "loading"}
               >
-                SUBSCRIBE
+                {status === "loading" ? "SUBSCRIBING..." : "SUBSCRIBE"}
               </button>
             </div>
           </form>
+
+          {message && (
+            <p
+              className={`mt-4 text-sm ${
+                status === "error" ? "text-red-600" : "text-green-700"
+              }`}
+              role="status"
+              aria-live="polite"
+            >
+              {message}
+            </p>
+          )}
         </div>
       </div>
     </section>

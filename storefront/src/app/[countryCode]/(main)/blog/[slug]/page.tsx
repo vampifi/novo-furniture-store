@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import { getPostBySlug, getPublishedPosts } from "@lib/data/blog"
 import ArticleContent from "@modules/blog/components/article-content"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { resolveMediaUrl } from "@lib/util/media"
 
 type PageProps = {
   params: { slug: string; countryCode: string }
@@ -29,7 +30,7 @@ export async function generateMetadata({
 
   const title = post.meta_title ?? `${post.title} | Novo Journal`
   const description = post.meta_description ?? post.excerpt ?? undefined
-  const ogImage = post.og_image ?? post.cover_image ?? undefined
+  const ogImage = resolveMediaUrl(post.og_image ?? post.cover_image ?? undefined)
 
   return {
     title,
@@ -69,7 +70,7 @@ const BlogArticle = async ({ params: { slug, countryCode } }: PageProps) => {
         day: "numeric",
       })
     : null
-  const ogImage = post.og_image ?? post.cover_image ?? null
+  const ogImage = resolveMediaUrl(post.og_image ?? post.cover_image ?? undefined) ?? null
   const canonical = post.canonical_url ?? undefined
   const updatedIso = post.updated_at ?? post.published_at ?? undefined
   const structuredData: Record<string, unknown> = {
@@ -165,10 +166,10 @@ const BlogArticle = async ({ params: { slug, countryCode } }: PageProps) => {
           )}
         </div>
 
-        {post.cover_image && (
+        {resolveMediaUrl(post.cover_image) && (
           <div className="overflow-hidden rounded-[32px] shadow-xl">
             <img
-              src={post.cover_image}
+              src={resolveMediaUrl(post.cover_image)}
               alt={post.title}
               className="h-[420px] w-full object-cover md:h-[520px]"
             />

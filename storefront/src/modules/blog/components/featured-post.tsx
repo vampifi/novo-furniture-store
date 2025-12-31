@@ -1,5 +1,6 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { StorefrontBlogPost } from "@lib/data/blog"
+import { resolveMediaUrl } from "@lib/util/media"
 
 const FeaturedPost = ({
   post,
@@ -8,12 +9,14 @@ const FeaturedPost = ({
   post: StorefrontBlogPost
   href: string
 }) => {
+  const coverImage = resolveMediaUrl(post.cover_image)
+
   return (
     <article className="relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl bg-[#f6efe9] shadow-lg md:flex-row">
       <div className="relative h-64 w-full overflow-hidden md:h-auto md:flex-1">
-        {post.cover_image ? (
+        {coverImage ? (
           <img
-            src={post.cover_image}
+            src={coverImage}
             alt={post.title}
             className="h-full w-full object-cover transition duration-700 ease-out hover:scale-105"
           />

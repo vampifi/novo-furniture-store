@@ -52,11 +52,17 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
       throw new MedusaError(MedusaError.Types.INVALID_DATA, `SMS notification not supported`)
     }
 
-    // Generate the email content using the template
+    const templateData =
+      notification.data && typeof notification.data === 'object'
+        ? (notification.data as Record<string, unknown>)
+        : {}
+
+    // Generate the email content using the template (exclude emailOptions meta)
     let emailContent: ReactNode
+    const { emailOptions: _emailOptions, ...templateProps } = templateData
 
     try {
-      emailContent = generateEmailTemplate(notification.template, notification.data)
+      emailContent = generateEmailTemplate(notification.template, templateProps)
     } catch (error) {
       if (error instanceof MedusaError) {
         throw error // Re-throw MedusaError for invalid template data
@@ -67,14 +73,19 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
       )
     }
 
-    const emailOptions = notification.data.emailOptions as NotificationEmailOptions
+    const emailOptions = ((templateData as { emailOptions?: unknown }).emailOptions ||
+      {}) as NotificationEmailOptions
+    const subject =
+      typeof emailOptions.subject === 'string' && emailOptions.subject.trim().length
+        ? emailOptions.subject
+        : 'You have a new notification'
 
     // Compose the message body to send via API to Resend
     const message: CreateEmailOptions = {
       to: notification.to,
       from: notification.from?.trim() ?? this.config_.from,
       react: emailContent,
-      subject: emailOptions.subject ?? 'You have a new notification',
+      subject,
       headers: emailOptions.headers,
       replyTo: emailOptions.replyTo,
       cc: emailOptions.cc,

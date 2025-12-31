@@ -4,12 +4,24 @@ import { InviteUserEmail, INVITE_USER, isInviteUserData } from './invite-user'
 import { OrderPlacedTemplate, ORDER_PLACED, isOrderPlacedTemplateData } from './order-placed'
 import { OrderCanceledTemplate, ORDER_CANCELED, isOrderCanceledTemplateData } from './order-canceled'
 import { OrderDispatchedTemplate, ORDER_DISPATCHED, isOrderDispatchedTemplateData } from './order-dispatched'
+import {
+  NewsletterWelcomeEmail,
+  NEWSLETTER_WELCOME,
+  isNewsletterWelcomeData,
+} from './newsletter-welcome'
+import {
+  NewsletterNewContentEmail,
+  NEWSLETTER_NEW_CONTENT,
+  isNewsletterNewContentData,
+} from './newsletter-new-content'
 
 export const EmailTemplates = {
   INVITE_USER,
   ORDER_PLACED,
   ORDER_CANCELED,
-  ORDER_DISPATCHED
+  ORDER_DISPATCHED,
+  NEWSLETTER_WELCOME,
+  NEWSLETTER_NEW_CONTENT,
 } as const
 
 export type EmailTemplateType = keyof typeof EmailTemplates
@@ -49,6 +61,22 @@ export function generateEmailTemplate(templateKey: string, data: unknown): React
         )
       }
       return <OrderDispatchedTemplate {...data} />
+    case EmailTemplates.NEWSLETTER_WELCOME:
+      if (!isNewsletterWelcomeData(data)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid data for template "${EmailTemplates.NEWSLETTER_WELCOME}"`
+        )
+      }
+      return <NewsletterWelcomeEmail {...data} />
+    case EmailTemplates.NEWSLETTER_NEW_CONTENT:
+      if (!isNewsletterNewContentData(data)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid data for template "${EmailTemplates.NEWSLETTER_NEW_CONTENT}"`
+        )
+      }
+      return <NewsletterNewContentEmail {...data} />
 
     default:
       throw new MedusaError(
@@ -58,4 +86,11 @@ export function generateEmailTemplate(templateKey: string, data: unknown): React
   }
 }
 
-export { InviteUserEmail, OrderPlacedTemplate, OrderCanceledTemplate, OrderDispatchedTemplate }
+export {
+  InviteUserEmail,
+  OrderPlacedTemplate,
+  OrderCanceledTemplate,
+  OrderDispatchedTemplate,
+  NewsletterWelcomeEmail,
+  NewsletterNewContentEmail,
+}
