@@ -186,12 +186,15 @@ const BlogArticle = async ({ params: { slug, countryCode } }: PageProps) => {
         </div>
 
         {resolveMediaUrl(post.cover_image) && (
-          <div className="overflow-hidden rounded-[32px] shadow-xl">
-            <img
-              src={resolveMediaUrl(post.cover_image)}
-              alt={post.title}
-              className="h-[420px] w-full object-cover md:h-[520px]"
-            />
+          <div className="overflow-hidden rounded-[32px] shadow-xl bg-[#f3ede7]">
+            <div className="relative aspect-[16/9] w-full md:aspect-[21/9]">
+              <img
+                src={resolveMediaUrl(post.cover_image)}
+                alt={post.title}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
           </div>
         )}
 

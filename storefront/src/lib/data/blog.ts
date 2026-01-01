@@ -1,5 +1,4 @@
 import { sdk } from "@lib/config"
-import { cache } from "react"
 
 export type StorefrontBlogPost = {
   id: string
@@ -20,48 +19,43 @@ export type StorefrontBlogPost = {
   updated_at?: string | null
 }
 
-const withCache = <Args extends unknown[], Return>(
-  fn: (...args: Args) => Promise<Return>
-) => cache(fn)
+export const getPublishedPosts = async ({
+  limit = 12,
+  offset = 0,
+  tag,
+}: {
+  limit?: number
+  offset?: number
+  tag?: string
+} = {}) => {
+  const search = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  })
 
-export const getPublishedPosts = withCache(
-  async ({
-    limit = 12,
-    offset = 0,
-    tag,
-  }: {
-    limit?: number
-    offset?: number
-    tag?: string
-  } = {}) => {
-    const search = new URLSearchParams({
-      limit: String(limit),
-      offset: String(offset),
+  if (tag) {
+    search.set("tag", tag)
+  }
+
+  const response = await sdk.client
+    .fetch<{
+      posts: StorefrontBlogPost[]
+      count: number
+      offset: number
+      limit: number
+    }>(`/store/blog-posts?${search.toString()}`, undefined, {
+      // Always fetch fresh so new/updated posts show immediately
+      next: { revalidate: 0, tags: ["blog_posts"] },
+    })
+    .catch((error) => {
+      console.error("Failed to load blog posts", error)
+      return { posts: [], count: 0, offset: 0, limit }
     })
 
-    if (tag) {
-      search.set("tag", tag)
-    }
+  return response
+}
 
-    const response = await sdk.client
-      .fetch<{
-        posts: StorefrontBlogPost[]
-        count: number
-        offset: number
-        limit: number
-      }>(`/store/blog-posts?${search.toString()}`, undefined, {
-        next: { revalidate: 60, tags: ["blog_posts"] },
-      })
-      .catch((error) => {
-        console.error("Failed to load blog posts", error)
-        return { posts: [], count: 0, offset: 0, limit }
-      })
-
-    return response
-  }
-)
-
-export const getPostBySlug = withCache(async (slug: string) => {
+export const getPostBySlug = async (slug: string) => {
   if (!slug) {
     return null
   }
@@ -71,7 +65,7 @@ export const getPostBySlug = withCache(async (slug: string) => {
       `/store/blog-posts/${encodeURIComponent(slug)}`,
       undefined,
       {
-        next: { revalidate: 60, tags: ["blog_posts", slug] },
+        next: { revalidate: 0, tags: ["blog_posts", slug] },
       }
     )
 
@@ -80,4 +74,4 @@ export const getPostBySlug = withCache(async (slug: string) => {
     console.error(`Failed to load blog post "${slug}"`, error)
     return null
   }
-})
+}
