@@ -67,7 +67,9 @@ const uploadImageFromUrl = async ({
   try {
     fileService = req.scope.resolve(Modules.FILE)
   } catch (error) {
-    logger?.warn?.("blog:upload:file-service-missing", error)
+    const message =
+      error instanceof Error ? error.message : typeof error === "string" ? error : "unknown error"
+    logger?.warn?.(`blog:upload:file-service-missing ${message}`)
     throw new MedusaError(
       MedusaError.Types.UNEXPECTED_STATE,
       "File service is not configured; cannot upload blog images."
@@ -78,7 +80,9 @@ const uploadImageFromUrl = async ({
     method: "GET",
     headers: { accept: "image/*" },
   }).catch((error) => {
-    logger?.error?.("blog:upload:fetch-failed", error)
+    const message =
+      error instanceof Error ? error.message : typeof error === "string" ? error : "unknown error"
+    logger?.error?.(`blog:upload:fetch-failed ${message}`)
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
       "Could not download the image. Please check the URL."
