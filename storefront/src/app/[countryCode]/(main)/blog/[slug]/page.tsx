@@ -4,17 +4,36 @@ import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
 import { getPostBySlug, getPublishedPosts } from "@lib/data/blog"
+import { listRegions } from "@lib/data/regions"
 import ArticleContent from "@modules/blog/components/article-content"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { resolveMediaUrl } from "@lib/util/media"
+import type { StoreRegion } from "@medusajs/types"
 
 type PageProps = {
   params: { slug: string; countryCode: string }
 }
 
 export async function generateStaticParams() {
-  const { posts } = await getPublishedPosts({ limit: 20 })
-  return posts.map((post) => ({ slug: post.slug }))
+  const { posts } = await getPublishedPosts({ limit: 50 })
+  const countryCodes = await listRegions().then(
+    (regions: StoreRegion[]) =>
+      regions
+        ?.map((r) => r.countries?.map((c) => c.iso_2))
+        .flat()
+        .filter(Boolean) as string[]
+  )
+
+  if (!countryCodes?.length || !posts?.length) {
+    return []
+  }
+
+  return countryCodes.flatMap((countryCode: string) =>
+    posts.map((post) => ({
+      countryCode,
+      slug: post.slug,
+    }))
+  )
 }
 
 export async function generateMetadata({
