@@ -165,6 +165,13 @@ const BlogAdminRoute = () => {
   const [submitting, setSubmitting] = useState(false)
   const [publishingId, setPublishingId] = useState<string | null>(null)
   const contentRef = useRef<HTMLTextAreaElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [uploadingField, setUploadingField] = useState<"cover_image" | "og_image" | null>(
+    null
+  )
+  const [fileTargetField, setFileTargetField] = useState<"cover_image" | "og_image" | null>(
+    null
+  )
   const [listDrafts, setListDrafts] = useState({
     bullet: "",
     numbered: "",
@@ -218,6 +225,60 @@ const BlogAdminRoute = () => {
       ...prev,
       [type]: value,
     }))
+  }
+
+  const handleFileSelection = (field: "cover_image" | "og_image") => {
+    setFileTargetField(field)
+    fileInputRef.current?.click()
+  }
+
+  const uploadSelectedFile = async (file: File, field: "cover_image" | "og_image") => {
+    setUploadingField(field)
+    try {
+      const formData = new FormData()
+      formData.append("files", file)
+
+      const res = await fetch("/admin/uploads", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}))
+        throw new Error(payload?.message || `Upload failed (${res.status})`)
+      }
+
+      const payload = (await res.json().catch(() => ({}))) as { files?: { url?: string }[] }
+      const url = payload?.files?.[0]?.url
+
+      if (!url) {
+        throw new Error("Upload succeeded but no URL was returned.")
+      }
+
+      handleInputChange(field, url)
+      toast.success("Image uploaded.")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Upload failed"
+      toast.error(message)
+    } finally {
+      setUploadingField(null)
+      setFileTargetField(null)
+    }
+  }
+
+  const handleFileInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    const target = fileTargetField
+
+    // reset so selecting same file twice still triggers change
+    event.target.value = ""
+
+    if (!file || !target) {
+      return
+    }
+
+    await uploadSelectedFile(file, target)
   }
 
   const handleInsertList = (type: "bullet" | "numbered") => {
@@ -611,6 +672,13 @@ const BlogAdminRoute = () => {
 
         {formOpen && (
           <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1">
                 <label className="text-xs font-semibold uppercase tracking-[0.3em] text-ui-fg-muted">
@@ -649,13 +717,24 @@ const BlogAdminRoute = () => {
                 <label className="text-xs font-semibold uppercase tracking-[0.3em] text-ui-fg-muted">
                   Cover image URL
                 </label>
-                <Input
-                  value={form.cover_image}
-                  onChange={(event) =>
-                    handleInputChange("cover_image", event.target.value)
-                  }
-                  placeholder="https://"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={form.cover_image}
+                    onChange={(event) =>
+                      handleInputChange("cover_image", event.target.value)
+                    }
+                    placeholder="https://"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="small"
+                    onClick={() => handleFileSelection("cover_image")}
+                    disabled={uploadingField === "cover_image"}
+                  >
+                    {uploadingField === "cover_image" ? "Uploading…" : "Upload"}
+                  </Button>
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-semibold uppercase tracking-[0.3em] text-ui-fg-muted">
@@ -885,13 +964,24 @@ const BlogAdminRoute = () => {
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-ui-fg-muted">
                     Social image URL
                   </label>
-                  <Input
-                    value={form.og_image}
-                    onChange={(event) =>
-                      handleInputChange("og_image", event.target.value)
-                    }
-                    placeholder="https://..."
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={form.og_image}
+                      onChange={(event) =>
+                        handleInputChange("og_image", event.target.value)
+                      }
+                      placeholder="https://..."
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="small"
+                      onClick={() => handleFileSelection("og_image")}
+                      disabled={uploadingField === "og_image"}
+                    >
+                      {uploadingField === "og_image" ? "Uploading…" : "Upload"}
+                    </Button>
+                  </div>
                   <p className="text-[0.65rem] text-ui-fg-muted">
                     Optional override for Open Graph and Twitter cards.
                   </p>

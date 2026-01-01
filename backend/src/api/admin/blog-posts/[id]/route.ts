@@ -4,6 +4,7 @@ import { z } from "zod"
 import { BLOG_MODULE } from "modules/blog"
 import BlogModuleService from "modules/blog/service"
 import { sendPostNewsletter } from "../utils/send-post-newsletter"
+import { uploadBlogImages } from "../utils/upload-image"
 
 const updateSchema = z
   .object({
@@ -71,7 +72,15 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     select: ["id", "status", "slug"],
   })
 
-  const post = await blogModule.updatePost(req.params.id, payload.data)
+  const withUploadedImages = await uploadBlogImages(
+    {
+      ...payload.data,
+      slug: payload.data.slug ?? before?.slug ?? undefined,
+    },
+    req
+  )
+
+  const post = await blogModule.updatePost(req.params.id, withUploadedImages)
 
   const shouldNotify =
     (before?.status !== "published" && post.status === "published") ||
