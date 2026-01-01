@@ -16,7 +16,7 @@ importers:
         version: 3.958.0
       '@linearcommerce/product-custom-attributes':
         specifier: ^0.0.5
-        version: 0.0.5(qyu5763j72rpoaioe7bhnv4jqy)
+        version: 0.0.5(il6pjhf2javn3abncwdfddz46i)
       '@medusajs/admin-sdk':
         specifier: 2.8.8
         version: 2.8.8
@@ -43,7 +43,7 @@ importers:
         version: 2.8.8(@medusajs/framework@2.8.8(@medusajs/cli@2.8.8(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(@types/node@20.19.27)(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(@mikro-orm/cli@6.4.3(pg@8.16.3))(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(awilix@8.0.1)
       '@medusajs/ui':
         specifier: preview
-        version: 4.0.32-preview-20251231090312(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+        version: 4.0.32-preview-20260101060141(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
       '@medusajs/workflow-engine-redis':
         specifier: 2.8.8
         version: 2.8.8(@medusajs/framework@2.8.8(@medusajs/cli@2.8.8(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(@types/node@20.19.27)(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(@mikro-orm/cli@6.4.3(pg@8.16.3))(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(@mikro-orm/core@6.4.3)(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(awilix@8.0.1)
@@ -64,7 +64,7 @@ importers:
         version: 0.0.26(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@rokmohar/medusa-plugin-meilisearch':
         specifier: 1.2.3
-        version: 1.2.3(hgno6hpggni6mj4nt63cs2e5yq)
+        version: 1.2.3(73gk6lc2diafiasbtxhx43lx4i)
       awilix:
         specifier: ^8.0.1
         version: 8.0.1
@@ -82,7 +82,7 @@ importers:
         version: 8.16.3
       react-i18next:
         specifier: ^16.0.0
-        version: 16.5.0(i18next@25.7.3(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+        version: 16.5.1(i18next@25.7.3(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
       resend:
         specifier: 4.0.1
         version: 4.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1476,8 +1476,8 @@ packages:
       '@mikro-orm/postgresql': 6.4.3
       awilix: ^8.0.1
 
-  '@medusajs/icons@2.12.4-preview-20251231090312':
-    resolution: {integrity: sha512-ZXCBG4FBSmWjOumQFnFklH6kRWHinO2N5BsCjBsnX9lhAWsNl4Mkp4kj7UUOfxwDoLhkKdHwWe62/3+txGjnVA==}
+  '@medusajs/icons@2.12.4-preview-20260101060141':
+    resolution: {integrity: sha512-j4WBqwZ6tiO1fs6PTxiqEm1dZyXItfCF+3Njan32/wKNVWMpTMjxg/2vYs8FJSMfiAy5OTiFzMLSayLQYPBpkg==}
     peerDependencies:
       react: ^18.3.1
 
@@ -1766,8 +1766,8 @@ packages:
       react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
 
-  '@medusajs/ui@4.0.32-preview-20251231090312':
-    resolution: {integrity: sha512-cQDb4wtgge6uqlrlh8l69Bv5AgOEuC3KYbwbA3BG36Fk3D9UNFRQvJdBuclE0Dp64x6e7rL8BhN62f4B8ubVlg==}
+  '@medusajs/ui@4.0.32-preview-20260101060141':
+    resolution: {integrity: sha512-HH1PQgBVvUp/DtSFqLGoVUXj3tvdLmZc46llq3fMhoItz/uMVksYMASb+OPKyMJdnX4d7kmXHvJ082VEsSCmMA==}
     peerDependencies:
       react: ^18.3.1
       react-dom: ^18.3.1
@@ -6594,8 +6594,8 @@ packages:
       react-native:
         optional: true
 
-  react-i18next@16.5.0:
-    resolution: {integrity: sha512-IMpPTyCTKxEj8klCrLKUTIUa8uYTd851+jcu2fJuUB9Agkk9Qq8asw4omyeHVnOXHrLgQJGTm5zTvn8HpaPiqw==}
+  react-i18next@16.5.1:
+    resolution: {integrity: sha512-Hks6UIRZWW4c+qDAnx1csVsCGYeIR4MoBGQgJ+NUoNnO6qLxXuf8zu0xdcinyXUORgGzCdRsexxO1Xzv3sTdnw==}
     peerDependencies:
       i18next: '>= 25.6.2'
       react: '>= 16.8.0'
@@ -9015,7 +9015,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@linearcommerce/product-custom-attributes@0.0.5(qyu5763j72rpoaioe7bhnv4jqy)':
+  '@linearcommerce/product-custom-attributes@0.0.5(il6pjhf2javn3abncwdfddz46i)':
     dependencies:
       '@medusajs/admin-sdk': 2.8.8
       '@medusajs/cli': 2.8.8(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(@types/node@20.19.27)(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27))
@@ -9023,7 +9023,7 @@ snapshots:
       '@medusajs/icons': 2.8.8(react@18.3.1)
       '@medusajs/medusa': 2.8.8(4c7ugprrge4v7ochrhsiqxhggm)
       '@medusajs/test-utils': 2.8.8(@medusajs/framework@2.8.8(@medusajs/cli@2.8.8(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(@types/node@20.19.27)(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(@mikro-orm/cli@6.4.3(pg@8.16.3))(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(@medusajs/medusa@2.8.8(4c7ugprrge4v7ochrhsiqxhggm))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(awilix@8.0.1)
-      '@medusajs/ui': 4.0.32-preview-20251231090312(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      '@medusajs/ui': 4.0.32-preview-20260101060141(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
       '@mikro-orm/cli': 6.4.3(pg@8.16.3)
       '@mikro-orm/core': 6.4.3
       '@mikro-orm/knex': 6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3)
@@ -9355,7 +9355,7 @@ snapshots:
       '@mikro-orm/postgresql': 6.4.3(@mikro-orm/core@6.4.3)
       awilix: 8.0.1
 
-  '@medusajs/icons@2.12.4-preview-20251231090312(react@18.3.1)':
+  '@medusajs/icons@2.12.4-preview-20260101060141(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
@@ -9717,12 +9717,12 @@ snapshots:
       - '@types/react-dom'
       - typescript
 
-  '@medusajs/ui@4.0.32-preview-20251231090312(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)':
+  '@medusajs/ui@4.0.32-preview-20260101060141(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)':
     dependencies:
       '@dnd-kit/core': 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dnd-kit/sortable': 8.0.0(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@dnd-kit/utilities': 3.2.2(react@18.3.1)
-      '@medusajs/icons': 2.12.4-preview-20251231090312(react@18.3.1)
+      '@medusajs/icons': 2.12.4-preview-20260101060141(react@18.3.1)
       '@radix-ui/react-dialog': 1.1.4(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-dismissable-layer': 1.1.4(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-table': 8.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -12041,7 +12041,7 @@ snapshots:
 
   '@remix-run/router@1.13.1': {}
 
-  '@rokmohar/medusa-plugin-meilisearch@1.2.3(hgno6hpggni6mj4nt63cs2e5yq)':
+  '@rokmohar/medusa-plugin-meilisearch@1.2.3(73gk6lc2diafiasbtxhx43lx4i)':
     dependencies:
       '@medusajs/admin-sdk': 2.8.8
       '@medusajs/cli': 2.8.8(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(@types/node@20.19.27)(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27))
@@ -12049,7 +12049,7 @@ snapshots:
       '@medusajs/icons': 2.8.8(react@18.3.1)
       '@medusajs/medusa': 2.8.8(4c7ugprrge4v7ochrhsiqxhggm)
       '@medusajs/test-utils': 2.8.8(@medusajs/framework@2.8.8(@medusajs/cli@2.8.8(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(@types/node@20.19.27)(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(@mikro-orm/cli@6.4.3(pg@8.16.3))(@mikro-orm/core@6.4.3)(@mikro-orm/knex@6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3))(@mikro-orm/migrations@6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.19.27)(pg@8.16.3))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(awilix@8.0.1)(ioredis@5.8.2)(pg@8.16.3)(vite@5.4.21(@types/node@20.19.27)))(@medusajs/medusa@2.8.8(4c7ugprrge4v7ochrhsiqxhggm))(@mikro-orm/postgresql@6.4.3(@mikro-orm/core@6.4.3))(awilix@8.0.1)
-      '@medusajs/ui': 4.0.32-preview-20251231090312(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      '@medusajs/ui': 4.0.32-preview-20260101060141(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
       '@mikro-orm/cli': 6.4.3(pg@8.16.3)
       '@mikro-orm/core': 6.4.3
       '@mikro-orm/knex': 6.4.3(@mikro-orm/core@6.4.3)(pg@8.16.3)
@@ -15683,7 +15683,7 @@ snapshots:
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
 
-  react-i18next@16.5.0(i18next@25.7.3(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3):
+  react-i18next@16.5.1(i18next@25.7.3(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3):
     dependencies:
       '@babel/runtime': 7.28.4
       html-parse-stringify: 3.0.1
