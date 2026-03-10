@@ -111,21 +111,6 @@ const medusaConfig = {
         }
       }
     },
-    {
-      key: Modules.LOCKING,
-      resolve: '@medusajs/locking',
-      options: {
-        providers: [
-          {
-            resolve: '@medusajs/locking-redis',
-            id: 'redis',
-            is_default: true,
-            options: {
-              redisUrl: REDIS_URL,
-            },
-          },
-        ],
-      },
     }] : []),
     ...(SENDGRID_API_KEY && SENDGRID_FROM_EMAIL || RESEND_API_KEY && RESEND_FROM_EMAIL ? [{
       key: Modules.NOTIFICATION,
