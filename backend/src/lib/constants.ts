@@ -4,6 +4,18 @@ import { assertValue } from 'utils/assert-value'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
+const ensureUrlProtocol = (value?: string): string | undefined => {
+  if (!value) {
+    return undefined
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value
+  }
+
+  return `https://${value}`
+}
+
 /**
  * Is development environment
  */
@@ -12,7 +24,12 @@ export const IS_DEV = process.env.NODE_ENV === 'development'
 /**
  * Public URL for the backend
  */
-export const BACKEND_URL = process.env.BACKEND_PUBLIC_URL ?? process.env.RAILWAY_PUBLIC_DOMAIN_VALUE ?? 'http://localhost:9000'
+const RAILWAY_URL =
+  ensureUrlProtocol(process.env.RAILWAY_STATIC_URL) ??
+  ensureUrlProtocol(process.env.RAILWAY_PUBLIC_DOMAIN) ??
+  ensureUrlProtocol(process.env.RAILWAY_PUBLIC_DOMAIN_VALUE)
+
+export const BACKEND_URL = ensureUrlProtocol(process.env.BACKEND_PUBLIC_URL) ?? RAILWAY_URL ?? 'http://localhost:9000'
 
 /**
  * Database URL for Postgres instance used by the backend
@@ -25,7 +42,7 @@ export const DATABASE_URL = assertValue(
 /**
  * (optional) Redis URL for Redis instance used by the backend
  */
-export const REDIS_URL = process.env.REDIS_URL;
+export const REDIS_URL = process.env.REDIS_URL ?? process.env.REDIS_PRIVATE_URL ?? process.env.REDIS_PUBLIC_URL;
 
 /**
  * Admin CORS origins
@@ -88,7 +105,7 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
  * (optional) Meilisearch configuration
  */
 export const MEILISEARCH_HOST = process.env.MEILISEARCH_HOST;
-export const MEILISEARCH_ADMIN_KEY = process.env.MEILISEARCH_ADMIN_KEY;
+export const MEILISEARCH_ADMIN_KEY = process.env.MEILISEARCH_ADMIN_KEY ?? process.env.MEILISEARCH_API_KEY;
 
 /**
  * Worker mode
