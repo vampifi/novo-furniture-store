@@ -109,6 +109,7 @@ export const MEILISEARCH_ADMIN_KEY =
   process.env.MEILISEARCH_ADMIN_KEY ??
   process.env.MEILISEARCH_API_KEY ??
   process.env.MEILISEARCH_MASTER_KEY;
+export const MEILISEARCH_PRODUCTS_ENABLED = process.env.MEILISEARCH_PRODUCTS_ENABLED === 'true';
 
 /**
  * Worker mode

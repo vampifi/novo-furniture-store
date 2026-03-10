@@ -24,7 +24,8 @@ import {
   MINIO_SECRET_KEY,
   MINIO_BUCKET,
   MEILISEARCH_HOST,
-  MEILISEARCH_ADMIN_KEY
+  MEILISEARCH_ADMIN_KEY,
+  MEILISEARCH_PRODUCTS_ENABLED
 } from 'lib/constants';
 
 loadEnv(process.env.NODE_ENV, process.cwd());
@@ -177,7 +178,7 @@ const medusaConfig = {
         settings: {
           products: {
             type: 'products',
-            enabled: true,
+            enabled: MEILISEARCH_PRODUCTS_ENABLED,
             fields: ['id', 'title', 'description', 'handle', 'variant_sku', 'thumbnail'],
             indexSettings: {
               searchableAttributes: ['title', 'description', 'variant_sku'],
