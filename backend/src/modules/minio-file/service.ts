@@ -4,10 +4,12 @@ import {
   ProviderUploadFileDTO,
   ProviderDeleteFileDTO,
   ProviderFileResultDTO,
-  ProviderGetFileDTO
+  ProviderGetFileDTO,
+  ProviderGetPresignedUploadUrlDTO
 } from '@medusajs/framework/types';
 import { Client } from 'minio';
 import path from 'path';
+import { Readable } from 'stream';
 import { ulid } from 'ulid';
 
 type InjectedDependencies = {
@@ -141,6 +143,10 @@ class MinioFileProviderService extends AbstractFileProviderService {
     }
   }
 
+  private buildFileUrl(fileKey: string): string {
+    return `https://${this.config_.endPoint}/${this.bucket}/${fileKey}`
+  }
+
   async upload(
     file: ProviderUploadFileDTO
   ): Promise<ProviderFileResultDTO> {
@@ -176,8 +182,7 @@ class MinioFileProviderService extends AbstractFileProviderService {
         }
       )
 
-      // Generate URL using the endpoint and bucket
-      const url = `https://${this.config_.endPoint}/${this.bucket}/${fileKey}`
+      const url = this.buildFileUrl(fileKey)
 
       this.logger_.info(`Successfully uploaded file ${fileKey} to MinIO bucket ${this.bucket}`)
 
@@ -195,21 +200,46 @@ class MinioFileProviderService extends AbstractFileProviderService {
   }
 
   async delete(
-    fileData: ProviderDeleteFileDTO
+    fileData: ProviderDeleteFileDTO | ProviderDeleteFileDTO[]
   ): Promise<void> {
-    if (!fileData?.fileKey) {
+    const files = Array.isArray(fileData) ? fileData : [fileData]
+
+    await Promise.all(files.map(async (file) => {
+      if (!file?.fileKey) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          'No file key provided'
+        )
+      }
+
+      try {
+        await this.client.removeObject(this.bucket, file.fileKey)
+        this.logger_.info(`Successfully deleted file ${file.fileKey} from MinIO bucket ${this.bucket}`)
+      } catch (error) {
+        // Log error but don't throw if file doesn't exist
+        this.logger_.warn(`Failed to delete file ${file.fileKey}: ${error.message}`)
+      }
+    }))
+  }
+
+  /**
+   * Force uploads through Medusa's `/admin/uploads` route instead of asking the
+   * browser to upload directly to MinIO. This avoids presigned-upload support and
+   * CORS issues in admin flows such as product CSV import.
+   */
+  async getPresignedUploadUrl(
+    fileData: ProviderGetPresignedUploadUrlDTO
+  ): Promise<ProviderFileResultDTO> {
+    if (!fileData?.filename) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
-        'No file key provided'
+        'No filename provided'
       )
     }
 
-    try {
-      await this.client.removeObject(this.bucket, fileData.fileKey)
-      this.logger_.info(`Successfully deleted file ${fileData.fileKey} from MinIO bucket ${this.bucket}`)
-    } catch (error) {
-      // Log error but don't throw if file doesn't exist
-      this.logger_.warn(`Failed to delete file ${fileData.fileKey}: ${error.message}`)
+    return {
+      url: '/admin/uploads',
+      key: fileData.filename
     }
   }
 
@@ -238,6 +268,45 @@ class MinioFileProviderService extends AbstractFileProviderService {
         `Failed to generate presigned URL: ${error.message}`
       )
     }
+  }
+
+  async getDownloadStream(
+    fileData: ProviderGetFileDTO
+  ): Promise<Readable> {
+    if (!fileData?.fileKey) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'No file key provided'
+      )
+    }
+
+    try {
+      const stream = await this.client.getObject(this.bucket, fileData.fileKey)
+      this.logger_.info(`Opened download stream for file ${fileData.fileKey}`)
+      return stream
+    } catch (error) {
+      this.logger_.error(`Failed to open download stream: ${error.message}`)
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        `Failed to open download stream: ${error.message}`
+      )
+    }
+  }
+
+  async getAsBuffer(
+    fileData: ProviderGetFileDTO
+  ): Promise<Buffer> {
+    const stream = await this.getDownloadStream(fileData)
+
+    return await new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = []
+
+      stream.on('data', (chunk) => {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+      })
+      stream.on('error', reject)
+      stream.on('end', () => resolve(Buffer.concat(chunks)))
+    })
   }
 }
 
