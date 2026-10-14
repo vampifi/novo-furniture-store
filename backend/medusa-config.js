@@ -1,6 +1,17 @@
 import { loadEnv, Modules, defineConfig } from '@medusajs/utils';
 import path from 'path';
 import './src/utils/register-product-custom-attribute-import.js';
+
+// Prevent a single unhandled rejection/exception (e.g. from a scheduled job
+// or subscriber) from crashing the whole server process. Without this, an
+// error thrown outside an HTTP request context is fatal to the Node process.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+});
 import { BLOG_MODULE } from './src/modules/blog';
 import {
   ADMIN_CORS,
