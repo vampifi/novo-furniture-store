@@ -11,6 +11,9 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  title: "Novo Furniture",
+  description:
+    "Discover premium furniture collections at Novo Furniture. Shop now for quality, style, and comfort.",
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
