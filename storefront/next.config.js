@@ -45,6 +45,18 @@ const nextConfig = {
         protocol: "https",
         hostname: process.env.NEXT_PUBLIC_MINIO_ENDPOINT,
       }] : []),
+      { // Note: 14 products still need replacement photos sourced manually (source site is down)
+        protocol: "https",
+        hostname: "www.esmefurnishings.co.uk",
+      },
+      { // Note: 1 product image missing at source (404) - needs a replacement photo
+        protocol: "https",
+        hostname: "www.dreamfurnishings.co.uk",
+      },
+      { // Note: 2 product images blocked by source site's hotlink protection (403) - needs replacement photos
+        protocol: "https",
+        hostname: "www.newbyhouseinteriors.co.uk",
+      },
     ],
   },
   serverRuntimeConfig: {
