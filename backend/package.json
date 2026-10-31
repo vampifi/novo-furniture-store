@@ -18,7 +18,8 @@
     "ib": "MEILISEARCH_ADMIN_KEY=${MEILISEARCH_ADMIN_KEY:-${MEILISEARCH_API_KEY:-$MEILISEARCH_MASTER_KEY}} init-backend",
     "start": "MEILISEARCH_ADMIN_KEY=${MEILISEARCH_ADMIN_KEY:-${MEILISEARCH_API_KEY:-$MEILISEARCH_MASTER_KEY}} init-backend && cd .medusa/server && medusa start --verbose",
     "dev": "medusa develop",
-    "email:dev": "email dev --dir=./src/modules/email-notifications/templates --port=3002"
+    "email:dev": "email dev --dir=./src/modules/email-notifications/templates --port=3002",
+    "test": "jest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.901.0",
