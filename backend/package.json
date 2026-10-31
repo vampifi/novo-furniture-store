@@ -18,7 +18,8 @@
     "ib": "MEILISEARCH_ADMIN_KEY=${MEILISEARCH_ADMIN_KEY:-${MEILISEARCH_API_KEY:-$MEILISEARCH_MASTER_KEY}} init-backend",
     "start": "MEILISEARCH_ADMIN_KEY=${MEILISEARCH_ADMIN_KEY:-${MEILISEARCH_API_KEY:-$MEILISEARCH_MASTER_KEY}} init-backend && cd .medusa/server && medusa start --verbose",
     "dev": "medusa develop",
-    "email:dev": "email dev --dir=./src/modules/email-notifications/templates --port=3002"
+    "email:dev": "email dev --dir=./src/modules/email-notifications/templates --port=3002",
+    "test": "jest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.901.0",
@@ -28,10 +29,10 @@
     "@medusajs/cli": "2.8.8",
     "@medusajs/dashboard": "2.8.8",
     "@medusajs/framework": "2.8.8",
+    "@medusajs/icons": "2.8.8",
     "@medusajs/medusa": "2.8.8",
     "@medusajs/notification-sendgrid": "2.8.8",
     "@medusajs/payment-stripe": "2.8.8",
-    "@medusajs/icons": "2.8.8",
     "@medusajs/ui": "4.0.18",
     "@medusajs/workflow-engine-redis": "2.8.8",
     "@mikro-orm/core": "6.4.3",
@@ -40,8 +41,10 @@
     "@mikro-orm/postgresql": "6.4.3",
     "@react-email/components": "^0.0.26",
     "@rokmohar/medusa-plugin-meilisearch": "1.2.3",
-    "i18next": "^25.6.3",
     "awilix": "^8.0.1",
+    "google-auth-library": "^11.3.2",
+    "googleapis": "^189.0.0",
+    "i18next": "^25.6.3",
     "medusajs-launch-utils": "0.0.18",
     "minio": "^8.0.3",
     "pg": "^8.13.1",
