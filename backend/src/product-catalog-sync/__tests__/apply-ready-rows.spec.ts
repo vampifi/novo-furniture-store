@@ -1,4 +1,5 @@
 import { applyReadyRows } from "../apply-ready-rows"
+import { checkProductLevelFieldConsistency } from "../product-level-consistency"
 import type { CanonicalProduct } from "../types"
 
 /**
@@ -48,7 +49,7 @@ describe("applyReadyRows", () => {
     const row = makeProduct({ productHandle: "oak-dining-table", sku: "acm_1" })
     const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_1" })
 
-    const outcomes = await applyReadyRows([row], applyCanonicalProduct)
+    const outcomes = await applyReadyRows([row], checkProductLevelFieldConsistency([row]), applyCanonicalProduct)
 
     expect(applyCanonicalProduct).toHaveBeenCalledTimes(1)
     expect(applyCanonicalProduct).toHaveBeenCalledWith([row])
@@ -59,12 +60,13 @@ describe("applyReadyRows", () => {
     const tableRowA = makeProduct({ productHandle: "oak-dining-table", sku: "acm_1" })
     const tableRowB = makeProduct({ productHandle: "oak-dining-table", sku: "acm_2" })
     const chairRow = makeProduct({ productHandle: "pine-chair", sku: "acm_3" })
+    const rows = [tableRowA, chairRow, tableRowB]
     const applyCanonicalProduct = jest
       .fn()
       .mockResolvedValueOnce({ productId: "prod_table" })
       .mockResolvedValueOnce({ productId: "prod_chair" })
 
-    const outcomes = await applyReadyRows([tableRowA, chairRow, tableRowB], applyCanonicalProduct)
+    const outcomes = await applyReadyRows(rows, checkProductLevelFieldConsistency(rows), applyCanonicalProduct)
 
     expect(applyCanonicalProduct).toHaveBeenCalledTimes(2)
     expect(applyCanonicalProduct).toHaveBeenNthCalledWith(1, [tableRowA, tableRowB])
@@ -79,9 +81,10 @@ describe("applyReadyRows", () => {
     const disagreeingA = makeProduct({ productHandle: "pine-bookshelf", sku: "acm_1", status: "draft" })
     const disagreeingB = makeProduct({ productHandle: "pine-bookshelf", sku: "acm_2", status: "published" })
     const consistent = makeProduct({ productHandle: "oak-dining-table", sku: "acm_3" })
+    const rows = [disagreeingA, disagreeingB, consistent]
     const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_table" })
 
-    const outcomes = await applyReadyRows([disagreeingA, disagreeingB, consistent], applyCanonicalProduct)
+    const outcomes = await applyReadyRows(rows, checkProductLevelFieldConsistency(rows), applyCanonicalProduct)
 
     expect(applyCanonicalProduct).toHaveBeenCalledTimes(1)
     expect(applyCanonicalProduct).toHaveBeenCalledWith([consistent])
@@ -94,7 +97,7 @@ describe("applyReadyRows", () => {
   it("invokes applyCanonicalProduct zero times and returns no outcomes for an empty input (idempotent cycle)", async () => {
     const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_unused" })
 
-    const outcomes = await applyReadyRows([], applyCanonicalProduct)
+    const outcomes = await applyReadyRows([], [], applyCanonicalProduct)
 
     expect(applyCanonicalProduct).not.toHaveBeenCalled()
     expect(outcomes).toEqual([])
@@ -103,13 +106,14 @@ describe("applyReadyRows", () => {
   it("isolates a product-level failure: one product's applyCanonicalProduct rejection doesn't stop other products from being applied", async () => {
     const failingRow = makeProduct({ productHandle: "broken-product", sku: "acm_1" })
     const okRow = makeProduct({ productHandle: "oak-dining-table", sku: "acm_2" })
+    const rows = [failingRow, okRow]
     const failure = new Error("DB write failed")
     const applyCanonicalProduct = jest
       .fn()
       .mockRejectedValueOnce(failure)
       .mockResolvedValueOnce({ productId: "prod_table" })
 
-    const outcomes = await applyReadyRows([failingRow, okRow], applyCanonicalProduct)
+    const outcomes = await applyReadyRows(rows, checkProductLevelFieldConsistency(rows), applyCanonicalProduct)
 
     expect(applyCanonicalProduct).toHaveBeenCalledTimes(2)
     expect(outcomes).toEqual([
@@ -124,9 +128,10 @@ describe("applyReadyRows", () => {
         "even if it reaches this function directly (defense-in-depth on top of row-reconciliation's own exclusion)",
       async () => {
         const placeholderRow = makeProduct({ productHandle: "needs-a-sku", sku: "acm_" })
+        const rows = [placeholderRow]
         const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_unused" })
 
-        const outcomes = await applyReadyRows([placeholderRow], applyCanonicalProduct)
+        const outcomes = await applyReadyRows(rows, checkProductLevelFieldConsistency(rows), applyCanonicalProduct)
 
         expect(applyCanonicalProduct).not.toHaveBeenCalled()
         expect(outcomes).toEqual([])
@@ -136,13 +141,40 @@ describe("applyReadyRows", () => {
     it("still applies the rest of a product's variants when only one sibling row has a placeholder SKU", async () => {
       const placeholderSibling = makeProduct({ productHandle: "oak-dining-table", sku: "acm_" })
       const validSibling = makeProduct({ productHandle: "oak-dining-table", sku: "acm_1" })
+      const rows = [placeholderSibling, validSibling]
       const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_table" })
 
-      const outcomes = await applyReadyRows([placeholderSibling, validSibling], applyCanonicalProduct)
+      const outcomes = await applyReadyRows(rows, checkProductLevelFieldConsistency(rows), applyCanonicalProduct)
 
       expect(applyCanonicalProduct).toHaveBeenCalledTimes(1)
       expect(applyCanonicalProduct).toHaveBeenCalledWith([validSibling])
       expect(outcomes).toEqual([{ productHandle: "oak-dining-table", result: { outcome: "applied", productId: "prod_table" } }])
+    })
+  })
+
+  describe("precomputed consistencyResults contract (issue #19: computed once by the caller, shared with resolveSyncStatusForCycle)", () => {
+    it("throws a descriptive error when a row has no matching consistency result (contract violation)", async () => {
+      const row = makeProduct({ sku: "acm_orphan" })
+      const applyCanonicalProduct = jest.fn()
+
+      await expect(applyReadyRows([row], [], applyCanonicalProduct)).rejects.toThrow(/acm_orphan/)
+      expect(applyCanonicalProduct).not.toHaveBeenCalled()
+    })
+
+    it("treats a row as not ready when its precomputed result says readyToSync: false, without recomputing consistency itself", async () => {
+      // Deliberately a lie relative to what checkProductLevelFieldConsistency would compute for a
+      // single, sibling-less row (always ready) - proves this function trusts the precomputed
+      // result rather than recomputing it, which is the whole point of accepting it as a parameter.
+      const row = makeProduct({ sku: "acm_lied_to" })
+      const falseConsistencyResult = [{ product: row, readyToSync: false, disagreements: [] }]
+      const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_unused" })
+
+      const outcomes = await applyReadyRows([row], falseConsistencyResult, applyCanonicalProduct)
+
+      expect(applyCanonicalProduct).not.toHaveBeenCalled()
+      expect(outcomes).toEqual([
+        { productHandle: "oak-dining-table", result: { outcome: "skipped", reason: "product-level-disagreement" } },
+      ])
     })
   })
 })
