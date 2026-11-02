@@ -12,11 +12,11 @@
  * pass a tab name to scope the run to just that one.
  */
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { createApplyCanonicalProductRunner } from "../../../../product-catalog-sync/workflows/run-apply-canonical-product-workflow"
-import { triggerSyncCycle } from "../../../../product-catalog-sync/sync-cycle-trigger"
-import type { SyncCycleScope } from "../../../../product-catalog-sync/sync-cycle-trigger"
-import { createMedusaSyncCycleLock } from "../../../../product-catalog-sync/trigger-infra/medusa-locking-sync-cycle-lock"
-import { getSupplierTabSyncConfigs } from "../../../../product-catalog-sync/trigger-infra/supplier-tab-registry"
+import { createApplyCanonicalProductRunner } from "product-catalog-sync/workflows/run-apply-canonical-product-workflow"
+import { triggerSyncCycle } from "product-catalog-sync/sync-cycle-trigger"
+import type { SyncCycleScope } from "product-catalog-sync/sync-cycle-trigger"
+import { createMedusaSyncCycleLock } from "product-catalog-sync/trigger-infra/medusa-locking-sync-cycle-lock"
+import { getSupplierTabSyncConfigs } from "product-catalog-sync/trigger-infra/supplier-tab-registry"
 
 function resolveScope(body: unknown): SyncCycleScope {
   const supplierTab = (body as { supplierTab?: unknown } | null)?.supplierTab
