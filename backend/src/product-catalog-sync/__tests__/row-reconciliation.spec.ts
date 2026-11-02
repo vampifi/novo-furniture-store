@@ -1,4 +1,4 @@
-import { hashAdapterOwnedFields, reconcileSupplierTabRows } from "../row-reconciliation"
+import { hashAdapterOwnedFields, isIncompletePlaceholderSku, reconcileSupplierTabRows } from "../row-reconciliation"
 import type { ExistingSheetRow } from "../row-reconciliation"
 import type { CanonicalProduct } from "../types"
 
@@ -141,6 +141,16 @@ describe("hashAdapterOwnedFields", () => {
     const b = Object.fromEntries(bEntries) as CanonicalProduct
 
     expect(hashAdapterOwnedFields(a)).toBe(hashAdapterOwnedFields(b))
+  })
+})
+
+describe("isIncompletePlaceholderSku", () => {
+  it("flags the ADR-0004 placeholder shape: a short (<=3 char) prefix plus a trailing underscore, nothing else", () => {
+    expect(isIncompletePlaceholderSku("acm_")).toBe(true)
+  })
+
+  it("does not flag a legitimate, longer business-chosen SKU that merely happens to end in an underscore", () => {
+    expect(isIncompletePlaceholderSku("my-sku_")).toBe(false)
   })
 })
 
@@ -338,6 +348,14 @@ describe("reconcileSupplierTabRows", () => {
     const result = reconcileSupplierTabRows([existing], [fresh])
 
     expect(result.rowsToWriteBack).toEqual([{ product: fresh, adapterFieldsHash: hashAdapterOwnedFields(fresh) }])
+    expect(result.rowsNeedingMedusaSync).toEqual([fresh])
+  })
+
+  it("does not wrongly exclude a legitimate business-chosen SKU ending in an underscore from Medusa sync", () => {
+    const fresh = makeProduct({ supplierSku: "SUP-7", sku: "my-sku_" })
+
+    const result = reconcileSupplierTabRows([], [fresh])
+
     expect(result.rowsNeedingMedusaSync).toEqual([fresh])
   })
 

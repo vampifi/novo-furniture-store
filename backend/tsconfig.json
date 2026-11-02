@@ -28,7 +28,6 @@
   "include": ["src", "medusa-config.js"],
   "exclude": [
     "**/__tests__",
-    "**/__fixtures__",
     "node_modules",
     "build",
     ".cache"

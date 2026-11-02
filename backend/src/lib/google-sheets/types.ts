@@ -5,7 +5,7 @@ import type { sheets_v4 } from "googleapis"
  *
  * Narrowed (rather than depending on the full `sheets_v4.Sheets["spreadsheets"]["values"]`
  * resource) so tests can supply a plain object mock instead of constructing a real googleapis
- * client — see `__tests__/client.test.ts`.
+ * client — see `__tests__/client.spec.ts`.
  */
 export type SheetsValuesApi = Pick<sheets_v4.Sheets["spreadsheets"]["values"], "batchGet" | "batchUpdate">
 

@@ -12,18 +12,40 @@
  * pass a tab name to scope the run to just that one.
  */
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { createApplyCanonicalProductRunner } from "../../../../product-catalog-sync/workflows/run-apply-canonical-product-workflow"
-import { triggerSyncCycle } from "../../../../product-catalog-sync/sync-cycle-trigger"
-import type { SyncCycleScope } from "../../../../product-catalog-sync/sync-cycle-trigger"
-import { createMedusaSyncCycleLock } from "../../../../product-catalog-sync/trigger/medusa-locking-sync-cycle-lock"
-import { getSupplierTabSyncConfigs } from "../../../../product-catalog-sync/trigger/supplier-tab-registry"
+import { MedusaError } from "@medusajs/framework/utils"
+import { z } from "zod"
+import { createApplyCanonicalProductRunner } from "product-catalog-sync/workflows/run-apply-canonical-product-workflow"
+import { triggerSyncCycle } from "product-catalog-sync/sync-cycle-trigger"
+import type { SyncCycleScope } from "product-catalog-sync/sync-cycle-trigger"
+import { createMedusaSyncCycleLock } from "product-catalog-sync/trigger-infra/medusa-locking-sync-cycle-lock"
+import { getSupplierTabSyncConfigs } from "product-catalog-sync/trigger-infra/supplier-tab-registry"
+
+// Same zod + formatZodError pattern as src/api/admin/blog-posts/route.ts, for consistency
+// across admin routes rather than hand-rolled typeof/narrowing.
+const triggerBodySchema = z.object({
+  supplierTab: z.string().trim().min(1).optional(),
+})
+
+const formatZodError = (error: z.ZodError, fallback: string) => {
+  const { formErrors, fieldErrors } = error.flatten()
+  const fieldMessages = Object.entries(fieldErrors).flatMap(([field, errors]) =>
+    (errors ?? []).map((message) => `${field}: ${message}`)
+  )
+  const combinedErrors = [...formErrors, ...fieldMessages].filter(Boolean)
+  return combinedErrors.join(" ") || fallback
+}
 
 function resolveScope(body: unknown): SyncCycleScope {
-  const supplierTab = (body as { supplierTab?: unknown } | null)?.supplierTab
-  if (typeof supplierTab === "string" && supplierTab.trim().length > 0) {
-    return { tabs: "one", tabName: supplierTab }
+  const payload = triggerBodySchema.safeParse(body ?? {})
+
+  if (!payload.success) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      formatZodError(payload.error, "Invalid product-catalog-sync trigger payload.")
+    )
   }
-  return { tabs: "all" }
+
+  return payload.data.supplierTab ? { tabs: "one", tabName: payload.data.supplierTab } : { tabs: "all" }
 }
 
 export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<void> {

@@ -4,6 +4,7 @@
  * function (rather than inlined in the workflow composer) so the option-synthesis logic below has
  * a single, readable home - `transform()` just calls straight through to it.
  */
+import { hashAdapterOwnedFields, isIncompletePlaceholderSku } from "../../row-reconciliation"
 import type { CanonicalProduct } from "../../types"
 
 const DEFAULT_OPTION_TITLE = "Default option"
@@ -48,11 +49,34 @@ function buildVariantOptionSelection(product: CanonicalProduct): VariantOptionSe
 
 /**
  * Metadata every variant gets, regardless of create/update - carries the Supplier SKU for
- * traceability (spec §5) and is also the only place idempotency-hash storage (spec §8) would
- * hook in, if/when that's built.
+ * traceability and the Adapter-Owned-fields idempotency hash (spec §5, §8 step 9: "On success,
+ * update variant.metadata (supplier_sku, sync hash)"). `hashAdapterOwnedFields` is recomputed
+ * here rather than threaded through as a separate input: it's a pure function of `product`'s own
+ * fields, and this `product` is the exact same (already-merged) row that row-reconciliation.ts
+ * hashed earlier in the same cycle, so the value is identical - recomputing avoids widening this
+ * function's (and therefore the whole workflow input's) signature just to pass a value that's
+ * already derivable from what's already here.
  */
 function buildVariantMetadata(product: CanonicalProduct): Record<string, unknown> {
-  return { supplier_sku: product.supplierSku }
+  return { supplier_sku: product.supplierSku, sync_hash: hashAdapterOwnedFields(product) }
+}
+
+/**
+ * ADR-0004 guard at the workflow's actual Medusa-input boundary. row-reconciliation.ts and
+ * apply-ready-rows.ts both already filter placeholder-SKU rows before a product ever reaches
+ * applyCanonicalProductWorkflow - but nothing inside the workflow itself enforced the invariant,
+ * so calling the workflow directly (as its own integration test does) bypassed both filters
+ * entirely. This is the one place both the create and update paths unconditionally pass through
+ * before anything is sent to Medusa, so it's the seam that holds regardless of caller.
+ */
+function assertNoPlaceholderSkus(products: CanonicalProduct[]): void {
+  const placeholderSkus = products.filter((product) => isIncompletePlaceholderSku(product.sku)).map((product) => product.sku)
+  if (placeholderSkus.length > 0) {
+    throw new Error(
+      "applyCanonicalProductWorkflow: refusing to push row(s) whose SKU is still the ADR-0004 incomplete " +
+        `placeholder to Medusa: ${placeholderSkus.join(", ")}`
+    )
+  }
 }
 
 const CURRENCY_CODE = "usd"
@@ -86,6 +110,7 @@ export type CreateProductInput = {
  * reconciling disagreement across a product's sibling rows (spec §8) is explicitly out of scope
  * for this ticket (#14), which assumes its caller already resolved/validated that upstream. */
 export function buildCreateProductInput(products: CanonicalProduct[]): CreateProductInput {
+  assertNoPlaceholderSkus(products)
   const [representative] = products
 
   return {
@@ -134,6 +159,7 @@ export function buildUpdateProductInput(
   products: CanonicalProduct[],
   existingVariantsBySku: { variantId: string; sku: string }[]
 ): UpdateProductInput {
+  assertNoPlaceholderSkus(products)
   const [representative] = products
   const variantIdBySku = new Map(existingVariantsBySku.map(({ sku, variantId }) => [sku, variantId]))
 

@@ -4,7 +4,7 @@
  * Empty today, deliberately: no real Supplier Adapter has been onboarded yet - spec §11 lists
  * "Building each individual Supplier Adapter, one at a time" and "a concrete example Supplier
  * Tab (headers + sample rows)" as future work, and neither exists yet. The fixture adapter at
- * `../__fixtures__/fixture-supplier-adapter.ts` exists only to prove the Adapter contract (#11)
+ * `../test-support/fixture-supplier-adapter.ts` exists only to prove the Adapter contract (#11)
  * in tests - it's explicitly documented there as "NOT a real supplier integration" and has no
  * real Google Sheet column layout behind it, so it isn't registered here either.
  *

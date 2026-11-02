@@ -23,10 +23,7 @@ module.exports = {
       },
     ],
   },
-  // Issue #12 (google-sheets) landed first and established *.test.ts; issue #11
-  // (product-catalog-sync) was built in parallel using *.spec.ts. Both conventions are
-  // supported here rather than forcing a rename of either ticket's already-reviewed tests.
-  testMatch: ["<rootDir>/src/**/__tests__/**/*.test.ts", "<rootDir>/src/**/__tests__/**/*.spec.ts"],
+  testMatch: ["<rootDir>/src/**/__tests__/**/*.spec.ts"],
   testPathIgnorePatterns: ["/node_modules/", "<rootDir>/.medusa/"],
   // "tsx" added for issue #14: see the transform comment above.
   moduleFileExtensions: ["ts", "tsx", "js", "json"],
