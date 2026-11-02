@@ -22,6 +22,7 @@ import { Modules } from "@medusajs/framework/utils"
 import type { IProductModuleService } from "@medusajs/framework/types"
 import { reconcileSupplierTabRows } from "../row-reconciliation"
 import type { ExistingSheetRow } from "../row-reconciliation"
+import { checkProductLevelFieldConsistency } from "../product-level-consistency"
 import { applyReadyRows } from "../apply-ready-rows"
 import { createApplyCanonicalProductRunner } from "../workflows/run-apply-canonical-product-workflow"
 import { buildCanonicalProduct, nextTestSku } from "../test-support/canonical-product-fixture"
@@ -33,16 +34,20 @@ jest.setTimeout(120000)
 
 /**
  * The full cycle this ticket wires together (spec §8 steps 7-8, scoped to this ticket's brief):
- * reconcile against last cycle's sheet state, drop rows whose product disagrees on a
- * product-level field, group the remainder by Handle, apply each group to Medusa.
+ * reconcile against last cycle's sheet state, check product-level field consistency once (issue
+ * #19 - the same result sync-cycle.ts's real orchestration shares between this step and
+ * sync-status.ts, computed here identically for this test's own direct use of applyReadyRows),
+ * drop rows whose product disagrees on a product-level field, group the remainder by Handle,
+ * apply each group to Medusa.
  */
 async function runSyncCycle(
   existingRows: ExistingSheetRow[],
   freshProducts: CanonicalProduct[],
-  applyCanonicalProduct: Parameters<typeof applyReadyRows>[1]
+  applyCanonicalProduct: Parameters<typeof applyReadyRows>[2]
 ) {
   const { rowsNeedingMedusaSync, rowsToWriteBack } = reconcileSupplierTabRows(existingRows, freshProducts)
-  const outcomes = await applyReadyRows(rowsNeedingMedusaSync, applyCanonicalProduct)
+  const consistencyResults = checkProductLevelFieldConsistency(rowsToWriteBack.map((row) => row.product))
+  const outcomes = await applyReadyRows(rowsNeedingMedusaSync, consistencyResults, applyCanonicalProduct)
   return { outcomes, rowsToWriteBack }
 }
 

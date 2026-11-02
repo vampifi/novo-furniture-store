@@ -124,6 +124,27 @@ const medusaConfig = {
                 url: REDIS_URL,
               }
             }
+          },
+          // Issue #19 (product-catalog-sync): the Sync Engine's overlap lock needs a distributed
+          // lock shared across every server instance/process, not Medusa's default in-memory
+          // Locking module (which only prevents overlap within a single process). Mirrors the
+          // EVENT_BUS/WORKFLOW_ENGINE pattern above: same REDIS_URL, same already-installed
+          // @medusajs/locking-redis provider.
+          {
+            key: Modules.LOCKING,
+            resolve: '@medusajs/locking',
+            options: {
+              providers: [
+                {
+                  id: 'locking-redis',
+                  resolve: '@medusajs/locking-redis',
+                  is_default: true,
+                  options: {
+                    redisUrl: REDIS_URL
+                  }
+                }
+              ]
+            }
           }
         ]
       : []),
