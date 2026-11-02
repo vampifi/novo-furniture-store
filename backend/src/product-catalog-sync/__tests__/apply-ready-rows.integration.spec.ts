@@ -27,6 +27,7 @@ import { applyReadyRows } from "../apply-ready-rows"
 import { createApplyCanonicalProductRunner } from "../workflows/run-apply-canonical-product-workflow"
 import { buildCanonicalProduct, nextTestSku } from "../test-support/canonical-product-fixture"
 import { startMeilisearchTestContainer } from "../test-support/meilisearch-test-container"
+import type { MeilisearchTestContainer } from "../test-support/meilisearch-test-container"
 import type { CanonicalProduct } from "../types"
 
 jest.setTimeout(120000)
@@ -51,14 +52,14 @@ async function runSyncCycle(
 }
 
 describe("Sync Engine apply mechanism (issue #16): reconciliation -> consistency -> apply, end-to-end", () => {
-  let stopMeilisearch: () => Promise<void>
+  let meilisearch: MeilisearchTestContainer
 
   beforeAll(async () => {
-    stopMeilisearch = await startMeilisearchTestContainer()
+    meilisearch = await startMeilisearchTestContainer()
   })
 
   afterAll(async () => {
-    await stopMeilisearch()
+    await meilisearch.stop()
   })
 
   medusaIntegrationTestRunner({

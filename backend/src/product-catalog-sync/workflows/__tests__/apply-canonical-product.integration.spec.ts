@@ -1,7 +1,8 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import type { IProductModuleService } from "@medusajs/framework/types"
-import { startMeilisearchTestContainer, waitForIndexedProductDocument } from "../../test-support/meilisearch-test-container"
+import { startMeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
+import type { MeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
 import { buildCanonicalProduct, buildCustomAttribute, nextTestSku } from "../../test-support/canonical-product-fixture"
 import { applyCanonicalProductWorkflow } from "../apply-canonical-product"
 
@@ -24,14 +25,14 @@ async function expectWorkflowRunToReject(runPromise: Promise<unknown>): Promise<
 }
 
 describe("applyCanonicalProductWorkflow", () => {
-  let stopMeilisearch: () => Promise<void>
+  let meilisearch: MeilisearchTestContainer
 
   beforeAll(async () => {
-    stopMeilisearch = await startMeilisearchTestContainer()
+    meilisearch = await startMeilisearchTestContainer()
   })
 
   afterAll(async () => {
-    await stopMeilisearch()
+    await meilisearch.stop()
   })
 
   medusaIntegrationTestRunner({
@@ -274,7 +275,7 @@ describe("applyCanonicalProductWorkflow", () => {
             },
           })
 
-          const indexedDocument = (await waitForIndexedProductDocument(result.productId)) as {
+          const indexedDocument = (await meilisearch.waitForIndexedProductDocument(result.productId)) as {
             id: string
             title: string
           }
