@@ -2,7 +2,7 @@
  * The Sync Engine's scheduled trigger (issue #19; spec §8: "Scheduled polling ... every 30-60s").
  *
  * Contains no cycle logic of its own - it resolves the currently-registered Supplier Tabs
- * (trigger/supplier-tab-registry.ts), wires up the real overlap lock and the real
+ * (trigger-infra/supplier-tab-registry.ts), wires up the real overlap lock and the real
  * apply-canonical-product runner, and calls `triggerSyncCycle`, the exact same shared entry
  * point the manual-trigger admin route calls
  * (`src/api/admin/product-catalog-sync/trigger/route.ts`).
@@ -16,8 +16,8 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import type { MedusaContainer } from "@medusajs/framework/types"
 import { createApplyCanonicalProductRunner } from "../product-catalog-sync/workflows/run-apply-canonical-product-workflow"
 import { triggerSyncCycle } from "../product-catalog-sync/sync-cycle-trigger"
-import { createMedusaSyncCycleLock } from "../product-catalog-sync/trigger/medusa-locking-sync-cycle-lock"
-import { getSupplierTabSyncConfigs } from "../product-catalog-sync/trigger/supplier-tab-registry"
+import { createMedusaSyncCycleLock } from "../product-catalog-sync/trigger-infra/medusa-locking-sync-cycle-lock"
+import { getSupplierTabSyncConfigs } from "../product-catalog-sync/trigger-infra/supplier-tab-registry"
 
 export default async function productCatalogSyncJob(container: MedusaContainer): Promise<void> {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)

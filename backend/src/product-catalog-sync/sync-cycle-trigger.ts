@@ -11,7 +11,7 @@
  * (whether kicked off by the schedule or a manual call) does block a second trigger for that same
  * tab, immediately and without waiting.
  *
- * Framework-free, like sync-cycle.ts: `SyncCycleLock` is injected, with `trigger/` holding the
+ * Framework-free, like sync-cycle.ts: `SyncCycleLock` is injected, with `trigger-infra/` holding the
  * real Medusa-Locking-module-backed implementation.
  */
 import { runSupplierTabSyncCycle } from "./sync-cycle"

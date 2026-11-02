@@ -11,7 +11,7 @@
  * §11 "future work") and `applyCanonicalProduct` (the real composed Medusa workflow, #14/#16's
  * existing seam). That keeps this module unit-testable with fakes, and leaves the real Google
  * Sheets wiring and the real Medusa wiring as separate, swappable concerns - see
- * `trigger/` for the real implementations used by the scheduled job and the manual-trigger route.
+ * `trigger-infra/` for the real implementations used by the scheduled job and the manual-trigger route.
  *
  * Issue #19's fix for a known duplication: `checkProductLevelFieldConsistency` (#17) used to be
  * called independently by apply-ready-rows.ts (#16) and by whatever computed sync-status.ts's
@@ -54,7 +54,7 @@ export interface SupplierTabSyncOutcome {
  * The per-tab I/O seam this module depends on but doesn't implement: reading a tab's current
  * state (both the previously-synced rows needed for reconciliation, and this cycle's fresh raw
  * rows for the Adapter) and writing this cycle's resolved outcome back. The real Google-Sheets-
- * backed implementation lives in `trigger/` - deliberately not built here, since the per-tab
+ * backed implementation lives in `trigger-infra/` - deliberately not built here, since the per-tab
  * Sheet column layout isn't designed yet for any real supplier (spec §11).
  */
 export interface SupplierTabIO {
