@@ -4,6 +4,7 @@
  * tests in workflows/__tests__/apply-canonical-product.integration.spec.ts).
  */
 import { buildCanonicalProduct, buildVariantOption } from "../../../test-support/canonical-product-fixture"
+import { hashAdapterOwnedFields } from "../../../row-reconciliation"
 import { buildCreateProductInput, buildUpdateProductInput } from "../build-product-input"
 
 describe("buildCreateProductInput", () => {
@@ -45,7 +46,20 @@ describe("buildCreateProductInput", () => {
 
     const input = buildCreateProductInput([product])
 
-    expect(input.variants[0].metadata).toEqual({ supplier_sku: "ACME-123" })
+    expect(input.variants[0].metadata).toEqual({
+      supplier_sku: "ACME-123",
+      sync_hash: hashAdapterOwnedFields(product),
+    })
+  })
+
+  it("stashes the Adapter-Owned-fields idempotency hash in variant metadata alongside the Supplier SKU (spec §8 step 9)", () => {
+    const product = buildCanonicalProduct({ supplierCost: 42 })
+    const unrelatedProduct = buildCanonicalProduct({ supplierCost: 999 })
+
+    const input = buildCreateProductInput([product])
+
+    expect(input.variants[0].metadata.sync_hash).toBe(hashAdapterOwnedFields(product))
+    expect(input.variants[0].metadata.sync_hash).not.toBe(hashAdapterOwnedFields(unrelatedProduct))
   })
 
   it("takes representative product-level fields from the first row only (out of scope: §8 consistency check)", () => {
@@ -56,6 +70,16 @@ describe("buildCreateProductInput", () => {
 
     expect(input.title).toBe("First Title")
   })
+
+  it(
+    "refuses to build Medusa input for a row whose SKU is still the ADR-0004 incomplete placeholder - " +
+      "the invariant must hold at this seam too, not just in the two callers that already filter for it",
+    () => {
+      const placeholderProduct = buildCanonicalProduct({ sku: "acm_", supplierSku: null })
+
+      expect(() => buildCreateProductInput([placeholderProduct])).toThrow(/acm_/)
+    }
+  )
 })
 
 describe("buildUpdateProductInput", () => {
@@ -71,7 +95,7 @@ describe("buildUpdateProductInput", () => {
         title: product.productTitle,
         sku: "sku-1",
         prices: [{ amount: product.retailPrice, currency_code: "usd" }],
-        metadata: { supplier_sku: product.supplierSku },
+        metadata: { supplier_sku: product.supplierSku, sync_hash: hashAdapterOwnedFields(product) },
       },
     ])
   })

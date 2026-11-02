@@ -4,6 +4,7 @@ import type { IProductModuleService } from "@medusajs/framework/types"
 import { startMeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
 import type { MeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
 import { buildCanonicalProduct, buildCustomAttribute, nextTestSku } from "../../test-support/canonical-product-fixture"
+import { hashAdapterOwnedFields } from "../../row-reconciliation"
 import { applyCanonicalProductWorkflow } from "../apply-canonical-product"
 
 jest.setTimeout(120000)
@@ -254,6 +255,60 @@ describe("applyCanonicalProductWorkflow", () => {
             })
             expect(materialAfter).toHaveLength(1)
             expect(materialAfter[0].value).toBe("Oak")
+          }
+        )
+      })
+
+      describe("ADR 0004 placeholder-SKU guard", () => {
+        it(
+          "rejects a placeholder-SKU product even when the workflow is called directly, bypassing the " +
+            "two callers (row-reconciliation.ts, apply-ready-rows.ts) that normally filter it out first",
+          async () => {
+            const container = getContainer()
+            const handle = `needs-a-sku-${nextTestSku()}`
+            const placeholderProduct = buildCanonicalProduct({
+              productHandle: handle,
+              sku: "acm_",
+              supplierSku: null,
+            })
+
+            await expectWorkflowRunToReject(
+              applyCanonicalProductWorkflow(container).run({ input: { products: [placeholderProduct] } })
+            )
+
+            const query = container.resolve(ContainerRegistrationKeys.QUERY)
+            const { data: products } = await query.graph({
+              entity: "product",
+              fields: ["id"],
+              filters: { handle },
+            })
+            expect(products).toHaveLength(0)
+          }
+        )
+      })
+
+      describe("variant.metadata hash persistence (spec §8 step 9)", () => {
+        it(
+          "persists the Adapter-Owned-fields sync hash to variant.metadata on a real create, " +
+            "readable back via a real Medusa query - not just present in a hand-built test fixture",
+          async () => {
+            const container = getContainer()
+            const sku = nextTestSku()
+            const canonicalProduct = buildCanonicalProduct({ sku, supplierSku: "SUP-HASH-1" })
+
+            await applyCanonicalProductWorkflow(container).run({
+              input: { products: [canonicalProduct] },
+            })
+
+            const query = container.resolve(ContainerRegistrationKeys.QUERY)
+            const { data: variants } = await query.graph({
+              entity: "product_variant",
+              fields: ["id", "sku", "metadata"],
+              filters: { sku },
+            })
+
+            expect(variants).toHaveLength(1)
+            expect(variants[0].metadata?.sync_hash).toBe(hashAdapterOwnedFields(canonicalProduct))
           }
         )
       })
