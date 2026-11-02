@@ -195,7 +195,7 @@ const PLACEHOLDER_SKU_SHAPE = /^.{1,3}_$/
  * validation.ts, this can't do an exact match against a known supplier prefix: CanonicalProduct
  * carries no `supplierName` field, and neither this function nor its caller
  * (`reconcileSupplierTabRows`) ever receives one - each Adapter keeps its own supplier name
- * private (see e.g. `__fixtures__/fixture-supplier-adapter.ts`'s `SUPPLIER_NAME` constant), so an
+ * private (see e.g. `test-support/fixture-supplier-adapter.ts`'s `SUPPLIER_NAME` constant), so an
  * exact match isn't information actually available at this point in the pipeline. Bounding the
  * shape to `buildDefaultSku`'s own 3-character-prefix contract is the least invasive fix that
  * closes the concrete false-positive this was found with, without plumbing a new field through

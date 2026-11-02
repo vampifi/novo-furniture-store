@@ -1,8 +1,8 @@
 /**
  * Builds a minimal, valid CanonicalProduct for tests, with every field defaulted so a test only
  * has to specify the handful of fields it actually cares about. Not a real Supplier Adapter
- * output - purely test scaffolding (contrast with __fixtures__/fixture-supplier-adapter.ts, which
- * is itself under test for issue #11).
+ * output - purely test scaffolding (contrast with fixture-supplier-adapter.ts in this same
+ * directory, which is itself under test for issue #11).
  */
 import type { CanonicalCustomAttribute, CanonicalProduct, CanonicalVariantOption } from "../types"
 

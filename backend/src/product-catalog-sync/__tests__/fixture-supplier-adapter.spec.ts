@@ -1,4 +1,4 @@
-import { fixtureSupplierAdapter } from "../__fixtures__/fixture-supplier-adapter"
+import { fixtureSupplierAdapter } from "../test-support/fixture-supplier-adapter"
 import type { AdapterContext, RawRow } from "../types"
 
 function fakeContext(): AdapterContext {
