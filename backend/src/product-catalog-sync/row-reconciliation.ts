@@ -188,7 +188,7 @@ export function reconcileSupplierTabRows(
  * exactly what distinguishes "no Supplier SKU to derive from" (buildDefaultSku) regardless of
  * which supplier's prefix was used.
  */
-function isIncompletePlaceholderSku(sku: string): boolean {
+export function isIncompletePlaceholderSku(sku: string): boolean {
   return sku.endsWith("_")
 }
 
