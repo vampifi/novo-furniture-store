@@ -182,14 +182,29 @@ export function reconcileSupplierTabRows(
 }
 
 /**
- * True when `sku` matches the ADR-0004 incomplete-placeholder shape: `<prefix>_` with nothing
- * after the trailing underscore. Unlike `isPlaceholderSku` in validation.ts, this doesn't need a
- * supplier name - CanonicalProduct doesn't carry one, and the trailing-underscore shape alone is
- * exactly what distinguishes "no Supplier SKU to derive from" (buildDefaultSku) regardless of
- * which supplier's prefix was used.
+ * The ADR-0004 incomplete-placeholder shape: `buildDefaultSku`'s prefix (`supplierName.slice(0,
+ * 3)`, so at most 3 characters) followed by exactly one trailing underscore and nothing else.
+ * Bounding the prefix length - rather than a bare `endsWith("_")` - is what keeps this from
+ * false-flagging a legitimate, longer business-chosen SKU that merely happens to end in an
+ * underscore (e.g. "my-sku_"): a prior code-review pass found that gap in this exact function.
+ */
+const PLACEHOLDER_SKU_SHAPE = /^.{1,3}_$/
+
+/**
+ * True when `sku` matches the ADR-0004 incomplete-placeholder shape. Unlike `isPlaceholderSku` in
+ * validation.ts, this can't do an exact match against a known supplier prefix: CanonicalProduct
+ * carries no `supplierName` field, and neither this function nor its caller
+ * (`reconcileSupplierTabRows`) ever receives one - each Adapter keeps its own supplier name
+ * private (see e.g. `__fixtures__/fixture-supplier-adapter.ts`'s `SUPPLIER_NAME` constant), so an
+ * exact match isn't information actually available at this point in the pipeline. Bounding the
+ * shape to `buildDefaultSku`'s own 3-character-prefix contract is the least invasive fix that
+ * closes the concrete false-positive this was found with, without plumbing a new field through
+ * the Adapter contract for a low-severity edge case. The residual ambiguity - an actual 1-3
+ * character business-chosen SKU ending in "_" - is unavoidable without that plumbing, and is
+ * accepted as out of scope here.
  */
 export function isIncompletePlaceholderSku(sku: string): boolean {
-  return sku.endsWith("_")
+  return PLACEHOLDER_SKU_SHAPE.test(sku)
 }
 
 /**
