@@ -4,7 +4,7 @@ import type { IProductModuleService } from "@medusajs/framework/types"
 import { startMeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
 import type { MeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
 import { buildCanonicalProduct, buildCustomAttribute, nextTestSku } from "../../test-support/canonical-product-fixture"
-import { hashAdapterOwnedFields } from "../../row-reconciliation"
+import { hashCanonicalProduct } from "../../row-reconciliation"
 import { applyCanonicalProductWorkflow } from "../apply-canonical-product"
 
 jest.setTimeout(120000)
@@ -308,7 +308,7 @@ describe("applyCanonicalProductWorkflow", () => {
             })
 
             expect(variants).toHaveLength(1)
-            expect(variants[0].metadata?.sync_hash).toBe(hashAdapterOwnedFields(canonicalProduct))
+            expect(variants[0].metadata?.sync_hash).toBe(hashCanonicalProduct(canonicalProduct))
           }
         )
       })

@@ -26,11 +26,10 @@ export interface ExistingSheetRow {
 
 /**
  * Single source of truth for the Business-Owned / Adapter-Owned split of CanonicalProduct's
- * top-level scalar fields (GLOSSARY.md, spec §5) - `hashAdapterOwnedFields` and `mergeProduct`
- * both draw from this one list rather than maintaining their own, so the two can't silently
- * drift apart as the schema grows. `variantOptions` and `customAttributes` are deliberately
- * excluded here - their ownership split is per-slot, not per-field (see `mergeVariantOptionSlot`
- * / `mergeCustomAttributeSlot` below), so they're handled separately in both functions.
+ * top-level scalar fields (GLOSSARY.md, spec §5) - `mergeProduct` draws from this one list rather
+ * than maintaining its own. `variantOptions` and `customAttributes` are deliberately excluded
+ * here - their ownership split is per-slot, not per-field (see `mergeVariantOptionSlot` /
+ * `mergeCustomAttributeSlot` below), so they're handled separately there.
  */
 const BUSINESS_OWNED_SCALAR_FIELDS = [
   "productHandle",
@@ -49,16 +48,6 @@ const BUSINESS_OWNED_SCALAR_FIELDS = [
   "discountable",
 ] as const satisfies readonly (keyof CanonicalProduct)[]
 
-const PAIRED_ARRAY_FIELDS = ["variantOptions", "customAttributes"] as const satisfies readonly (keyof CanonicalProduct)[]
-
-function omit<T extends object, K extends keyof T>(source: T, keys: readonly K[]): Omit<T, K> {
-  const result: T = { ...source }
-  for (const key of keys) {
-    delete result[key]
-  }
-  return result
-}
-
 function pick<T extends object, K extends keyof T>(source: T, keys: readonly K[]): Pick<T, K> {
   const result = {} as Pick<T, K>
   for (const key of keys) {
@@ -67,32 +56,29 @@ function pick<T extends object, K extends keyof T>(source: T, keys: readonly K[]
   return result
 }
 
-/** Deterministic hash over exactly a CanonicalProduct's Adapter-Owned field values (spec §8). */
-export function hashAdapterOwnedFields(product: CanonicalProduct): string {
-  const adapterOwnedScalars = omit(product, [...BUSINESS_OWNED_SCALAR_FIELDS, ...PAIRED_ARRAY_FIELDS])
-
-  const adapterOwnedSnapshot = {
-    ...adapterOwnedScalars,
-    variantOptions: product.variantOptions.map((option) => ({
-      supplierOptionName: option.supplierOptionName,
-      supplierOptionValue: option.supplierOptionValue,
-    })),
-    customAttributes: product.customAttributes.map((attribute) => ({
-      attributeKey: attribute.attributeKey,
-      attributeCategoryId: attribute.attributeCategoryId,
-      supplierAttributeValue: attribute.supplierAttributeValue,
-    })),
-  }
-
-  return createHash("sha256").update(stableStringify(adapterOwnedSnapshot)).digest("hex")
+/**
+ * Deterministic whole-row fingerprint over every field of a CanonicalProduct (spec §8; ADR 0006).
+ *
+ * Hashes the row as a single whole - Adapter-Owned and Business-Owned fields alike - rather than
+ * only the Adapter-Owned subset. `reconcileSupplierTabRows` always calls this on the *merged* row
+ * (`mergeProduct(existingMatch.product, fresh)`), never on `fresh` in isolation: hashing `fresh`
+ * alone (the pre-ADR-0006 behaviour, when this function was named `hashAdapterOwnedFields`) can
+ * never detect a Business-Owned-only edit made directly in the Sheet between cycles, since such
+ * an edit never changes `fresh` - which is exactly how issue #21 (a Retail Price edit never
+ * reaching Medusa) happened. One whole-row hash, checked after merging, is sufficient to catch
+ * every combination of Adapter-Owned/Business-Owned change across a cycle gap - seen ADR 0006 for
+ * the four scenarios this was checked against.
+ */
+export function hashCanonicalProduct(product: CanonicalProduct): string {
+  return createHash("sha256").update(stableStringify(product)).digest("hex")
 }
 
 /**
  * `JSON.stringify` with object keys sorted at every nesting level, so the result - and therefore
  * any hash over it - is stable regardless of incidental object key insertion order (which
- * `{...spread}`/`omit`/`pick` don't otherwise guarantee). Array element order is left untouched;
- * arrays here are always ordered data (e.g. `imageUrls`, variant-option/attribute slots) where
- * order is meaningful, unlike object key order, which is incidental.
+ * `{...spread}`/`pick` don't otherwise guarantee). Array element order is left untouched; arrays
+ * here are always ordered data (e.g. `imageUrls`, variant-option/attribute slots) where order is
+ * meaningful, unlike object key order, which is incidental.
  */
 function stableStringify(value: unknown): string {
   return JSON.stringify(sortKeysDeep(value))
@@ -131,6 +117,14 @@ export interface ReconciliationResult {
  *
  * Matching is keyed on Supplier SKU (stable, never business-edited) - never on SKU itself, which
  * the business owner can rename at will (spec §8, "Two distinct matching problems").
+ *
+ * For a matched row, the idempotency check (ADR 0006) always merges first
+ * (`mergeProduct(existingMatch.product, fresh)`) and hashes *that* - never `fresh` in isolation -
+ * so a Business-Owned edit made directly in the Sheet (`existingMatch.product`, per this module's
+ * documented contract: `ExistingSheetRow.product` is the Sheet's current state) is just as
+ * capable of triggering a write-back/Medusa-sync as a changed Adapter-Owned value. Only an
+ * unchanged merged-row hash means this cycle would reproduce a row identical to what's already
+ * persisted - skip entirely, no Sheet write, no Medusa call.
  */
 export function reconcileSupplierTabRows(
   existingRows: ExistingSheetRow[],
@@ -153,19 +147,19 @@ export function reconcileSupplierTabRows(
 
     if (!existingMatch) {
       // New row - no identity to compare against, so there's nothing to merge or skip.
-      pushRow(fresh, hashAdapterOwnedFields(fresh))
+      pushRow(fresh, hashCanonicalProduct(fresh))
       continue
     }
 
-    const freshHash = hashAdapterOwnedFields(fresh)
-    if (freshHash === existingMatch.adapterFieldsHash) {
-      // Idempotency (spec §8): the adapter is a pure function, so an unchanged hash means this
-      // cycle would reproduce identical Adapter-Owned output - skip entirely, no Sheet write, no
-      // Medusa call.
+    const merged = mergeProduct(existingMatch.product, fresh)
+    const mergedHash = hashCanonicalProduct(merged)
+    if (mergedHash === existingMatch.adapterFieldsHash) {
+      // Idempotency (spec §8, ADR 0006): the merged row is identical to what's already
+      // persisted - skip entirely, no Sheet write, no Medusa call.
       continue
     }
 
-    pushRow(mergeProduct(existingMatch.product, fresh), freshHash)
+    pushRow(merged, mergedHash)
   }
 
   function pushRow(product: CanonicalProduct, adapterFieldsHash: string): void {

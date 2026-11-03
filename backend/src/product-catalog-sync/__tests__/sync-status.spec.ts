@@ -2,7 +2,7 @@ import { buildSyncedWriteBack, resolveSyncStatusForCycle } from "../sync-status"
 import type { AdapterRowResult, CanonicalProduct } from "../types"
 import { checkProductLevelFieldConsistency } from "../product-level-consistency"
 import type { ProductLevelConsistencyCheckResult } from "../product-level-consistency"
-import { hashAdapterOwnedFields, reconcileSupplierTabRows } from "../row-reconciliation"
+import { hashCanonicalProduct, reconcileSupplierTabRows } from "../row-reconciliation"
 import type { ExistingSheetRow } from "../row-reconciliation"
 
 /**
@@ -258,7 +258,7 @@ describe("buildSyncedWriteBack", () => {
 describe("reconciliation: re-flagged every cycle without a wasted rewrite (spec §9)", () => {
   it("keeps an unresolved row's status correct across cycles even though idempotency skips rewriting its unchanged hash", () => {
     const cycle1Product = makeProduct({ supplierSku: "SUP-ERR", sku: "acm_", productHandle: "needs-sku-product" })
-    const cycle1Hash = hashAdapterOwnedFields(cycle1Product)
+    const cycle1Hash = hashCanonicalProduct(cycle1Product)
 
     // Cycle 1: the row is new, so it's written back with its correctly-derived status.
     const cycle1 = resolveSyncStatusForCycle({
