@@ -1,7 +1,7 @@
 # Product Catalog Sync: Google Sheet → Medusa — Architecture Spec
 
-**Status**: Architecture decided, ready for implementation planning.
-**Source of record**: [wayfinder map #1](https://github.com/vampifi/novo-furniture-store/issues/1) and its nine resolved tickets; `GLOSSARY.md`; `docs/adr/0001`–`0005`. This document consolidates those decisions into one reference — the issues and ADRs remain the detailed record of *why*.
+**Status**: Implemented and merged to `integration/product-catalog-sync`, verified end-to-end against a real local Medusa instance. One post-implementation bug found via manual verification and fixed — see ADR 0006.
+**Source of record**: [wayfinder map #1](https://github.com/vampifi/novo-furniture-store/issues/1) and its nine resolved tickets; `GLOSSARY.md`; `docs/adr/0001`–`0006`. This document consolidates those decisions into one reference — the issues and ADRs remain the detailed record of *why*.
 
 ## 1. Problem
 
@@ -176,11 +176,11 @@ Instead: a **custom Medusa workflow** composes the official `createProductsWorkf
 Scheduled polling (Medusa `src/jobs`, every 30–60s — adequate per research, though it provides no retries or overlap prevention on its own) and a manual "sync now" request (scopable to one Supplier Tab or all of them) enter the same underlying sync-cycle function. A lock (a Redis flag, already configured) prevents overlap — a trigger firing mid-cycle is simply skipped, not queued. The concrete manual-trigger UI surface (likely Sheets-native) is left to implementation.
 
 ### Two distinct matching problems
-- **Adapter output ↔ existing Sheet row**: matched via **Supplier SKU** (stable, never business-edited) — decides whether to use the Adapter's fresh seed defaults (new row) or preserve existing Business-Owned values (existing row, merging only Adapter-Owned fields).
+- **Adapter output ↔ existing Sheet row**: matched via **Supplier SKU** (stable, never business-edited) — decides whether to use the Adapter's fresh seed defaults (new row) or preserve existing Business-Owned values (existing row, merging only Adapter-Owned fields). The "existing" row's product data is read from the **Sheet's current state** (not Medusa) — see ADR 0006 — so a business owner's in-sheet edit is visible to this merge; only the row's stored hash is read from Medusa's metadata.
 - **Sheet row ↔ Medusa variant**: matched via **SKU** itself (the real Medusa upsert key) — this is Sheet-to-Medusa, not Adapter-to-Sheet, so the (possibly business-renamed) SKU is correct here.
 
 ### Idempotency
-A hash of each row's Adapter-Owned field values is stored in `variant.metadata`, alongside `supplier_sku`. An unchanged hash skips the row entirely — no Sheet write, no Medusa call.
+A deterministic fingerprint of the **merged row** — Adapter-Owned fields refreshed, Business-Owned fields as currently sitting in the Sheet — is stored in `variant.metadata` as `sync_hash`, alongside `supplier_sku`. An unchanged hash skips the row entirely — no Sheet write, no Medusa call. **Revised by ADR 0006**: the original design hashed only Adapter-Owned fields of the Adapter's fresh output in isolation, which could never detect a Business-Owned-only edit (e.g. a Retail Price change made directly in the Sheet) — found via manual end-to-end verification after initial implementation, not during design. Hashing the merged row, computed after merging rather than over fresh output alone, closes this for every combination of Adapter-Owned/Business-Owned change across a cycle gap.
 
 ### Product-level field consistency (new finding during design)
 Several canonical-schema columns are product-level in Medusa (one slot per product) despite being repeated per variant row in the Sheet. If a product's sibling rows disagree on a Business-Owned product-level field, **no default is picked** — the product simply doesn't sync until the business owner resolves it. Resolution uses majority rule: if most siblings agree, only the dissenting row(s) are flagged by name; a genuine tie flags every row of that product with a caveat that it may not apply to every variant.
@@ -230,11 +230,14 @@ Plus a **`Last Synced At`** timestamp, updated whenever a row successfully syncs
 | [0003](../adr/0003-supplier-tab-row-per-variant.md) | One row per variant, mirroring Medusa's own CSV convention |
 | [0004](../adr/0004-no-automatic-identity-matching-without-supplier-code.md) | No automatic identity matching when a supplier provides no code; incomplete-placeholder SKU, business owner reconciles by hand |
 | [0005](../adr/0005-sync-engine-applies-via-composed-workflow.md) | Direct composed-workflow calls, not CSV re-import |
+| [0006](../adr/0006-existing-row-sourcing-and-merged-row-hash.md) | `existingRows` sourced from the Sheet, not Medusa; idempotency hashes the merged row, not just Adapter-Owned fields — fixes a post-implementation bug where Business-Owned edits silently never reached Medusa |
 
 ## 11. Future Work
 
 - Designing the Pack Extraction stage proper (file ingestion mechanics, where Supplier Packs land, OCR/AI-based extraction for non-deterministic suppliers) — its own future wayfinder effort.
 - Field-level extraction-confidence flagging, once that extraction stage exists.
 - Building each individual Supplier Adapter, one at a time, against this interface (§6).
+- **Open, unresolved**: the Admin dashboard widget from `@linearcommerce/product-custom-attributes` (for viewing/editing custom attributes in the Medusa UI) doesn't appear in the compiled admin bundle, despite the plugin being correctly structured and resolvable. Root cause not found — traced through Medusa's plugin-admin-resolution pipeline without a clear answer; reproduces in a real `medusa build`, so not a local-dev artifact. Doesn't affect correctness: the underlying custom-attribute data is independently verified correct at the database level. Worth a focused investigation or an upstream bug report if the Admin UI view becomes a real requirement.
+- **Pending a client decision** (meeting scheduled the day after this spec's implementation was verified): whether to build automated per-supplier adapters at all, or have the business owner's staff populate Supplier Tabs manually. The architecture supports either per-supplier, or a hybrid — see the "manual-entry pivot" discussion recorded in this effort's history. If the client decides against adapters for some/all suppliers, revisit whether the paired `Supplier X`/`X` columns (§5) and the Adapter-Owned/Business-Owned split still earn their complexity for those suppliers, since that split exists specifically to reconcile two independent writers (an automated adapter and a human) — with only one writer, it can simplify.
 - A concrete example Supplier Tab (headers + sample rows) to sanity-check this schema before implementation begins.
 - Deciding how this spec itself gets reviewed/signed off before handoff.
