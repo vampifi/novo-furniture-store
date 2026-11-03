@@ -4,7 +4,7 @@
  * function (rather than inlined in the workflow composer) so the option-synthesis logic below has
  * a single, readable home - `transform()` just calls straight through to it.
  */
-import { hashAdapterOwnedFields, isIncompletePlaceholderSku } from "../../row-reconciliation"
+import { hashCanonicalProduct, isIncompletePlaceholderSku } from "../../row-reconciliation"
 import type { CanonicalProduct } from "../../types"
 
 const DEFAULT_OPTION_TITLE = "Default option"
@@ -49,8 +49,8 @@ function buildVariantOptionSelection(product: CanonicalProduct): VariantOptionSe
 
 /**
  * Metadata every variant gets, regardless of create/update - carries the Supplier SKU for
- * traceability and the Adapter-Owned-fields idempotency hash (spec §5, §8 step 9: "On success,
- * update variant.metadata (supplier_sku, sync hash)"). `hashAdapterOwnedFields` is recomputed
+ * traceability and the whole-row idempotency hash (spec §5, §8 step 9: "On success, update
+ * variant.metadata (supplier_sku, sync hash)"; ADR 0006). `hashCanonicalProduct` is recomputed
  * here rather than threaded through as a separate input: it's a pure function of `product`'s own
  * fields, and this `product` is the exact same (already-merged) row that row-reconciliation.ts
  * hashed earlier in the same cycle, so the value is identical - recomputing avoids widening this
@@ -58,7 +58,7 @@ function buildVariantOptionSelection(product: CanonicalProduct): VariantOptionSe
  * already derivable from what's already here.
  */
 function buildVariantMetadata(product: CanonicalProduct): Record<string, unknown> {
-  return { supplier_sku: product.supplierSku, sync_hash: hashAdapterOwnedFields(product) }
+  return { supplier_sku: product.supplierSku, sync_hash: hashCanonicalProduct(product) }
 }
 
 /**

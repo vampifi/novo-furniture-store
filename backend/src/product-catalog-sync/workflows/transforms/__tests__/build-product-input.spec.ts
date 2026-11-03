@@ -4,7 +4,7 @@
  * tests in workflows/__tests__/apply-canonical-product.integration.spec.ts).
  */
 import { buildCanonicalProduct, buildVariantOption } from "../../../test-support/canonical-product-fixture"
-import { hashAdapterOwnedFields } from "../../../row-reconciliation"
+import { hashCanonicalProduct } from "../../../row-reconciliation"
 import { buildCreateProductInput, buildUpdateProductInput } from "../build-product-input"
 
 describe("buildCreateProductInput", () => {
@@ -48,18 +48,18 @@ describe("buildCreateProductInput", () => {
 
     expect(input.variants[0].metadata).toEqual({
       supplier_sku: "ACME-123",
-      sync_hash: hashAdapterOwnedFields(product),
+      sync_hash: hashCanonicalProduct(product),
     })
   })
 
-  it("stashes the Adapter-Owned-fields idempotency hash in variant metadata alongside the Supplier SKU (spec §8 step 9)", () => {
+  it("stashes the whole-row idempotency hash in variant metadata alongside the Supplier SKU (spec §8 step 9; ADR 0006)", () => {
     const product = buildCanonicalProduct({ supplierCost: 42 })
     const unrelatedProduct = buildCanonicalProduct({ supplierCost: 999 })
 
     const input = buildCreateProductInput([product])
 
-    expect(input.variants[0].metadata.sync_hash).toBe(hashAdapterOwnedFields(product))
-    expect(input.variants[0].metadata.sync_hash).not.toBe(hashAdapterOwnedFields(unrelatedProduct))
+    expect(input.variants[0].metadata.sync_hash).toBe(hashCanonicalProduct(product))
+    expect(input.variants[0].metadata.sync_hash).not.toBe(hashCanonicalProduct(unrelatedProduct))
   })
 
   it("takes representative product-level fields from the first row only (out of scope: §8 consistency check)", () => {
@@ -95,7 +95,7 @@ describe("buildUpdateProductInput", () => {
         title: product.productTitle,
         sku: "sku-1",
         prices: [{ amount: product.retailPrice, currency_code: "usd" }],
-        metadata: { supplier_sku: product.supplierSku, sync_hash: hashAdapterOwnedFields(product) },
+        metadata: { supplier_sku: product.supplierSku, sync_hash: hashCanonicalProduct(product) },
       },
     ])
   })

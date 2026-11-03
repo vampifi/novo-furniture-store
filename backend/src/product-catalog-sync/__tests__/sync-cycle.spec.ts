@@ -2,7 +2,7 @@ import { runSupplierTabSyncCycle } from "../sync-cycle"
 import type { SupplierTabDefinition, SupplierTabIO } from "../sync-cycle"
 import { checkProductLevelFieldConsistency } from "../product-level-consistency"
 import type { ExistingSheetRow } from "../row-reconciliation"
-import { hashAdapterOwnedFields } from "../row-reconciliation"
+import { hashCanonicalProduct } from "../row-reconciliation"
 import type { AdapterContext, AdapterRowResult, CanonicalProduct, RawRow, SupplierAdapter } from "../types"
 
 // Wraps the real implementation in a jest.fn() so one test below can assert call count, without
@@ -174,7 +174,7 @@ describe("runSupplierTabSyncCycle", () => {
     const existingProduct = makeProduct({ sku: "acm_business-named", supplierSku: "SUP-1", productTitle: "Business Title" })
     const existing: ExistingSheetRow = {
       product: existingProduct,
-      adapterFieldsHash: hashAdapterOwnedFields(existingProduct),
+      adapterFieldsHash: hashCanonicalProduct(existingProduct),
     }
     const freshProduct = makeProduct({ supplierSku: "SUP-1", supplierCost: 999, sku: "ignored-fresh-sku" })
     const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_1" })
