@@ -3,7 +3,12 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import type { IProductModuleService } from "@medusajs/framework/types"
 import { startMeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
 import type { MeilisearchTestContainer } from "../../test-support/meilisearch-test-container"
-import { buildCanonicalProduct, buildCustomAttribute, nextTestSku } from "../../test-support/canonical-product-fixture"
+import {
+  buildCanonicalProduct,
+  buildCustomAttribute,
+  buildVariantOption,
+  nextTestSku,
+} from "../../test-support/canonical-product-fixture"
 import { hashCanonicalProduct } from "../../row-reconciliation"
 import { applyCanonicalProductWorkflow } from "../apply-canonical-product"
 
@@ -88,6 +93,44 @@ describe("applyCanonicalProductWorkflow", () => {
           expect(allProducts[0].title).toBe("Oak Dining Table (Refurbished)")
           expect(allProducts[0].variants).toHaveLength(1)
           expect(allProducts[0].variants?.[0]?.sku).toBe(sku)
+        })
+
+        it("leaves variants it wasn't given in place, with their prices and options (issue #22)", async () => {
+          const container = getContainer()
+          const productHandle = "walnut-bookcase"
+          const [skuA, skuB, skuC] = [nextTestSku(), nextTestSku(), nextTestSku()]
+          const variant = (sku: string, size: string, retailPrice: number) =>
+            buildCanonicalProduct({
+              sku,
+              productHandle,
+              retailPrice,
+              variantOptions: [buildVariantOption({ optionName: "Size", optionValue: size })],
+            })
+
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(skuA, "S", 299), variant(skuB, "M", 399), variant(skuC, "L", 379)] },
+          })
+
+          await applyCanonicalProductWorkflow(container).run({ input: { products: [variant(skuB, "M", 449)] } })
+
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data: variants } = await query.graph({
+            entity: "product_variant",
+            fields: ["sku", "prices.amount", "options.value"],
+          })
+          const summary = variants
+            .map((v) => ({
+              sku: v.sku,
+              prices: (v.prices ?? []).map((price) => price?.amount),
+              options: (v.options ?? []).map((option) => option?.value),
+            }))
+            .sort((a, b) => [skuA, skuB, skuC].indexOf(a.sku as string) - [skuA, skuB, skuC].indexOf(b.sku as string))
+
+          expect(summary).toEqual([
+            { sku: skuA, prices: [299], options: ["S"] },
+            { sku: skuB, prices: [449], options: ["M"] },
+            { sku: skuC, prices: [379], options: ["L"] },
+          ])
         })
       })
 

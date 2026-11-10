@@ -146,18 +146,23 @@ export type UpdateProductInput = {
   description: string | undefined
   status: CanonicalProduct["status"]
   discountable: boolean
-  variants: ExistingVariantInput[]
+  variants: (ExistingVariantInput | { id: string })[]
 }
 
 /**
  * `existingVariantsBySku` must cover every row in `products` (callers only take the update branch
  * once resolveExistingProductStep confirms every incoming SKU already has a variant id - adding a
  * new variant to an existing product via this same call is out of scope for this ticket).
+ *
+ * `otherVariantIds` are listed by id alone so Medusa keeps them unchanged: its product update
+ * treats `variants` as the complete set and deletes anything missing, and the sync never deletes
+ * a variant (issue #22).
  */
 export function buildUpdateProductInput(
   productId: string,
   products: CanonicalProduct[],
-  existingVariantsBySku: { variantId: string; sku: string }[]
+  existingVariantsBySku: { variantId: string; sku: string }[],
+  otherVariantIds: string[]
 ): UpdateProductInput {
   assertNoPlaceholderSkus(products)
   const [representative] = products
@@ -170,18 +175,21 @@ export function buildUpdateProductInput(
     description: nullToUndefined(representative.description),
     status: representative.status,
     discountable: representative.discountable,
-    variants: products.map((product) => {
-      const variantId = variantIdBySku.get(product.sku)
-      if (!variantId) {
-        throw new Error(`No existing variant id resolved for SKU "${product.sku}" during update`)
-      }
-      return {
-        id: variantId,
-        title: product.productTitle,
-        sku: product.sku,
-        prices: [{ amount: product.retailPrice, currency_code: CURRENCY_CODE }],
-        metadata: buildVariantMetadata(product),
-      }
-    }),
+    variants: [
+      ...products.map((product) => {
+        const variantId = variantIdBySku.get(product.sku)
+        if (!variantId) {
+          throw new Error(`No existing variant id resolved for SKU "${product.sku}" during update`)
+        }
+        return {
+          id: variantId,
+          title: product.productTitle,
+          sku: product.sku,
+          prices: [{ amount: product.retailPrice, currency_code: CURRENCY_CODE }],
+          metadata: buildVariantMetadata(product),
+        }
+      }),
+      ...otherVariantIds.map((id) => ({ id })),
+    ],
   }
 }

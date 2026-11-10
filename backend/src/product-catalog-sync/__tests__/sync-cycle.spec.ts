@@ -187,6 +187,83 @@ describe("runSupplierTabSyncCycle", () => {
     ])
   })
 
+  describe("a product with some changed rows (issue #22)", () => {
+    const bookcaseRow = (supplierSku: string, overrides: Partial<CanonicalProduct> = {}) =>
+      makeProduct({ productHandle: "bookcase", productTitle: "Bookcase", sku: `acm_${supplierSku}`, supplierSku, ...overrides })
+
+    /** A row already synced as `synced`, whose Business-Owned fields now read as `current` in the Sheet. */
+    const existingRow = (synced: CanonicalProduct, current: CanonicalProduct = synced): ExistingSheetRow => ({
+      product: current,
+      adapterFieldsHash: hashCanonicalProduct(synced),
+    })
+
+    const runCycle = async (existing: ExistingSheetRow[], fresh: CanonicalProduct[]) => {
+      const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_1" })
+      const tab = makeTab({
+        adapter: fakeAdapterFor(fresh.map((product) => ({ ok: true as const, product }))),
+        io: fakeIO(existing, fresh.map(() => ({}))),
+      })
+      const outcome = await runSupplierTabSyncCycle(tab, { applyCanonicalProduct })
+      return { applyCanonicalProduct, outcome }
+    }
+
+    it("applies all of the product's rows when one changes, and leaves other products alone", async () => {
+      const [a, b, c] = [bookcaseRow("A"), bookcaseRow("B", { retailPrice: 399 }), bookcaseRow("C")]
+      const editedB = { ...b, retailPrice: 449 }
+      const untouched = makeProduct({ productHandle: "table", sku: "acm_T", supplierSku: "T" })
+
+      const { applyCanonicalProduct } = await runCycle(
+        [existingRow(a), existingRow(b, editedB), existingRow(c), existingRow(untouched)],
+        [a, b, c, untouched]
+      )
+
+      expect(applyCanonicalProduct).toHaveBeenCalledTimes(1)
+      expect(applyCanonicalProduct.mock.calls[0][0].map((row: CanonicalProduct) => [row.sku, row.retailPrice])).toEqual([
+        ["acm_A", 250],
+        ["acm_B", 449],
+        ["acm_C", 250],
+      ])
+    })
+
+    it("flags a changed row that now disagrees with its unchanged siblings, and doesn't sync the product", async () => {
+      const [a, b, c] = [bookcaseRow("A"), bookcaseRow("B"), bookcaseRow("C")]
+      const editedB = { ...b, productTitle: "Bookcase XL" }
+
+      const { applyCanonicalProduct, outcome } = await runCycle(
+        [existingRow(a), existingRow(b, editedB), existingRow(c)],
+        [a, b, c]
+      )
+
+      expect(applyCanonicalProduct).not.toHaveBeenCalled()
+      expect(outcome.blockedRows.map((row) => [row.anchor, row.status])).toEqual([
+        ["acm_B", "⚠ Title doesn't match this product's other 2 variants"],
+      ])
+    })
+
+    it("flags an unchanged row left in the minority by its siblings' edits", async () => {
+      const [a, b, c] = [bookcaseRow("A"), bookcaseRow("B"), bookcaseRow("C")]
+      const [editedA, editedB] = [a, b].map((row) => ({ ...row, productTitle: "Renamed Bookcase" }))
+
+      const { applyCanonicalProduct, outcome } = await runCycle(
+        [existingRow(a, editedA), existingRow(b, editedB), existingRow(c)],
+        [a, b, c]
+      )
+
+      expect(applyCanonicalProduct).not.toHaveBeenCalled()
+      expect(outcome.blockedRows.map((row) => [row.anchor, row.status])).toEqual([
+        ["acm_C", "⚠ Title doesn't match this product's other 2 variants"],
+      ])
+    })
+
+    it("makes no Medusa calls when none of the rows changed", async () => {
+      const [a, b] = [bookcaseRow("A"), bookcaseRow("B")]
+
+      const { applyCanonicalProduct } = await runCycle([existingRow(a), existingRow(b)], [a, b])
+
+      expect(applyCanonicalProduct).not.toHaveBeenCalled()
+    })
+  })
+
   it("computes product-level field consistency exactly once per cycle, not once per downstream consumer (issue #19)", async () => {
     const product = makeProduct({ sku: "acm_once" })
     const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_1" })

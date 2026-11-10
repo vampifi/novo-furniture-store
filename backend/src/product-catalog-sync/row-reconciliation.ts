@@ -142,24 +142,29 @@ export function reconcileSupplierTabRows(
   const rowsToWriteBack: RowToWriteBack[] = []
   const rowsNeedingMedusaSync: CanonicalProduct[] = []
 
-  for (const fresh of freshProducts) {
+  const reconciledRows = freshProducts.map((fresh) => {
     const existingMatch = fresh.supplierSku !== null ? existingBySupplierSku.get(fresh.supplierSku) : undefined
 
     if (!existingMatch) {
       // New row - no identity to compare against, so there's nothing to merge or skip.
-      pushRow(fresh, hashCanonicalProduct(fresh))
-      continue
+      return { product: fresh, hash: hashCanonicalProduct(fresh), changed: true }
     }
 
     const merged = mergeProduct(existingMatch.product, fresh)
-    const mergedHash = hashCanonicalProduct(merged)
-    if (mergedHash === existingMatch.adapterFieldsHash) {
-      // Idempotency (spec §8, ADR 0006): the merged row is identical to what's already
-      // persisted - skip entirely, no Sheet write, no Medusa call.
-      continue
-    }
+    const hash = hashCanonicalProduct(merged)
+    return { product: merged, hash, changed: hash !== existingMatch.adapterFieldsHash }
+  })
 
-    pushRow(merged, mergedHash)
+  // Idempotency (spec §8, ADR 0006) applies per product: a product with no changed row is skipped
+  // entirely - no Sheet write, no Medusa call. One changed row brings in all its siblings, because
+  // the product-level consistency check and the apply both need the product's full row set
+  // (issue #22).
+  const changedHandles = new Set(reconciledRows.filter((row) => row.changed).map((row) => row.product.productHandle))
+
+  for (const { product, hash } of reconciledRows) {
+    if (changedHandles.has(product.productHandle)) {
+      pushRow(product, hash)
+    }
   }
 
   function pushRow(product: CanonicalProduct, adapterFieldsHash: string): void {

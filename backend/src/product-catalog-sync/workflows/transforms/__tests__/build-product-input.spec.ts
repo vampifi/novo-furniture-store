@@ -86,7 +86,7 @@ describe("buildUpdateProductInput", () => {
   it("maps each row to its already-resolved existing variant id", () => {
     const product = buildCanonicalProduct({ sku: "sku-1" })
 
-    const input = buildUpdateProductInput("prod_123", [product], [{ variantId: "variant_1", sku: "sku-1" }])
+    const input = buildUpdateProductInput("prod_123", [product], [{ variantId: "variant_1", sku: "sku-1" }], [])
 
     expect(input.id).toBe("prod_123")
     expect(input.variants).toEqual([

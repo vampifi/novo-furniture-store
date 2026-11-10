@@ -38,14 +38,19 @@ export const applyCanonicalProductWorkflow = createWorkflow<
 >(APPLY_CANONICAL_PRODUCT_WORKFLOW, (input) => {
   const skus = transform({ input }, (data) => data.input.products.map((product) => product.sku))
 
-  const { productId: existingProductId, existingVariantsBySku } = resolveExistingProductStep({ skus })
+  const { productId: existingProductId, existingVariantsBySku, otherVariantIds } = resolveExistingProductStep({ skus })
 
   const createInput = transform({ input }, (data) => buildCreateProductInput(data.input.products))
   const updateInput = transform(
-    { input, existingProductId, existingVariantsBySku },
+    { input, existingProductId, existingVariantsBySku, otherVariantIds },
     (data) =>
       data.existingProductId
-        ? buildUpdateProductInput(data.existingProductId, data.input.products, data.existingVariantsBySku)
+        ? buildUpdateProductInput(
+            data.existingProductId,
+            data.input.products,
+            data.existingVariantsBySku,
+            data.otherVariantIds
+          )
         : null
   )
 

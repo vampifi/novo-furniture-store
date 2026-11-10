@@ -25,6 +25,11 @@ export type ResolveExistingProductStepOutput = {
   productId: string | null
   /** Only the subset of `skus` that already exist, mapped to their current variant id. */
   existingVariantsBySku: ExistingVariantBySku[]
+  /**
+   * The product's other variants, not named by `skus`. An update must keep listing these: Medusa
+   * treats a product update's `variants` as the complete set and deletes any it doesn't see.
+   */
+  otherVariantIds: string[]
 }
 
 export const resolveExistingProductStep = createStep(
@@ -46,12 +51,21 @@ export const resolveExistingProductStep = createStep(
       )
     }
 
+    const productId: string | null = variants[0]?.product_id ?? null
+    const namedVariantIds = new Set(variants.map((variant: { id: string }) => variant.id))
+    const { data: allProductVariants } = productId
+      ? await query.graph({ entity: "product_variant", fields: ["id"], filters: { product_id: productId } })
+      : { data: [] as { id: string }[] }
+
     return new StepResponse({
-      productId: variants[0]?.product_id ?? null,
+      productId,
       existingVariantsBySku: variants.map((variant: { id: string; sku: string }) => ({
         variantId: variant.id,
         sku: variant.sku,
       })),
+      otherVariantIds: allProductVariants
+        .map((variant: { id: string }) => variant.id)
+        .filter((id: string) => !namedVariantIds.has(id)),
     })
   }
 )
