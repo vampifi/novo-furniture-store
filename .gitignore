@@ -1,1 +1,7 @@
 .idea/
+
+# Agent skill tooling: .agents/skills and .claude/skills are fetched content, reproducible from
+# skills-lock.json via the `skills` CLI - not original project material (same as node_modules/).
+# .claude/worktrees is git's own worktree checkouts, used transiently by implementer agents.
+.agents/
+.claude/
