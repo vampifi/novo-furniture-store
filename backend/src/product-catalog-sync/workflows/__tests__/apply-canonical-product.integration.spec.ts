@@ -193,6 +193,51 @@ describe("applyCanonicalProductWorkflow", () => {
         })
       })
 
+      describe("images (issue #24)", () => {
+        const productImageUrls = async (container: ReturnType<typeof getContainer>, productId: string) => {
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data } = await query.graph({ entity: "product", fields: ["images.url", "images.rank"], filters: { id: productId } })
+          return [...(data[0].images ?? [])].sort((a, b) => (a?.rank ?? 0) - (b?.rank ?? 0)).map((image) => image?.url)
+        }
+
+        it("applies product images in sheet order, and reflects a later reorder and removal", async () => {
+          const container = getContainer()
+          const sku = nextTestSku()
+          const [front, side, detail] = ["front", "side", "detail"].map((name) => `https://example.com/${name}.jpg`)
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [buildCanonicalProduct({ sku, imageUrls: [front, side, detail] })] },
+          })
+          expect(await productImageUrls(container, result.productId)).toEqual([front, side, detail])
+
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [buildCanonicalProduct({ sku, imageUrls: [detail, front] })] },
+          })
+          expect(await productImageUrls(container, result.productId)).toEqual([detail, front])
+        })
+
+        it("keeps each variant's own image in its metadata", async () => {
+          const container = getContainer()
+          const [a, b] = [nextTestSku(), nextTestSku()]
+          const row = (sku: string, size: string, url: string) =>
+            buildCanonicalProduct({
+              sku,
+              productHandle: "two-images",
+              variantImageUrls: [url],
+              variantOptions: [buildVariantOption({ optionValue: size })],
+            })
+
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [row(a, "S", "https://example.com/s.jpg"), row(b, "L", "https://example.com/l.jpg")] },
+          })
+
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data } = await query.graph({ entity: "product_variant", fields: ["sku", "metadata"], filters: { sku: [a, b] } })
+          const urlsBySku = Object.fromEntries(data.map((v) => [v.sku, (v.metadata as Record<string, unknown>).variant_image_urls]))
+          expect(urlsBySku).toEqual({ [a]: ["https://example.com/s.jpg"], [b]: ["https://example.com/l.jpg"] })
+        })
+      })
+
       describe("custom attributes", () => {
         it("creates the category definition and product-level value for a new attribute", async () => {
           const container = getContainer()

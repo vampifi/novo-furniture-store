@@ -58,7 +58,12 @@ function buildVariantOptionSelection(product: CanonicalProduct): VariantOptionSe
  * already derivable from what's already here.
  */
 function buildVariantMetadata(product: CanonicalProduct): Record<string, unknown> {
-  return { supplier_sku: product.supplierSku, sync_hash: hashCanonicalProduct(product) }
+  return {
+    supplier_sku: product.supplierSku,
+    sync_hash: hashCanonicalProduct(product),
+    // Medusa 2.8 has no per-variant image relation, so these are kept for the storefront to read.
+    ...(product.variantImageUrls.length > 0 ? { variant_image_urls: product.variantImageUrls } : {}),
+  }
 }
 
 /**
@@ -81,6 +86,11 @@ function assertNoPlaceholderSkus(products: CanonicalProduct[]): void {
 
 const CURRENCY_CODE = "usd"
 
+/** Always sent, even when empty: the Sheet decides the product's images, so a removal must land. */
+function buildImages(product: CanonicalProduct): { url: string }[] {
+  return product.imageUrls.map((url) => ({ url }))
+}
+
 /** CanonicalProduct models "no value" as `null` (spec §5); Medusa's own DTOs model it as
  * `undefined`. This is the one place that boundary gets crossed. */
 function nullToUndefined<T>(value: T | null): T | undefined {
@@ -102,6 +112,7 @@ export type CreateProductInput = {
   description: string | undefined
   status: CanonicalProduct["status"]
   discountable: boolean
+  images: { url: string }[]
   options: { title: string; values: string[] }[]
   variants: NewProductVariantInput[]
 }
@@ -120,6 +131,7 @@ export function buildCreateProductInput(products: CanonicalProduct[]): CreatePro
     description: nullToUndefined(representative.description),
     status: representative.status,
     discountable: representative.discountable,
+    images: buildImages(representative),
     options: buildProductOptions(products),
     variants: products.map((product) => ({
       title: product.productTitle,
@@ -146,6 +158,7 @@ export type UpdateProductInput = {
   description: string | undefined
   status: CanonicalProduct["status"]
   discountable: boolean
+  images: { url: string }[]
   /** Only sent when new option values need adding - see buildOptionsUpdate. */
   options: { id: string; title: string; values: string[] }[] | undefined
   variants: (ExistingVariantInput | { id: string })[]
@@ -193,6 +206,7 @@ export function buildUpdateProductInput(
     description: nullToUndefined(representative.description),
     status: representative.status,
     discountable: representative.discountable,
+    images: buildImages(representative),
     options: buildOptionsUpdate(products, existingOptions),
     variants: [
       ...products.flatMap((product) => {
