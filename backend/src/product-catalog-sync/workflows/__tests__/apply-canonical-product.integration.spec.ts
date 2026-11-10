@@ -10,6 +10,7 @@ import {
   nextTestSku,
 } from "../../test-support/canonical-product-fixture"
 import { hashCanonicalProduct } from "../../row-reconciliation"
+import type { CanonicalProduct } from "../../types"
 import { applyCanonicalProductWorkflow } from "../apply-canonical-product"
 
 jest.setTimeout(120000)
@@ -235,6 +236,43 @@ describe("applyCanonicalProductWorkflow", () => {
           const { data } = await query.graph({ entity: "product_variant", fields: ["sku", "metadata"], filters: { sku: [a, b] } })
           const urlsBySku = Object.fromEntries(data.map((v) => [v.sku, (v.metadata as Record<string, unknown>).variant_image_urls]))
           expect(urlsBySku).toEqual({ [a]: ["https://example.com/s.jpg"], [b]: ["https://example.com/l.jpg"] })
+        })
+      })
+
+      describe("weight and dimensions (issue #26)", () => {
+        it("gives each variant its own values, and applies later changes and blanks", async () => {
+          const container = getContainer()
+          const [a, b] = [nextTestSku(), nextTestSku()]
+          const row = (sku: string, size: string, facts: Partial<CanonicalProduct>) =>
+            buildCanonicalProduct({ sku, productHandle: "measured", variantOptions: [buildVariantOption({ optionValue: size })], ...facts })
+
+          await applyCanonicalProductWorkflow(container).run({
+            input: {
+              products: [
+                row(a, "S", { weight: 12, length: 80, width: 30, height: 100 }),
+                row(b, "L", { weight: 20, length: 90, width: 40, height: 180 }),
+              ],
+            },
+          })
+          await applyCanonicalProductWorkflow(container).run({
+            input: {
+              products: [
+                row(a, "S", { weight: 15, length: 80, width: 30, height: null }),
+                row(b, "L", { weight: 20, length: 90, width: 40, height: 180 }),
+              ],
+            },
+          })
+
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data } = await query.graph({
+            entity: "product_variant",
+            fields: ["sku", "weight", "length", "width", "height"],
+            filters: { sku: [a, b] },
+          })
+          expect(Object.fromEntries(data.map(({ sku, ...facts }) => [sku, facts]))).toEqual({
+            [a]: expect.objectContaining({ weight: 15, length: 80, width: 30, height: null }),
+            [b]: expect.objectContaining({ weight: 20, length: 90, width: 40, height: 180 }),
+          })
         })
       })
 

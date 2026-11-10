@@ -89,7 +89,7 @@ describe("buildUpdateProductInput", () => {
     const input = buildUpdateProductInput("prod_123", [product], [{ variantId: "variant_1", sku: "sku-1" }], [], [])
 
     expect(input.id).toBe("prod_123")
-    expect(input.variants).toEqual([
+    expect(input.variants).toMatchObject([
       {
         id: "variant_1",
         title: product.productTitle,

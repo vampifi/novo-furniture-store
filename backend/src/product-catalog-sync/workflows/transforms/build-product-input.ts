@@ -97,7 +97,12 @@ function nullToUndefined<T>(value: T | null): T | undefined {
   return value ?? undefined
 }
 
-export type NewProductVariantInput = {
+/** Per-variant facts. `null` is sent as-is so that blanking a Sheet cell clears the value. */
+function buildVariantFacts(product: CanonicalProduct) {
+  return { weight: product.weight, length: product.length, width: product.width, height: product.height }
+}
+
+export type NewProductVariantInput = ReturnType<typeof buildVariantFacts> & {
   title: string
   sku: string
   options: VariantOptionSelection
@@ -134,6 +139,7 @@ export function buildCreateProductInput(products: CanonicalProduct[]): CreatePro
     images: buildImages(representative),
     options: buildProductOptions(products),
     variants: products.map((product) => ({
+      ...buildVariantFacts(product),
       title: product.productTitle,
       sku: product.sku,
       options: buildVariantOptionSelection(product),
@@ -143,7 +149,7 @@ export function buildCreateProductInput(products: CanonicalProduct[]): CreatePro
   }
 }
 
-export type ExistingVariantInput = {
+export type ExistingVariantInput = ReturnType<typeof buildVariantFacts> & {
   id: string
   title: string
   sku: string
@@ -214,6 +220,7 @@ export function buildUpdateProductInput(
         return variantId
           ? [
               {
+                ...buildVariantFacts(product),
                 id: variantId,
                 title: product.productTitle,
                 sku: product.sku,
@@ -242,6 +249,7 @@ export function buildNewVariantsInput(
   return products
     .filter((product) => !existingSkus.has(product.sku))
     .map((product) => ({
+      ...buildVariantFacts(product),
       product_id: productId,
       title: product.productTitle,
       sku: product.sku,
