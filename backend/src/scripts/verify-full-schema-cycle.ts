@@ -8,7 +8,7 @@
  * row idempotency hash), custom attributes, and variant options end-to-end against a real
  * database - see #21's resolution comment for what this proved.
  *
- * Run via `npx medusa exec ./src/scripts/verify-full-schema-cycle.ts` after
+ * Run via `pnpm medusa exec ./src/scripts/verify-full-schema-cycle.ts` after
  * setup-full-schema-sheet.ts has populated the sandbox sheet. Never point GOOGLE_SHEETS_* env
  * vars at a production sheet when running this.
  */
@@ -24,18 +24,18 @@ import type { ExistingSheetRow } from "../product-catalog-sync/row-reconciliatio
 import type { AdapterRowResult, CanonicalProduct, RawRow, SupplierAdapter } from "../product-catalog-sync/types"
 
 const TAB_NAME = "Sheet1"
-const RANGE = `${TAB_NAME}!A2:AO200` // header is row 1
 
-// Full canonical schema, one physical column per field - one slot each for the repeatable
-// variantOptions/customAttributes/images groups, to keep this test sheet a manageable width
-// while still exercising every field *kind* (paired, single-column adapter-owned,
-// business-owned, array-as-list).
-const COLUMNS = [
+// Full canonical schema, one physical column per field - two option slots and three product
+// image slots (so multi-option variants and repeated images are exercised), one slot for
+// customAttributes, to keep this test sheet a manageable width while still exercising every
+// field *kind* (paired, single-column adapter-owned, business-owned, array-as-list).
+export const COLUMNS = [
   "productHandle", "sku", "supplierSku",
   "supplierTitle", "productTitle", "supplierSubtitle", "subtitle", "supplierDescription", "description",
   "supplierCost", "retailPrice",
   "supplierOption1Name", "supplierOption1Value", "option1Name", "option1Value",
-  "imageUrl", "variantImageUrl",
+  "supplierOption2Name", "supplierOption2Value", "option2Name", "option2Value",
+  "imageUrl1", "imageUrl2", "imageUrl3", "variantImageUrl",
   "weight", "length", "width", "height", "hsCode", "originCountry", "midCode", "upc", "ean",
   "attribute1Key", "attribute1CategoryId", "supplierAttribute1Value", "attribute1Value", "attribute1Visible",
   "status", "productTags", "productCategories", "collectionId", "typeId", "shippingProfileId", "salesChannel", "discountable",
@@ -46,12 +46,30 @@ export const HEADER_ROW = [
   "Supplier Title", "Product Title", "Supplier Subtitle", "Subtitle", "Supplier Description", "Description",
   "Supplier Cost", "Retail Price",
   "Supplier Option 1 Name", "Supplier Option 1 Value", "Option 1 Name", "Option 1 Value",
-  "Image URL", "Variant Image URL",
+  "Supplier Option 2 Name", "Supplier Option 2 Value", "Option 2 Name", "Option 2 Value",
+  "Image 1 URL", "Image 2 URL", "Image 3 URL", "Variant Image URL",
   "Weight", "Length", "Width", "Height", "HS Code", "Origin Country", "MID Code", "UPC", "EAN",
   "Attribute 1 Key", "Attribute 1 Category Id", "Supplier Attribute 1 Value", "Attribute 1 Value", "Attribute 1 Visible",
   "Status", "Product Tags", "Product Categories", "Collection Id", "Type Id", "Shipping Profile Id", "Sales Channel", "Discountable",
   "Sync Status", "Last Synced At",
 ]
+
+function columnLetter(oneBasedIndex: number): string {
+  let letters = ""
+  for (let n = oneBasedIndex; n > 0; n = Math.floor((n - 1) / 26)) {
+    letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters
+  }
+  return letters
+}
+
+export const LAST_COLUMN = columnLetter(HEADER_ROW.length)
+const SYNC_STATUS_COLUMN = columnLetter(HEADER_ROW.length - 1)
+const RANGE = `${TAB_NAME}!A2:${LAST_COLUMN}200` // header is row 1
+
+/** Builds one positional sheet row from named fields, so sample data can't drift out of column order. */
+export function sampleRow(fields: Partial<Record<(typeof COLUMNS)[number], string>>): string[] {
+  return [...COLUMNS.map((column) => fields[column] ?? ""), "", ""]
+}
 
 function rowToRawRow(row: (string | number | boolean | null)[]): RawRow {
   const raw: RawRow = {}
@@ -109,18 +127,23 @@ function rowToCanonicalProductOrError(row: RawRow, anchor: string): AdapterRowRe
       description: str(row.description) ?? str(row.supplierDescription),
       supplierCost: num(row.supplierCost),
       retailPrice,
-      variantOptions:
-        str(row.option1Name) || str(row.supplierOption1Name)
-          ? [
-              {
-                supplierOptionName: str(row.supplierOption1Name) ?? "",
-                supplierOptionValue: str(row.supplierOption1Value) ?? "",
-                optionName: str(row.option1Name) ?? str(row.supplierOption1Name) ?? "",
-                optionValue: str(row.option1Value) ?? str(row.supplierOption1Value) ?? "",
-              },
-            ]
-          : [],
-      imageUrls: str(row.imageUrl) ? [str(row.imageUrl) as string] : [],
+      variantOptions: [1, 2].flatMap((slot) => {
+        const supplierName = str(row[`supplierOption${slot}Name`])
+        const supplierValue = str(row[`supplierOption${slot}Value`])
+        const name = str(row[`option${slot}Name`]) ?? supplierName
+        if (!name) {
+          return []
+        }
+        return [
+          {
+            supplierOptionName: supplierName ?? "",
+            supplierOptionValue: supplierValue ?? "",
+            optionName: name,
+            optionValue: str(row[`option${slot}Value`]) ?? supplierValue ?? "",
+          },
+        ]
+      }),
+      imageUrls: [row.imageUrl1, row.imageUrl2, row.imageUrl3].map(str).filter((url): url is string => url !== null),
       variantImageUrls: str(row.variantImageUrl) ? [str(row.variantImageUrl) as string] : [],
       weight: num(row.weight),
       length: num(row.length),
@@ -169,6 +192,7 @@ const passthroughAdapter: SupplierAdapter = async (rows) => {
 
 function productToRow(product: CanonicalProduct, syncStatus: string, lastSyncedAt: string): (string | number | boolean)[] {
   const opt = product.variantOptions[0]
+  const opt2 = product.variantOptions[1]
   const attr = product.customAttributes[0]
   return [
     product.productHandle,
@@ -186,7 +210,13 @@ function productToRow(product: CanonicalProduct, syncStatus: string, lastSyncedA
     opt?.supplierOptionValue ?? "",
     opt?.optionName ?? "",
     opt?.optionValue ?? "",
+    opt2?.supplierOptionName ?? "",
+    opt2?.supplierOptionValue ?? "",
+    opt2?.optionName ?? "",
+    opt2?.optionValue ?? "",
     product.imageUrls[0] ?? "",
+    product.imageUrls[1] ?? "",
+    product.imageUrls[2] ?? "",
     product.variantImageUrls[0] ?? "",
     product.weight ?? "",
     product.length ?? "",
@@ -220,6 +250,21 @@ export default async function verifyFullSchemaCycle({ container }: ExecArgs) {
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const sheets = createGoogleSheetsClient(loadServiceAccountConfigFromEnv())
 
+  // Real sheet row numbers from this cycle's read, so write-back lands on the row each result
+  // came from however few rows changed. Supplier SKU is tried first because it's stable: SKU can
+  // be blank in the Sheet until the first write-back fills in its derived default.
+  const sheetRowByKey = new Map<string, number>()
+  let sheetRowByBatchPosition: number[] = []
+
+  const sheetRowForProduct = (product: CanonicalProduct): number | undefined =>
+    (product.supplierSku ? sheetRowByKey.get(`supplier:${product.supplierSku}`) : undefined) ??
+    sheetRowByKey.get(`sku:${product.sku}`)
+
+  const sheetRowForAnchor = (anchor: string): number | undefined => {
+    const batchPosition = /^batch position #(\d+)$/.exec(anchor)
+    return batchPosition ? sheetRowByBatchPosition[Number(batchPosition[1])] : sheetRowByKey.get(`supplier:${anchor}`)
+  }
+
   const testTab: SupplierTabDefinition = {
     name: TAB_NAME,
     adapter: passthroughAdapter,
@@ -227,8 +272,19 @@ export default async function verifyFullSchemaCycle({ container }: ExecArgs) {
     io: {
       async readCurrentRows() {
         const [range] = await sheets.batchRead([RANGE])
-        const dataRows = (range?.values ?? []).filter((row) => row.length > 0 && row.some((cell) => cell !== ""))
-        const rawRows = dataRows.map(rowToRawRow)
+        const dataRows = (range?.values ?? [])
+          .map((row, index) => ({ row, sheetRow: index + 2 }))
+          .filter(({ row }) => row.length > 0 && row.some((cell) => cell !== ""))
+        const rawRows = dataRows.map(({ row }) => rowToRawRow(row))
+
+        sheetRowByKey.clear()
+        sheetRowByBatchPosition = dataRows.map(({ sheetRow }) => sheetRow)
+        rawRows.forEach((raw, position) => {
+          const supplierSku = str(raw.supplierSku)
+          const sku = str(raw.sku)
+          if (supplierSku) sheetRowByKey.set(`supplier:${supplierSku}`, sheetRowByBatchPosition[position])
+          if (sku) sheetRowByKey.set(`sku:${sku}`, sheetRowByBatchPosition[position])
+        })
 
         // ADR 0006: existingRows.product must reflect the Sheet's CURRENT state (so a business
         // edit is visible to reconciliation), not Medusa's last-known state - only the hash
@@ -265,21 +321,40 @@ export default async function verifyFullSchemaCycle({ container }: ExecArgs) {
         return { existingRows, rawRows }
       },
       async writeBack(outcome) {
-        const rows: (string | number | boolean)[][] = []
+        const writes: { range: string; values: (string | number | boolean)[][] }[] = []
+        let unmatched = 0
+
         for (const blocked of outcome.blockedRows) {
-          if (blocked.product) {
-            rows.push(productToRow(blocked.product, blocked.status, ""))
+          const sheetRow = blocked.product ? sheetRowForProduct(blocked.product) : sheetRowForAnchor(blocked.anchor)
+          if (sheetRow === undefined) {
+            unmatched++
+            logger.warn(`No sheet row found for blocked row "${blocked.anchor}" - nothing written for it.`)
+          } else if (blocked.product) {
+            // Stops at Sync Status: only a successful sync may touch Last Synced At (spec §9).
+            const row = productToRow(blocked.product, blocked.status, "").slice(0, -1)
+            writes.push({ range: `${TAB_NAME}!A${sheetRow}:${SYNC_STATUS_COLUMN}${sheetRow}`, values: [row] })
+          } else {
+            writes.push({ range: `${TAB_NAME}!${SYNC_STATUS_COLUMN}${sheetRow}`, values: [[blocked.status]] })
           }
         }
+
         for (const synced of outcome.syncedRows) {
-          rows.push(productToRow(synced.product, synced.writeBack.status, synced.writeBack.lastSyncedAt.toISOString()))
+          const sheetRow = sheetRowForProduct(synced.product)
+          if (sheetRow === undefined) {
+            unmatched++
+            logger.warn(`No sheet row found for synced SKU "${synced.product.sku}" - nothing written for it.`)
+            continue
+          }
+          const row = productToRow(synced.product, synced.writeBack.status, synced.writeBack.lastSyncedAt.toISOString())
+          writes.push({ range: `${TAB_NAME}!A${sheetRow}:${LAST_COLUMN}${sheetRow}`, values: [row] })
         }
-        if (rows.length > 0) {
-          // Keyed by SKU so each row lands back on roughly the same line it came from - good
-          // enough for this smoke test, not a real diffing write-back.
-          await sheets.batchWrite(rows.map((row, i) => ({ range: `${TAB_NAME}!A${i + 2}:AO${i + 2}`, values: [row] })))
+
+        if (writes.length > 0) {
+          await sheets.batchWrite(writes)
         }
-        logger.info(`Wrote back ${rows.length} row(s). blockedRows=${outcome.blockedRows.length} syncedRows=${outcome.syncedRows.length}`)
+        logger.info(
+          `Wrote back ${writes.length} row(s), ${unmatched} unmatched. blockedRows=${outcome.blockedRows.length} syncedRows=${outcome.syncedRows.length}`
+        )
       },
     },
   }
