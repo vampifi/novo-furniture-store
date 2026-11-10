@@ -18,6 +18,7 @@ import { createApplyCanonicalProductRunner } from "product-catalog-sync/workflow
 import { triggerSyncCycle } from "product-catalog-sync/sync-cycle-trigger"
 import { createMedusaSyncCycleLock } from "product-catalog-sync/trigger-infra/medusa-locking-sync-cycle-lock"
 import { getSupplierTabSyncConfigs } from "product-catalog-sync/trigger-infra/supplier-tab-registry"
+import { createMedusaReferenceChecker } from "product-catalog-sync/trigger-infra/medusa-reference-checker"
 
 export default async function productCatalogSyncJob(container: MedusaContainer): Promise<void> {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
@@ -28,6 +29,7 @@ export default async function productCatalogSyncJob(container: MedusaContainer):
       supplierTabs: getSupplierTabSyncConfigs(container),
       lock: createMedusaSyncCycleLock(container),
       applyCanonicalProduct: createApplyCanonicalProductRunner(container),
+      findUnresolvedReferences: createMedusaReferenceChecker(container),
     }
   )
 

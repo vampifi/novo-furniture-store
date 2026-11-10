@@ -6,6 +6,7 @@
  */
 import { hashCanonicalProduct, isIncompletePlaceholderSku } from "../../row-reconciliation"
 import type { CanonicalProduct } from "../../types"
+import type { ProductLinkIds } from "../steps/resolve-product-links"
 
 const DEFAULT_OPTION_TITLE = "Default option"
 const DEFAULT_OPTION_VALUE = "Default option"
@@ -110,7 +111,7 @@ export type NewProductVariantInput = ReturnType<typeof buildVariantFacts> & {
   metadata: Record<string, unknown>
 }
 
-export type CreateProductInput = {
+export type CreateProductInput = ProductLinkIds & {
   title: string
   handle: string
   subtitle: string | undefined
@@ -125,11 +126,12 @@ export type CreateProductInput = {
 /** Representative product-level fields are read from `products[0]` - see ADR 0005 implementer notes:
  * reconciling disagreement across a product's sibling rows (spec §8) is explicitly out of scope
  * for this ticket (#14), which assumes its caller already resolved/validated that upstream. */
-export function buildCreateProductInput(products: CanonicalProduct[]): CreateProductInput {
+export function buildCreateProductInput(products: CanonicalProduct[], links: ProductLinkIds): CreateProductInput {
   assertNoPlaceholderSkus(products)
   const [representative] = products
 
   return {
+    ...links,
     title: representative.productTitle,
     handle: representative.productHandle,
     subtitle: nullToUndefined(representative.subtitle),
@@ -157,7 +159,7 @@ export type ExistingVariantInput = ReturnType<typeof buildVariantFacts> & {
   metadata: Record<string, unknown>
 }
 
-export type UpdateProductInput = {
+export type UpdateProductInput = ProductLinkIds & {
   id: string
   title: string
   subtitle: string | undefined
@@ -199,13 +201,15 @@ export function buildUpdateProductInput(
   products: CanonicalProduct[],
   existingVariantsBySku: { variantId: string; sku: string }[],
   otherVariantIds: string[],
-  existingOptions: { id: string; title: string; values: string[] }[]
+  existingOptions: { id: string; title: string; values: string[] }[],
+  links: ProductLinkIds
 ): UpdateProductInput {
   assertNoPlaceholderSkus(products)
   const [representative] = products
   const variantIdBySku = new Map(existingVariantsBySku.map(({ sku, variantId }) => [sku, variantId]))
 
   return {
+    ...links,
     id: productId,
     title: representative.productTitle,
     subtitle: nullToUndefined(representative.subtitle),

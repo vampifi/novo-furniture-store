@@ -19,6 +19,7 @@ import { triggerSyncCycle } from "product-catalog-sync/sync-cycle-trigger"
 import type { SyncCycleScope } from "product-catalog-sync/sync-cycle-trigger"
 import { createMedusaSyncCycleLock } from "product-catalog-sync/trigger-infra/medusa-locking-sync-cycle-lock"
 import { getSupplierTabSyncConfigs } from "product-catalog-sync/trigger-infra/supplier-tab-registry"
+import { createMedusaReferenceChecker } from "product-catalog-sync/trigger-infra/medusa-reference-checker"
 
 // Same zod + formatZodError pattern as src/api/admin/blog-posts/route.ts, for consistency
 // across admin routes rather than hand-rolled typeof/narrowing.
@@ -55,6 +56,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     supplierTabs: getSupplierTabSyncConfigs(req.scope),
     lock: createMedusaSyncCycleLock(req.scope),
     applyCanonicalProduct: createApplyCanonicalProductRunner(req.scope),
+    findUnresolvedReferences: createMedusaReferenceChecker(req.scope),
   })
 
   if (scope.tabs === "one" && results[0]?.outcome === "unknown-tab") {

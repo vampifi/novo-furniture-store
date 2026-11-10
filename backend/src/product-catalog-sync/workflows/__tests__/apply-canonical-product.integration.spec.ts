@@ -12,6 +12,7 @@ import {
 import { hashCanonicalProduct } from "../../row-reconciliation"
 import type { CanonicalProduct } from "../../types"
 import { applyCanonicalProductWorkflow } from "../apply-canonical-product"
+import { createMedusaReferenceChecker } from "../../trigger-infra/medusa-reference-checker"
 
 jest.setTimeout(120000)
 
@@ -273,6 +274,76 @@ describe("applyCanonicalProductWorkflow", () => {
             [a]: expect.objectContaining({ weight: 15, length: 80, width: 30, height: null }),
             [b]: expect.objectContaining({ weight: 20, length: 90, width: 40, height: 180 }),
           })
+        })
+      })
+
+      describe("tags and categories (issue #25)", () => {
+        const productLinks = async (container: ReturnType<typeof getContainer>, productId: string) => {
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data } = await query.graph({
+            entity: "product",
+            fields: ["tags.value", "categories.handle"],
+            filters: { id: productId },
+          })
+          return {
+            tags: (data[0].tags ?? []).map((tag) => tag?.value).sort(),
+            categories: (data[0].categories ?? []).map((category) => category?.handle).sort(),
+          }
+        }
+
+        it("creates missing tags, reuses existing ones, and reflects a removal", async () => {
+          const container = getContainer()
+          const [skuA, skuB] = [nextTestSku(), nextTestSku()]
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [buildCanonicalProduct({ sku: skuA, productTags: ["oak", "storage"] })] },
+          })
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [buildCanonicalProduct({ sku: skuB, productTags: ["oak"] })] },
+          })
+          expect((await productLinks(container, result.productId)).tags).toEqual(["oak", "storage"])
+
+          const productModuleService: IProductModuleService = container.resolve(Modules.PRODUCT)
+          expect(await productModuleService.listProductTags({ value: ["oak"] })).toHaveLength(1)
+
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [buildCanonicalProduct({ sku: skuA, productTags: ["storage"] })] },
+          })
+          expect((await productLinks(container, result.productId)).tags).toEqual(["storage"])
+        })
+
+        it("assigns existing categories by handle, and reflects a removal", async () => {
+          const container = getContainer()
+          const sku = nextTestSku()
+          const productModuleService: IProductModuleService = container.resolve(Modules.PRODUCT)
+          await productModuleService.createProductCategories([
+            { name: "Sofas", handle: "sofas", is_active: true },
+            { name: "Living Room", handle: "living-room", is_active: true },
+          ])
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [buildCanonicalProduct({ sku, productCategories: ["sofas", "living-room"] })] },
+          })
+          expect((await productLinks(container, result.productId)).categories).toEqual(["living-room", "sofas"])
+
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [buildCanonicalProduct({ sku, productCategories: ["sofas"] })] },
+          })
+          expect((await productLinks(container, result.productId)).categories).toEqual(["sofas"])
+        })
+
+        it("reports categories that don't exist, per product", async () => {
+          const container = getContainer()
+          const productModuleService: IProductModuleService = container.resolve(Modules.PRODUCT)
+          await productModuleService.createProductCategories([{ name: "Sofas", handle: "sofas", is_active: true }])
+          const findUnresolvedReferences = createMedusaReferenceChecker(container)
+
+          const unresolved = await findUnresolvedReferences([
+            buildCanonicalProduct({ productHandle: "known", productCategories: ["sofas"] }),
+            buildCanonicalProduct({ productHandle: "unknown", productCategories: ["sofas", "beds"] }),
+          ])
+
+          expect(Array.from(unresolved.entries())).toEqual([["unknown", ['Category "beds" doesn\'t exist in Medusa']]])
         })
       })
 

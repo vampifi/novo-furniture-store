@@ -7,11 +7,13 @@ import { buildCanonicalProduct, buildVariantOption } from "../../../test-support
 import { hashCanonicalProduct } from "../../../row-reconciliation"
 import { buildCreateProductInput, buildUpdateProductInput } from "../build-product-input"
 
+const NO_LINKS = { tag_ids: [], category_ids: [] }
+
 describe("buildCreateProductInput", () => {
   it("synthesizes Medusa's single-variant default option when no row has variant options", () => {
     const product = buildCanonicalProduct({ variantOptions: [] })
 
-    const input = buildCreateProductInput([product])
+    const input = buildCreateProductInput([product], NO_LINKS)
 
     expect(input.options).toEqual([{ title: "Default option", values: ["Default option"] }])
     expect(input.variants[0].options).toEqual({ "Default option": "Default option" })
@@ -25,7 +27,7 @@ describe("buildCreateProductInput", () => {
       variantOptions: [buildVariantOption({ optionName: "Size", optionValue: "L" })],
     })
 
-    const input = buildCreateProductInput([small, large])
+    const input = buildCreateProductInput([small, large], NO_LINKS)
 
     expect(input.options).toEqual([{ title: "Size", values: ["S", "L"] }])
     expect(input.variants[0].options).toEqual({ Size: "S" })
@@ -35,7 +37,7 @@ describe("buildCreateProductInput", () => {
   it("converts CanonicalProduct's null (spec §5 'no value') to undefined for Medusa's optional DTO fields", () => {
     const product = buildCanonicalProduct({ subtitle: null, description: null })
 
-    const input = buildCreateProductInput([product])
+    const input = buildCreateProductInput([product], NO_LINKS)
 
     expect(input.subtitle).toBeUndefined()
     expect(input.description).toBeUndefined()
@@ -44,7 +46,7 @@ describe("buildCreateProductInput", () => {
   it("stashes the Supplier SKU in variant metadata for traceability (spec §5)", () => {
     const product = buildCanonicalProduct({ supplierSku: "ACME-123" })
 
-    const input = buildCreateProductInput([product])
+    const input = buildCreateProductInput([product], NO_LINKS)
 
     expect(input.variants[0].metadata).toEqual({
       supplier_sku: "ACME-123",
@@ -56,7 +58,7 @@ describe("buildCreateProductInput", () => {
     const product = buildCanonicalProduct({ supplierCost: 42 })
     const unrelatedProduct = buildCanonicalProduct({ supplierCost: 999 })
 
-    const input = buildCreateProductInput([product])
+    const input = buildCreateProductInput([product], NO_LINKS)
 
     expect(input.variants[0].metadata.sync_hash).toBe(hashCanonicalProduct(product))
     expect(input.variants[0].metadata.sync_hash).not.toBe(hashCanonicalProduct(unrelatedProduct))
@@ -66,7 +68,7 @@ describe("buildCreateProductInput", () => {
     const first = buildCanonicalProduct({ productTitle: "First Title" })
     const second = buildCanonicalProduct({ productTitle: "Second Title" })
 
-    const input = buildCreateProductInput([first, second])
+    const input = buildCreateProductInput([first, second], NO_LINKS)
 
     expect(input.title).toBe("First Title")
   })
@@ -77,7 +79,7 @@ describe("buildCreateProductInput", () => {
     () => {
       const placeholderProduct = buildCanonicalProduct({ sku: "acm_", supplierSku: null })
 
-      expect(() => buildCreateProductInput([placeholderProduct])).toThrow(/acm_/)
+      expect(() => buildCreateProductInput([placeholderProduct], NO_LINKS)).toThrow(/acm_/)
     }
   )
 })
@@ -86,7 +88,7 @@ describe("buildUpdateProductInput", () => {
   it("maps each row to its already-resolved existing variant id", () => {
     const product = buildCanonicalProduct({ sku: "sku-1" })
 
-    const input = buildUpdateProductInput("prod_123", [product], [{ variantId: "variant_1", sku: "sku-1" }], [], [])
+    const input = buildUpdateProductInput("prod_123", [product], [{ variantId: "variant_1", sku: "sku-1" }], [], [], NO_LINKS)
 
     expect(input.id).toBe("prod_123")
     expect(input.variants).toMatchObject([
@@ -103,6 +105,6 @@ describe("buildUpdateProductInput", () => {
   it("leaves out a row with no existing variant - it's created separately as a new variant (issue #23)", () => {
     const product = buildCanonicalProduct({ sku: "sku-new" })
 
-    expect(buildUpdateProductInput("prod_123", [product], [], [], []).variants).toEqual([])
+    expect(buildUpdateProductInput("prod_123", [product], [], [], [], NO_LINKS).variants).toEqual([])
   })
 })

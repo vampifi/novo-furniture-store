@@ -70,11 +70,19 @@ export interface SupplierTabDefinition {
   io: SupplierTabIO
 }
 
+/**
+ * Which of these rows' references don't exist in Medusa, as `productHandle -> messages`. Lets a
+ * bad reference be flagged in Sync Status rather than guessed (spec §8, "Cross-cutting policy").
+ */
+export type FindUnresolvedReferences = (products: CanonicalProduct[]) => Promise<Map<string, string[]>>
+
 export interface RunSupplierTabSyncCycleDeps {
   /** The real composed apply-canonical-product workflow (#14/#16) - see
    * `workflows/run-apply-canonical-product-workflow.ts`'s `createApplyCanonicalProductRunner`,
    * which both the scheduled job and the manual-trigger route use to build this. */
   applyCanonicalProduct: ApplyCanonicalProductForGroup
+  /** See `FindUnresolvedReferences` - real implementation in `trigger-infra/`. */
+  findUnresolvedReferences?: FindUnresolvedReferences
   /** Injectable clock, for deterministic tests - defaults to `() => new Date()`. */
   now?: () => Date
 }
@@ -118,8 +126,19 @@ export async function runSupplierTabSyncCycle(
     consistencyResults,
   })
 
+  const unresolvedReferences =
+    (await deps.findUnresolvedReferences?.(statusResult.readyForMedusaSync)) ?? new Map<string, string[]>()
+  const readyToApply = statusResult.readyForMedusaSync.filter((product) => !unresolvedReferences.has(product.productHandle))
+  const blockedByReference = statusResult.readyForMedusaSync
+    .filter((product) => unresolvedReferences.has(product.productHandle))
+    .map((product) => ({
+      anchor: product.sku,
+      product,
+      status: `⚠ ${(unresolvedReferences.get(product.productHandle) as string[]).join("; ")}`,
+    }))
+
   const applyOutcomes = await applyReadyRows(
-    statusResult.readyForMedusaSync,
+    readyToApply,
     consistencyResults,
     deps.applyCanonicalProduct
   )
@@ -136,13 +155,13 @@ export async function runSupplierTabSyncCycle(
   )
 
   const syncedAt = now()
-  const syncedRows: SupplierTabSyncedRow[] = statusResult.readyForMedusaSync
+  const syncedRows: SupplierTabSyncedRow[] = readyToApply
     .filter((product) => appliedHandles.has(product.productHandle))
     .map((product) => ({ product, writeBack: buildSyncedWriteBack(syncedAt) }))
 
   const outcome: SupplierTabSyncOutcome = {
     tabName: tab.name,
-    blockedRows: statusResult.blockedRows,
+    blockedRows: [...statusResult.blockedRows, ...blockedByReference],
     syncedRows,
     applyOutcomes,
   }

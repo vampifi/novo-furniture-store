@@ -17,6 +17,7 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { loadServiceAccountConfigFromEnv, createGoogleSheetsClient } from "../lib/google-sheets"
 import { triggerSyncCycle } from "../product-catalog-sync/sync-cycle-trigger"
 import { createApplyCanonicalProductRunner } from "../product-catalog-sync/workflows/run-apply-canonical-product-workflow"
+import { createMedusaReferenceChecker } from "../product-catalog-sync/trigger-infra/medusa-reference-checker"
 import { isIncompletePlaceholderSku } from "../product-catalog-sync/row-reconciliation"
 import { isNonEmptyString, isPositiveNumber } from "../product-catalog-sync/validation"
 import type { SupplierTabDefinition } from "../product-catalog-sync/sync-cycle"
@@ -362,7 +363,12 @@ export default async function verifyFullSchemaCycle({ container }: ExecArgs) {
   const lock = { async acquire() { return true }, async release() {} }
   const results = await triggerSyncCycle(
     { tabs: "all" },
-    { supplierTabs: [testTab], lock, applyCanonicalProduct: createApplyCanonicalProductRunner(container) }
+    {
+      supplierTabs: [testTab],
+      lock,
+      applyCanonicalProduct: createApplyCanonicalProductRunner(container),
+      findUnresolvedReferences: createMedusaReferenceChecker(container),
+    }
   )
   logger.info(`Cycle results: ${JSON.stringify(results, null, 2)}`)
 }

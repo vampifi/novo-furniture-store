@@ -18,6 +18,7 @@ import { createProductsWorkflow, createProductVariantsWorkflow, updateProductsWo
 import type { CanonicalProduct } from "../types"
 import { resolveExistingProductStep } from "./steps/resolve-existing-product"
 import { applyCustomAttributesStep } from "./steps/apply-custom-attributes"
+import { resolveProductLinksStep } from "./steps/resolve-product-links"
 import { buildCreateProductInput, buildNewVariantsInput, buildUpdateProductInput } from "./transforms/build-product-input"
 
 export type ApplyCanonicalProductWorkflowInput = {
@@ -47,9 +48,15 @@ export const applyCanonicalProductWorkflow = createWorkflow<
     existingOptions,
   } = resolveExistingProductStep({ skus, handle })
 
-  const createInput = transform({ input }, (data) => buildCreateProductInput(data.input.products))
+  const linkInput = transform({ input }, (data) => ({
+    tags: data.input.products[0].productTags,
+    categoryHandles: data.input.products[0].productCategories,
+  }))
+  const links = resolveProductLinksStep(linkInput)
+
+  const createInput = transform({ input, links }, (data) => buildCreateProductInput(data.input.products, data.links))
   const updateInput = transform(
-    { input, existingProductId, existingVariantsBySku, otherVariantIds, existingOptions },
+    { input, existingProductId, existingVariantsBySku, otherVariantIds, existingOptions, links },
     (data) =>
       data.existingProductId
         ? buildUpdateProductInput(
@@ -57,7 +64,8 @@ export const applyCanonicalProductWorkflow = createWorkflow<
             data.input.products,
             data.existingVariantsBySku,
             data.otherVariantIds,
-            data.existingOptions
+            data.existingOptions,
+            data.links
           )
         : null
   )

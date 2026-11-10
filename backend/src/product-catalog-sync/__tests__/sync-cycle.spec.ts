@@ -187,6 +187,29 @@ describe("runSupplierTabSyncCycle", () => {
     ])
   })
 
+  it("blocks every row of a product with an unresolved reference, and still applies other products (issue #25)", async () => {
+    const [bad1, bad2] = ["A", "B"].map((code) =>
+      makeProduct({ productHandle: "bad-table", sku: `acm_${code}`, supplierSku: code, productCategories: ["nope"] })
+    )
+    const good = makeProduct({ productHandle: "good-table", sku: "acm_G", supplierSku: "G" })
+    const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_1" })
+    const findUnresolvedReferences = jest.fn().mockResolvedValue(new Map([["bad-table", ['Category "nope" doesn\'t exist in Medusa']]]))
+    const tab = makeTab({
+      adapter: fakeAdapterFor([bad1, bad2, good].map((product) => ({ ok: true as const, product }))),
+      io: fakeIO([], [{}, {}, {}]),
+    })
+
+    const outcome = await runSupplierTabSyncCycle(tab, { applyCanonicalProduct, findUnresolvedReferences })
+
+    expect(applyCanonicalProduct).toHaveBeenCalledTimes(1)
+    expect(applyCanonicalProduct).toHaveBeenCalledWith([good])
+    expect(outcome.blockedRows.map((row) => [row.anchor, row.status])).toEqual([
+      ["acm_A", '⚠ Category "nope" doesn\'t exist in Medusa'],
+      ["acm_B", '⚠ Category "nope" doesn\'t exist in Medusa'],
+    ])
+    expect(outcome.syncedRows.map((row) => row.product.sku)).toEqual(["acm_G"])
+  })
+
   describe("a product with some changed rows (issue #22)", () => {
     const bookcaseRow = (supplierSku: string, overrides: Partial<CanonicalProduct> = {}) =>
       makeProduct({ productHandle: "bookcase", productTitle: "Bookcase", sku: `acm_${supplierSku}`, supplierSku, ...overrides })

@@ -14,6 +14,7 @@
  * Framework-free, like sync-cycle.ts: `SyncCycleLock` is injected, with `trigger-infra/` holding the
  * real Medusa-Locking-module-backed implementation.
  */
+import type { FindUnresolvedReferences } from "./sync-cycle"
 import { runSupplierTabSyncCycle } from "./sync-cycle"
 import type { ApplyCanonicalProductForGroup } from "./apply-ready-rows"
 import type { SupplierTabDefinition, SupplierTabSyncOutcome } from "./sync-cycle"
@@ -37,6 +38,7 @@ export interface TriggerSyncCycleDeps {
   supplierTabs: readonly SupplierTabDefinition[]
   lock: SyncCycleLock
   applyCanonicalProduct: ApplyCanonicalProductForGroup
+  findUnresolvedReferences?: FindUnresolvedReferences
   /** Injectable clock, forwarded to runSupplierTabSyncCycle - defaults to `() => new Date()`. */
   now?: () => Date
 }
@@ -85,6 +87,7 @@ export async function triggerSyncCycle(
     try {
       const result = await runSupplierTabSyncCycle(tab, {
         applyCanonicalProduct: deps.applyCanonicalProduct,
+        findUnresolvedReferences: deps.findUnresolvedReferences,
         now: deps.now,
       })
       results.push({ tabName: tab.name, outcome: "completed", result })
