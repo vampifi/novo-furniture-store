@@ -86,7 +86,7 @@ describe("buildUpdateProductInput", () => {
   it("maps each row to its already-resolved existing variant id", () => {
     const product = buildCanonicalProduct({ sku: "sku-1" })
 
-    const input = buildUpdateProductInput("prod_123", [product], [{ variantId: "variant_1", sku: "sku-1" }], [])
+    const input = buildUpdateProductInput("prod_123", [product], [{ variantId: "variant_1", sku: "sku-1" }], [], [])
 
     expect(input.id).toBe("prod_123")
     expect(input.variants).toEqual([
@@ -100,9 +100,9 @@ describe("buildUpdateProductInput", () => {
     ])
   })
 
-  it("throws when a row's SKU has no resolved existing variant id - the caller's contract violation, not a user-facing error", () => {
-    const product = buildCanonicalProduct({ sku: "sku-missing" })
+  it("leaves out a row with no existing variant - it's created separately as a new variant (issue #23)", () => {
+    const product = buildCanonicalProduct({ sku: "sku-new" })
 
-    expect(() => buildUpdateProductInput("prod_123", [product], [])).toThrow(/sku-missing/)
+    expect(buildUpdateProductInput("prod_123", [product], [], [], []).variants).toEqual([])
   })
 })

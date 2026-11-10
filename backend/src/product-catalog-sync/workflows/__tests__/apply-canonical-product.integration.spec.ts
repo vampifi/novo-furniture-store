@@ -134,6 +134,65 @@ describe("applyCanonicalProductWorkflow", () => {
         })
       })
 
+      describe("adding a variant to an existing product (issue #23)", () => {
+        const sizeVariant = (sku: string, size: string, retailPrice: number) =>
+          buildCanonicalProduct({
+            sku,
+            productHandle: "oak-wardrobe",
+            retailPrice,
+            variantOptions: [buildVariantOption({ optionName: "Size", optionValue: size })],
+          })
+
+        const summarizeVariants = async (container: ReturnType<typeof getContainer>) => {
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data: variants } = await query.graph({
+            entity: "product_variant",
+            fields: ["sku", "product_id", "prices.amount", "options.value", "inventory_items.inventory_item_id"],
+          })
+          return variants
+            .map((v) => ({
+              size: v.options?.[0]?.value,
+              price: v.prices?.[0]?.amount,
+              hasInventoryItem: (v.inventory_items?.length ?? 0) > 0,
+              productId: v.product_id,
+            }))
+            .sort((a, b) => (a.price as number) - (b.price as number))
+        }
+
+        it("adds a new variant with a new option value alongside the rows it arrived with", async () => {
+          const container = getContainer()
+          const [small, medium, large] = [nextTestSku(), nextTestSku(), nextTestSku()]
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [sizeVariant(small, "S", 100), sizeVariant(medium, "M", 200)] },
+          })
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [sizeVariant(small, "S", 100), sizeVariant(medium, "M", 200), sizeVariant(large, "L", 300)] },
+          })
+
+          expect(await summarizeVariants(container)).toEqual([
+            { size: "S", price: 100, hasInventoryItem: true, productId: result.productId },
+            { size: "M", price: 200, hasInventoryItem: true, productId: result.productId },
+            { size: "L", price: 300, hasInventoryItem: true, productId: result.productId },
+          ])
+        })
+
+        it("finds the product by handle when the new row is the only one it's given", async () => {
+          const container = getContainer()
+          const [small, large] = [nextTestSku(), nextTestSku()]
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [sizeVariant(small, "S", 100)] },
+          })
+          await applyCanonicalProductWorkflow(container).run({ input: { products: [sizeVariant(large, "L", 300)] } })
+
+          expect(await summarizeVariants(container)).toEqual([
+            { size: "S", price: 100, hasInventoryItem: true, productId: result.productId },
+            { size: "L", price: 300, hasInventoryItem: true, productId: result.productId },
+          ])
+        })
+      })
+
       describe("custom attributes", () => {
         it("creates the category definition and product-level value for a new attribute", async () => {
           const container = getContainer()

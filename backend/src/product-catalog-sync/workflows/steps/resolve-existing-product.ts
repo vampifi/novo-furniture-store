@@ -13,6 +13,8 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 export type ResolveExistingProductStepInput = {
   skus: string[]
+  /** Finds the product when none of `skus` exist yet but the row belongs to an existing product. */
+  handle: string
 }
 
 export type ExistingVariantBySku = {
@@ -20,8 +22,14 @@ export type ExistingVariantBySku = {
   sku: string
 }
 
+export type ExistingProductOption = {
+  id: string
+  title: string
+  values: string[]
+}
+
 export type ResolveExistingProductStepOutput = {
-  /** `null` when none of `skus` match an existing variant - this call is a create. */
+  /** `null` when neither `skus` nor `handle` match anything in Medusa - this call is a create. */
   productId: string | null
   /** Only the subset of `skus` that already exist, mapped to their current variant id. */
   existingVariantsBySku: ExistingVariantBySku[]
@@ -30,11 +38,12 @@ export type ResolveExistingProductStepOutput = {
    * treats a product update's `variants` as the complete set and deletes any it doesn't see.
    */
   otherVariantIds: string[]
+  existingOptions: ExistingProductOption[]
 }
 
 export const resolveExistingProductStep = createStep(
   "resolve-existing-product",
-  async ({ skus }: ResolveExistingProductStepInput, { container }): Promise<StepResponse<ResolveExistingProductStepOutput>> => {
+  async ({ skus, handle }: ResolveExistingProductStepInput, { container }): Promise<StepResponse<ResolveExistingProductStepOutput>> => {
     const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
     const { data: variants } = await query.graph({
@@ -51,11 +60,22 @@ export const resolveExistingProductStep = createStep(
       )
     }
 
-    const productId: string | null = variants[0]?.product_id ?? null
+    const { data: productsWithHandle } = variants.length
+      ? { data: [] as { id: string }[] }
+      : await query.graph({ entity: "product", fields: ["id"], filters: { handle } })
+
+    const productId: string | null = variants[0]?.product_id ?? productsWithHandle[0]?.id ?? null
     const namedVariantIds = new Set(variants.map((variant: { id: string }) => variant.id))
     const { data: allProductVariants } = productId
       ? await query.graph({ entity: "product_variant", fields: ["id"], filters: { product_id: productId } })
       : { data: [] as { id: string }[] }
+    const { data: productsWithOptions } = productId
+      ? await query.graph({
+          entity: "product",
+          fields: ["options.id", "options.title", "options.values.value"],
+          filters: { id: productId },
+        })
+      : { data: [] }
 
     return new StepResponse({
       productId,
@@ -66,6 +86,11 @@ export const resolveExistingProductStep = createStep(
       otherVariantIds: allProductVariants
         .map((variant: { id: string }) => variant.id)
         .filter((id: string) => !namedVariantIds.has(id)),
+      existingOptions: (productsWithOptions[0]?.options ?? []).map((option) => ({
+        id: option.id,
+        title: option.title,
+        values: (option.values ?? []).map((value) => value.value),
+      })),
     })
   }
 )

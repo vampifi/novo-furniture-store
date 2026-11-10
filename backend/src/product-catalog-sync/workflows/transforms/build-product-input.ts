@@ -146,13 +146,30 @@ export type UpdateProductInput = {
   description: string | undefined
   status: CanonicalProduct["status"]
   discountable: boolean
+  /** Only sent when new option values need adding - see buildOptionsUpdate. */
+  options: { id: string; title: string; values: string[] }[] | undefined
   variants: (ExistingVariantInput | { id: string })[]
 }
 
+/** The product's options with any new values appended, or `undefined` when there are none. */
+function buildOptionsUpdate(
+  products: CanonicalProduct[],
+  existingOptions: { id: string; title: string; values: string[] }[]
+): UpdateProductInput["options"] {
+  const incoming = buildProductOptions(products)
+  const merged = existingOptions.map((option) => ({
+    ...option,
+    values: Array.from(
+      new Set([...option.values, ...(incoming.find(({ title }) => title === option.title)?.values ?? [])])
+    ),
+  }))
+  const hasNewValues = merged.some((option, index) => option.values.length > existingOptions[index].values.length)
+  return hasNewValues ? merged : undefined
+}
+
 /**
- * `existingVariantsBySku` must cover every row in `products` (callers only take the update branch
- * once resolveExistingProductStep confirms every incoming SKU already has a variant id - adding a
- * new variant to an existing product via this same call is out of scope for this ticket).
+ * Rows whose SKU isn't in `existingVariantsBySku` are left out here: they're new variants, created
+ * separately from buildNewVariantsInput once this update has added their option values.
  *
  * `otherVariantIds` are listed by id alone so Medusa keeps them unchanged: its product update
  * treats `variants` as the complete set and deletes anything missing, and the sync never deletes
@@ -162,7 +179,8 @@ export function buildUpdateProductInput(
   productId: string,
   products: CanonicalProduct[],
   existingVariantsBySku: { variantId: string; sku: string }[],
-  otherVariantIds: string[]
+  otherVariantIds: string[],
+  existingOptions: { id: string; title: string; values: string[] }[]
 ): UpdateProductInput {
   assertNoPlaceholderSkus(products)
   const [representative] = products
@@ -175,21 +193,46 @@ export function buildUpdateProductInput(
     description: nullToUndefined(representative.description),
     status: representative.status,
     discountable: representative.discountable,
+    options: buildOptionsUpdate(products, existingOptions),
     variants: [
-      ...products.map((product) => {
+      ...products.flatMap((product) => {
         const variantId = variantIdBySku.get(product.sku)
-        if (!variantId) {
-          throw new Error(`No existing variant id resolved for SKU "${product.sku}" during update`)
-        }
-        return {
-          id: variantId,
-          title: product.productTitle,
-          sku: product.sku,
-          prices: [{ amount: product.retailPrice, currency_code: CURRENCY_CODE }],
-          metadata: buildVariantMetadata(product),
-        }
+        return variantId
+          ? [
+              {
+                id: variantId,
+                title: product.productTitle,
+                sku: product.sku,
+                prices: [{ amount: product.retailPrice, currency_code: CURRENCY_CODE }],
+                metadata: buildVariantMetadata(product),
+              },
+            ]
+          : []
       }),
       ...otherVariantIds.map((id) => ({ id })),
     ],
   }
+}
+
+export type NewVariantForExistingProductInput = NewProductVariantInput & { product_id: string }
+
+/** The rows whose SKU has no variant yet on this existing product (issue #23). */
+export function buildNewVariantsInput(
+  productId: string,
+  products: CanonicalProduct[],
+  existingVariantsBySku: { variantId: string; sku: string }[]
+): NewVariantForExistingProductInput[] {
+  assertNoPlaceholderSkus(products)
+  const existingSkus = new Set(existingVariantsBySku.map(({ sku }) => sku))
+
+  return products
+    .filter((product) => !existingSkus.has(product.sku))
+    .map((product) => ({
+      product_id: productId,
+      title: product.productTitle,
+      sku: product.sku,
+      options: buildVariantOptionSelection(product),
+      prices: [{ amount: product.retailPrice, currency_code: CURRENCY_CODE }],
+      metadata: buildVariantMetadata(product),
+    }))
 }
