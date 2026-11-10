@@ -7,7 +7,7 @@
  * never point this at a production sheet.
  */
 import { ExecArgs } from "@medusajs/framework/types"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { loadServiceAccountConfigFromEnv, createGoogleSheetsClient } from "../lib/google-sheets"
 import { HEADER_ROW, LAST_COLUMN, sampleRow } from "./verify-full-schema-cycle"
 
@@ -16,7 +16,7 @@ const CLEARED_ROWS = 30
 
 const physicalFacts = {
   weight: "18", length: "80", width: "30", height: "180",
-  hsCode: "940360", originCountry: "GB", midCode: "GBNOVO123", upc: "012345678905", ean: "5012345678900",
+  hsCode: "940360", originCountry: "GB", midCode: "GBNOVO123",
 }
 
 const bookcase = {
@@ -32,6 +32,8 @@ const bookcase = {
   imageUrl3: "https://example.com/images/walnut-bookcase-detail.jpg",
   status: "draft",
   productTags: "storage, living-room",
+  productCategories: "merch",
+  salesChannel: "Default Sales Channel",
   discountable: "TRUE",
 }
 
@@ -43,7 +45,7 @@ const sideTable = {
   discountable: "TRUE",
 }
 
-const SAMPLE_ROWS = [
+const buildSampleRows = (references: Record<string, string>) => [
   // Simple product, no options/attributes, no explicit sku/handle - the passthrough adapter
   // derives both.
   sampleRow({
@@ -60,9 +62,9 @@ const SAMPLE_ROWS = [
   // Deliberately invalid - no title anywhere, to confirm rejection against the full schema.
   sampleRow({ supplierSku: "sku-103", retailPrice: "199.99", status: "draft", discountable: "TRUE" }),
   // One product with three variants across two option slots and three product images.
-  sampleRow({ ...bookcase, supplierSku: "sku-201", supplierCost: "150", retailPrice: "299.00", supplierOption1Value: "Walnut", supplierOption2Value: "Small" }),
-  sampleRow({ ...bookcase, supplierSku: "sku-202", supplierCost: "200", retailPrice: "399.00", supplierOption1Value: "Walnut", supplierOption2Value: "Large" }),
-  sampleRow({ ...bookcase, supplierSku: "sku-203", supplierCost: "190", retailPrice: "379.00", supplierOption1Value: "Oak", supplierOption2Value: "Large" }),
+  sampleRow({ ...bookcase, ...references, variantImageUrl: "https://example.com/images/walnut-small.jpg", upc: "012345678201", ean: "5012345678201", supplierSku: "sku-201", supplierCost: "150", retailPrice: "299.00", supplierOption1Value: "Walnut", supplierOption2Value: "Small" }),
+  sampleRow({ ...bookcase, ...references, variantImageUrl: "https://example.com/images/walnut-large.jpg", upc: "012345678202", ean: "5012345678202", supplierSku: "sku-202", supplierCost: "200", retailPrice: "399.00", supplierOption1Value: "Walnut", supplierOption2Value: "Large" }),
+  sampleRow({ ...bookcase, ...references, variantImageUrl: "https://example.com/images/oak-large.jpg", upc: "012345678203", ean: "5012345678203", supplierSku: "sku-203", supplierCost: "190", retailPrice: "379.00", supplierOption1Value: "Oak", supplierOption2Value: "Large" }),
   // Sibling disagreement: the last row's title dissents, so only it is flagged by name and the
   // whole product stays out of Medusa (spec §8 majority rule).
   sampleRow({ ...sideTable, supplierSku: "sku-301", supplierCost: "40", retailPrice: "89.00", supplierOption1Value: "Small" }),
@@ -72,7 +74,23 @@ const SAMPLE_ROWS = [
 
 export default async function setupFullSchemaSheet({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+  const productModule = container.resolve(Modules.PRODUCT)
   const sheets = createGoogleSheetsClient(loadServiceAccountConfigFromEnv())
+
+  // The sample rows reference real Medusa records, so "every column populated" can actually sync.
+  const collection =
+    (await productModule.listProductCollections({ title: "Sheet Test Collection" }))[0] ??
+    (await productModule.createProductCollections([{ title: "Sheet Test Collection" }]))[0]
+  const type =
+    (await productModule.listProductTypes({ value: "Sheet Test Type" }))[0] ??
+    (await productModule.createProductTypes([{ value: "Sheet Test Type" }]))[0]
+  const { data: shippingProfiles } = await query.graph({ entity: "shipping_profile", fields: ["id"] })
+  const SAMPLE_ROWS = buildSampleRows({
+    collectionId: collection.id,
+    typeId: type.id,
+    shippingProfileId: shippingProfiles[0].id,
+  })
 
   // Clear earlier test data first, then write the full layout fresh.
   await sheets.batchWrite([

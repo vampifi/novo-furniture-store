@@ -51,6 +51,7 @@ export const applyCanonicalProductWorkflow = createWorkflow<
   const linkInput = transform({ input }, (data) => ({
     tags: data.input.products[0].productTags,
     categoryHandles: data.input.products[0].productCategories,
+    salesChannelName: data.input.products[0].salesChannel,
   }))
   const links = resolveProductLinksStep(linkInput)
 

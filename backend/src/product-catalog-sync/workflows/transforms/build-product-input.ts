@@ -100,7 +100,17 @@ function nullToUndefined<T>(value: T | null): T | undefined {
 
 /** Per-variant facts. `null` is sent as-is so that blanking a Sheet cell clears the value. */
 function buildVariantFacts(product: CanonicalProduct) {
-  return { weight: product.weight, length: product.length, width: product.width, height: product.height }
+  return {
+    weight: product.weight,
+    length: product.length,
+    width: product.width,
+    height: product.height,
+    hs_code: product.hsCode,
+    origin_country: product.originCountry,
+    mid_code: product.midCode,
+    upc: product.upc,
+    ean: product.ean,
+  }
 }
 
 export type NewProductVariantInput = ReturnType<typeof buildVariantFacts> & {
@@ -111,7 +121,16 @@ export type NewProductVariantInput = ReturnType<typeof buildVariantFacts> & {
   metadata: Record<string, unknown>
 }
 
-export type CreateProductInput = ProductLinkIds & {
+/** Blank collection and type clear the link. A blank shipping profile leaves the current one. */
+function buildProductReferences(product: CanonicalProduct) {
+  return {
+    collection_id: product.collectionId,
+    type_id: product.typeId,
+    shipping_profile_id: nullToUndefined(product.shippingProfileId),
+  }
+}
+
+export type CreateProductInput = ProductLinkIds & ReturnType<typeof buildProductReferences> & {
   title: string
   handle: string
   subtitle: string | undefined
@@ -132,6 +151,7 @@ export function buildCreateProductInput(products: CanonicalProduct[], links: Pro
 
   return {
     ...links,
+    ...buildProductReferences(representative),
     title: representative.productTitle,
     handle: representative.productHandle,
     subtitle: nullToUndefined(representative.subtitle),
@@ -159,7 +179,7 @@ export type ExistingVariantInput = ReturnType<typeof buildVariantFacts> & {
   metadata: Record<string, unknown>
 }
 
-export type UpdateProductInput = ProductLinkIds & {
+export type UpdateProductInput = ProductLinkIds & ReturnType<typeof buildProductReferences> & {
   id: string
   title: string
   subtitle: string | undefined
@@ -210,6 +230,7 @@ export function buildUpdateProductInput(
 
   return {
     ...links,
+    ...buildProductReferences(representative),
     id: productId,
     title: representative.productTitle,
     subtitle: nullToUndefined(representative.subtitle),

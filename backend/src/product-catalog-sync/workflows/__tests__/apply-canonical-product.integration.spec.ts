@@ -347,6 +347,106 @@ describe("applyCanonicalProductWorkflow", () => {
         })
       })
 
+      describe("remaining canonical columns (issue #27)", () => {
+        const createReferences = async (container: ReturnType<typeof getContainer>) => {
+          const productModule: IProductModuleService = container.resolve(Modules.PRODUCT)
+          const [collection] = await productModule.createProductCollections([{ title: "Autumn" }])
+          const [type] = await productModule.createProductTypes([{ value: "Bookcase" }])
+          const shippingProfile = await container
+            .resolve(Modules.FULFILLMENT)
+            .createShippingProfiles({ name: "Bulky", type: "default" })
+          const salesChannel = await container.resolve(Modules.SALES_CHANNEL).createSalesChannels({ name: "Web" })
+          return { collection, type, shippingProfile, salesChannel }
+        }
+
+        it("applies compliance codes to each variant", async () => {
+          const container = getContainer()
+          const sku = nextTestSku()
+
+          await applyCanonicalProductWorkflow(container).run({
+            input: {
+              products: [
+                buildCanonicalProduct({ sku, hsCode: "940360", originCountry: "GB", midCode: "MID1", upc: "012345678905", ean: "5012345678900" }),
+              ],
+            },
+          })
+
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data } = await query.graph({
+            entity: "product_variant",
+            fields: ["hs_code", "origin_country", "mid_code", "upc", "ean"],
+            filters: { sku },
+          })
+          expect(data[0]).toEqual(
+            expect.objectContaining({ hs_code: "940360", origin_country: "GB", mid_code: "MID1", upc: "012345678905", ean: "5012345678900" })
+          )
+        })
+
+        it("applies collection, type, shipping profile and sales channel to the product", async () => {
+          const container = getContainer()
+          const { collection, type, shippingProfile, salesChannel } = await createReferences(container)
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: {
+              products: [
+                buildCanonicalProduct({
+                  collectionId: collection.id,
+                  typeId: type.id,
+                  shippingProfileId: shippingProfile.id,
+                  salesChannel: "Web",
+                }),
+              ],
+            },
+          })
+
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data } = await query.graph({
+            entity: "product",
+            fields: ["collection_id", "type_id", "shipping_profile.id", "sales_channels.id"],
+            filters: { id: result.productId },
+          })
+          expect(data[0].collection_id).toBe(collection.id)
+          expect(data[0].type_id).toBe(type.id)
+          expect((data[0] as unknown as { shipping_profile: { id: string } }).shipping_profile.id).toBe(shippingProfile.id)
+          expect((data[0].sales_channels ?? []).map((channel) => channel?.id)).toEqual([salesChannel.id])
+        })
+
+        it("reports collections, types, shipping profiles and sales channels that don't exist", async () => {
+          const container = getContainer()
+          const { collection, type, shippingProfile } = await createReferences(container)
+          const findUnresolvedReferences = createMedusaReferenceChecker(container)
+
+          const unresolved = await findUnresolvedReferences([
+            buildCanonicalProduct({
+              productHandle: "all-known",
+              collectionId: collection.id,
+              typeId: type.id,
+              shippingProfileId: shippingProfile.id,
+              salesChannel: "Web",
+            }),
+            buildCanonicalProduct({
+              productHandle: "all-unknown",
+              collectionId: "pcol_missing",
+              typeId: "ptyp_missing",
+              shippingProfileId: "sp_missing",
+              salesChannel: "Nope",
+            }),
+          ])
+
+          expect(Array.from(unresolved.entries())).toEqual([
+            [
+              "all-unknown",
+              [
+                'Collection "pcol_missing" doesn\'t exist in Medusa',
+                'Type "ptyp_missing" doesn\'t exist in Medusa',
+                'Shipping Profile "sp_missing" doesn\'t exist in Medusa',
+                'Sales Channel "Nope" doesn\'t exist in Medusa',
+              ],
+            ],
+          ])
+        })
+      })
+
       describe("custom attributes", () => {
         it("creates the category definition and product-level value for a new attribute", async () => {
           const container = getContainer()

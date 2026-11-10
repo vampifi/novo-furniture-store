@@ -11,16 +11,19 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 export type ResolveProductLinksStepInput = {
   tags: string[]
   categoryHandles: string[]
+  salesChannelName: string | null
 }
 
 export type ProductLinkIds = {
   tag_ids: string[]
   category_ids: string[]
+  /** Left off when the Sheet names no channel, so existing assignments stay as they are. */
+  sales_channels?: { id: string }[]
 }
 
 export const resolveProductLinksStep = createStep(
   "resolve-product-links",
-  async ({ tags, categoryHandles }: ResolveProductLinksStepInput, { container }) => {
+  async ({ tags, categoryHandles, salesChannelName }: ResolveProductLinksStepInput, { container }) => {
     const productModule: IProductModuleService = container.resolve(Modules.PRODUCT)
 
     const query = container.resolve(ContainerRegistrationKeys.QUERY)
@@ -30,6 +33,13 @@ export const resolveProductLinksStep = createStep(
     const missingCategories = categoryHandles.filter((handle) => !categories.some((category) => category.handle === handle))
     if (missingCategories.length > 0) {
       throw new Error(`Categories not found in Medusa: ${missingCategories.join(", ")}`)
+    }
+
+    const { data: salesChannels } = salesChannelName
+      ? await query.graph({ entity: "sales_channel", fields: ["id"], filters: { name: salesChannelName } })
+      : { data: [] as { id: string }[] }
+    if (salesChannelName && salesChannels.length === 0) {
+      throw new Error(`Sales channel not found in Medusa: ${salesChannelName}`)
     }
 
     const uniqueTags = Array.from(new Set(tags))
@@ -42,6 +52,7 @@ export const resolveProductLinksStep = createStep(
     const linkIds: ProductLinkIds = {
       tag_ids: [...existingTags, ...createdTags].map((tag) => tag.id),
       category_ids: categories.map((category) => category.id),
+      ...(salesChannelName ? { sales_channels: [{ id: salesChannels[0].id }] } : {}),
     }
     return new StepResponse(linkIds, createdTags.map((tag) => tag.id))
   },

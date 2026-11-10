@@ -1,6 +1,6 @@
 # Product Catalog Sync: Google Sheet → Medusa — Architecture Spec
 
-**Status**: Implemented and merged to `integration/product-catalog-sync`, verified end-to-end against a real local Medusa instance. One post-implementation bug found via manual verification and fixed — see ADR 0006.
+**Status**: Implemented on `integration/product-catalog-sync`, verified end-to-end against a real local Medusa instance with every canonical column populated (§7, "What reaches Medusa"). Bugs found via manual verification and fixed — see ADR 0006 and issues #22–#27. Earlier versions of this document claimed full-schema verification when only title, subtitle, description, status, discountable, options and prices actually reached Medusa.
 **Source of record**: [wayfinder map #1](https://github.com/vampifi/novo-furniture-store/issues/1) and its nine resolved tickets; `GLOSSARY.md`; `docs/adr/0001`–`0006`. This document consolidates those decisions into one reference — the issues and ADRs remain the detailed record of *why*.
 
 ## 1. Problem
@@ -169,6 +169,20 @@ Instead: a **custom Medusa workflow** composes the official `createProductsWorkf
 - **Transactional behavior**: if a custom-attribute step fails after the product workflow succeeds, the orchestrator automatically rolls back the whole composed workflow using the product workflow's own built-in compensation (e.g. `deleteProducts`) — only the new custom-attribute steps need hand-written compensation.
 - **Failure granularity**: a product-level failure (e.g. a DB error) is scoped to that product only; other products and suppliers in the same cycle proceed independently.
 - **MeiliSearch**: automatic, no extra step — the same official workflows emit the same `product.created`/`product.updated` events either path would use.
+- **Variants are never deleted by the sync**: Medusa treats a product update's `variants` as the complete set, so the update lists every variant the rows don't cover. A variant whose row was removed from the Sheet stays in Medusa (#22).
+- **New variants on an existing product**: the product is found by SKU or Handle, any new option values are added, and the variant is created through Medusa's own workflow so it gets an inventory item (#23).
+
+### What reaches Medusa
+
+| Level | Columns |
+|---|---|
+| Product | Product Handle, Product Title, Subtitle, Description, Status, Discountable, Image N URL, Product Tag N, Product Category N, Collection Id, Type Id, Shipping Profile Id, Sales Channel, Option N Name/Value |
+| Variant | SKU, Retail Price, Option N Value, Weight, Length, Width, Height, HS Code, Origin Country, MID Code, UPC, EAN |
+| Variant metadata | Supplier SKU, sync hash, Variant Image N URL (Medusa 2.8 has no per-variant image relation) |
+| Custom Attribute records | Attribute N Key, Category Id, Value, Visible |
+| Sheet only | Supplier Cost and every other `Supplier X` column, Sync Status, Last Synced At |
+
+Product Category holds a category handle and Sales Channel holds a channel name, because those are what a person types; columns labelled "Id" hold Medusa ids. UPC and EAN must be unique per variant, as Medusa enforces. Blanking a tag, category, image, physical fact, compliance code, Collection Id or Type Id clears it in Medusa; a blank Shipping Profile Id or Sales Channel leaves the existing assignment alone.
 
 ## 8. Sync Engine Design
 
@@ -180,7 +194,7 @@ Scheduled polling (Medusa `src/jobs`, every 30–60s — adequate per research, 
 - **Sheet row ↔ Medusa variant**: matched via **SKU** itself (the real Medusa upsert key) — this is Sheet-to-Medusa, not Adapter-to-Sheet, so the (possibly business-renamed) SKU is correct here.
 
 ### Idempotency
-A deterministic fingerprint of the **merged row** — Adapter-Owned fields refreshed, Business-Owned fields as currently sitting in the Sheet — is stored in `variant.metadata` as `sync_hash`, alongside `supplier_sku`. An unchanged hash skips the row entirely — no Sheet write, no Medusa call. **Revised by ADR 0006**: the original design hashed only Adapter-Owned fields of the Adapter's fresh output in isolation, which could never detect a Business-Owned-only edit (e.g. a Retail Price change made directly in the Sheet) — found via manual end-to-end verification after initial implementation, not during design. Hashing the merged row, computed after merging rather than over fresh output alone, closes this for every combination of Adapter-Owned/Business-Owned change across a cycle gap.
+A deterministic fingerprint of the **merged row** — Adapter-Owned fields refreshed, Business-Owned fields as currently sitting in the Sheet — is stored in `variant.metadata` as `sync_hash`, alongside `supplier_sku`. A product whose rows all have unchanged hashes is skipped entirely — no Sheet write, no Medusa call. One changed row brings all of that product's rows through the cycle, so consistency checks and the apply see the full set (#22). **Revised by ADR 0006**: the original design hashed only Adapter-Owned fields of the Adapter's fresh output in isolation, which could never detect a Business-Owned-only edit (e.g. a Retail Price change made directly in the Sheet) — found via manual end-to-end verification after initial implementation, not during design. Hashing the merged row, computed after merging rather than over fresh output alone, closes this for every combination of Adapter-Owned/Business-Owned change across a cycle gap.
 
 ### Product-level field consistency (new finding during design)
 Several canonical-schema columns are product-level in Medusa (one slot per product) despite being repeated per variant row in the Sheet. If a product's sibling rows disagree on a Business-Owned product-level field, **no default is picked** — the product simply doesn't sync until the business owner resolves it. Resolution uses majority rule: if most siblings agree, only the dissenting row(s) are flagged by name; a genuine tie flags every row of that product with a caveat that it may not apply to every variant.
@@ -214,6 +228,7 @@ One unified `Sync Status` column per row:
 | `⚠ Needs SKU` | Incomplete-placeholder SKU (ADR 0004) |
 | `⚠ <field> doesn't match this product's other N variants` | Product-level disagreement, dissenting row (majority rule) |
 | `⚠ This product's variants disagree on <field> — check all rows, may not apply to every variant` | Product-level disagreement, no clear majority |
+| `⚠ <Category/Collection/Type/Shipping Profile/Sales Channel> "<value>" doesn't exist in Medusa` | A reference that can't be resolved; the product doesn't sync, others do (#25, #27) |
 
 Plus a **`Last Synced At`** timestamp, updated whenever a row successfully syncs.
 
