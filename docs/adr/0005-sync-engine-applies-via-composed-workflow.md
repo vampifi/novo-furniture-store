@@ -1,0 +1,11 @@
+# Sync Engine applies products via composed direct workflow calls, not CSV re-import
+
+Medusa ships a native product CSV import workflow (`importProductsWorkflow`) that this codebase's existing custom-attribute extension already hooks into for manual, human-uploaded imports. Reusing it for the Sync Engine looked appealing at first — it's an existing, tested path. But research (#2) found it's fail-fast with no row-level isolation: one malformed row aborts the entire batch before confirmation. That's fundamentally in tension with the row/variant-level independence the rest of this effort is built around (#8's per-row results, ADR 0004's per-row gating) — avoiding it would mean submitting one row per CSV import call, forfeiting any batching benefit while still paying the cost of generating CSV text, for no remaining upside.
+
+We decided the Sync Engine applies Canonical Products via a custom Medusa workflow that composes the official `createProductsWorkflow`/`updateProductsWorkflow` as a step (via `.runAsStep()`) — the same composition pattern Medusa's own `batchProductsWorkflow` uses — followed by steps that apply custom attribute values directly (bypassing the CSV-specific monkey-patch and its cache/metadata workaround, which exists only to survive that path's async event timing). Rows are grouped by Handle into one call per product, including only the Supplier Adapter's already-validated ("ok") variants; a failed variant is simply never included, rather than relying on Medusa to isolate it. If a later step (custom-attribute application) fails, the orchestrator automatically rolls back the composed product workflow using its own built-in compensation — only the new custom-attribute steps need hand-written compensation. A product-level call failing (e.g. a DB error) doesn't affect other products or other suppliers in the same sync cycle.
+
+This path still emits the same `product.created`/`product.updated` events the CSV path does (same underlying workflows), so MeiliSearch propagation remains automatic with no extra step.
+
+## Considered Options
+
+- **CSV generation + native `importProductsWorkflow`** — rejected: fail-fast batch semantics fight the row-independence this effort requires, and reusing it would forfeit CSV's only advantage (batching) while keeping its cost (serialization).
