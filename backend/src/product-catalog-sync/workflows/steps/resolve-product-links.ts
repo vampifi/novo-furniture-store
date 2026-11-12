@@ -49,6 +49,11 @@ export const resolveProductLinksStep = createStep(
       ? await productModule.createProductTags(missingTags.map((value) => ({ value })))
       : []
 
+    // Known gap: Medusa doesn't require sales channel names to be unique, so if two channels ever
+    // share a name this takes whichever the query returns first, rather than flagging the product
+    // as ambiguous (spec §8 cross-cutting policy). Accepted for now because the store has a single
+    // sales channel; once a second one is added, make createMedusaReferenceChecker block a name
+    // that matches more than one channel.
     const linkIds: ProductLinkIds = {
       tag_ids: [...existingTags, ...createdTags].map((tag) => tag.id),
       category_ids: categories.map((category) => category.id),

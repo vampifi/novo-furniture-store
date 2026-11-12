@@ -195,6 +195,122 @@ describe("applyCanonicalProductWorkflow", () => {
         })
       })
 
+      describe("option changes on an existing product (issue #28)", () => {
+        const variant = (sku: string, options: Record<string, string>, retailPrice = 100) =>
+          buildCanonicalProduct({
+            sku,
+            productHandle: "side-table",
+            retailPrice,
+            variantOptions: Object.entries(options).map(([optionName, optionValue]) =>
+              buildVariantOption({ optionName, optionValue })
+            ),
+          })
+
+        /** Each variant's options as "Title=Value" in title order, keyed by SKU, plus the product's option titles. */
+        const summarizeOptions = async (container: ReturnType<typeof getContainer>, productId: string) => {
+          const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          const { data: products } = await query.graph({
+            entity: "product",
+            fields: ["options.id", "options.title", "options.values.value", "variants.sku", "variants.options.value", "variants.options.option_id"],
+            filters: { id: productId },
+          })
+          const [product] = products
+          const titleById = new Map((product.options ?? []).map((option) => [option?.id, option?.title]))
+          return {
+            options: Object.fromEntries(
+              (product.options ?? []).map((option) => [option?.title, (option?.values ?? []).map((value) => value?.value).sort()])
+            ),
+            variants: Object.fromEntries(
+              (product.variants ?? []).map((v) => [
+                v?.sku,
+                (v?.options ?? []).map((option) => `${titleById.get(option?.option_id)}=${option?.value}`).sort(),
+              ])
+            ),
+          }
+        }
+
+        it("creates a new option and gives every variant, existing and new, its value", async () => {
+          const container = getContainer()
+          const [small, medium, gloss] = [nextTestSku(), nextTestSku(), nextTestSku()]
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(small, { Size: "Small" }), variant(medium, { Size: "Medium" })] },
+          })
+          await applyCanonicalProductWorkflow(container).run({
+            input: {
+              products: [
+                variant(small, { Size: "Small", Finish: "Matte" }),
+                variant(medium, { Size: "Medium", Finish: "Matte" }),
+                variant(gloss, { Size: "Small", Finish: "Gloss" }),
+              ],
+            },
+          })
+
+          expect(await summarizeOptions(container, result.productId)).toEqual({
+            options: { Size: ["Medium", "Small"], Finish: ["Gloss", "Matte"] },
+            variants: {
+              [small]: ["Finish=Matte", "Size=Small"],
+              [medium]: ["Finish=Matte", "Size=Medium"],
+              [gloss]: ["Finish=Gloss", "Size=Small"],
+            },
+          })
+        })
+
+        it("moves an existing variant to its changed option value", async () => {
+          const container = getContainer()
+          const [walnut, oak] = [nextTestSku(), nextTestSku()]
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(walnut, { Colour: "Walnut", Size: "Small" }), variant(oak, { Colour: "Oak", Size: "Large" })] },
+          })
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(walnut, { Colour: "Oak", Size: "Small" }), variant(oak, { Colour: "Oak", Size: "Large" })] },
+          })
+
+          expect((await summarizeOptions(container, result.productId)).variants).toEqual({
+            [walnut]: ["Colour=Oak", "Size=Small"],
+            [oak]: ["Colour=Oak", "Size=Large"],
+          })
+        })
+
+        it("removes an option no row names any more, such as after a rename, keeping every variant", async () => {
+          const container = getContainer()
+          const [walnut, oak] = [nextTestSku(), nextTestSku()]
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(walnut, { Color: "Walnut", Size: "Small" }), variant(oak, { Color: "Oak", Size: "Small" })] },
+          })
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(walnut, { Colour: "Walnut", Size: "Small" }), variant(oak, { Colour: "Oak", Size: "Small" })] },
+          })
+
+          expect(await summarizeOptions(container, result.productId)).toEqual({
+            options: { Colour: ["Oak", "Walnut"], Size: ["Small"] },
+            variants: {
+              [walnut]: ["Colour=Walnut", "Size=Small"],
+              [oak]: ["Colour=Oak", "Size=Small"],
+            },
+          })
+        })
+
+        it("replaces the placeholder option when a product without options gains one", async () => {
+          const container = getContainer()
+          const [small, large] = [nextTestSku(), nextTestSku()]
+
+          const { result } = await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(small, {})] },
+          })
+          await applyCanonicalProductWorkflow(container).run({
+            input: { products: [variant(small, { Size: "Small" }), variant(large, { Size: "Large" })] },
+          })
+
+          expect(await summarizeOptions(container, result.productId)).toEqual({
+            options: { Size: ["Large", "Small"] },
+            variants: { [small]: ["Size=Small"], [large]: ["Size=Large"] },
+          })
+        })
+      })
+
       describe("images (issue #24)", () => {
         const productImageUrls = async (container: ReturnType<typeof getContainer>, productId: string) => {
           const query = container.resolve(ContainerRegistrationKeys.QUERY)

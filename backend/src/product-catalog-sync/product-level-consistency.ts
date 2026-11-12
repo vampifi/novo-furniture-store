@@ -41,7 +41,8 @@ const PRODUCT_LEVEL_FIELDS = Object.keys(PRODUCT_LEVEL_FIELD_LABELS) as ProductL
 
 /** One field this specific row needs flagged in its Sync Status cell (spec §9). */
 export interface ProductLevelFieldDisagreement {
-  field: ProductLevelField
+  /** `variantOptions` when the row leaves blank an option its siblings fill (issue #28). */
+  field: ProductLevelField | "variantOptions"
   /** Exact Sync Status text per spec §9's table - ready to write back as-is. */
   message: string
 }
@@ -105,6 +106,13 @@ export function checkProductLevelFieldConsistency(products: CanonicalProduct[]):
         disagreementsByRow.get(row)!.push({ field, message: buildDissentingRowMessage(field, outcome.majorityCount) })
       }
     }
+
+    for (const [row, missingOptionNames] of findMissingOptionNames(siblings)) {
+      handlesWithAnyDisagreement.add(handle)
+      for (const optionName of missingOptionNames) {
+        disagreementsByRow.get(row)!.push({ field: "variantOptions", message: buildMissingOptionMessage(optionName) })
+      }
+    }
   }
 
   return products.map((product) => ({
@@ -122,6 +130,26 @@ function groupByHandle(products: CanonicalProduct[]): Map<string, CanonicalProdu
     siblingsByHandle.set(product.productHandle, siblings)
   }
   return siblingsByHandle
+}
+
+/**
+ * Option names are product-level in Medusa, and every variant needs a value for every one of its
+ * product's options (Medusa rejects a variant that leaves one out). So each row is checked against
+ * every option name any sibling fills, and lists the ones it leaves blank (issue #28). No majority
+ * rule here: the fix is always to fill the option on every row or clear it from every row, and
+ * the rows left blank are the ones to flag either way.
+ */
+function findMissingOptionNames(siblings: CanonicalProduct[]): Map<CanonicalProduct, string[]> {
+  const allOptionNames = new Set(siblings.flatMap((row) => row.variantOptions.map((option) => option.optionName)))
+  const missingByRow = new Map<CanonicalProduct, string[]>()
+  for (const row of siblings) {
+    const rowOptionNames = new Set(row.variantOptions.map((option) => option.optionName))
+    const missing = [...allOptionNames].filter((name) => !rowOptionNames.has(name))
+    if (missing.length > 0) {
+      missingByRow.set(row, missing)
+    }
+  }
+  return missingByRow
 }
 
 type FieldAgreementOutcome =
@@ -183,4 +211,9 @@ function buildDissentingRowMessage(field: ProductLevelField, majorityCount: numb
 /** Exact Sync Status text for every row of a product on a genuine tie (spec §9). */
 function buildTieMessage(field: ProductLevelField): string {
   return `⚠ This product's variants disagree on ${PRODUCT_LEVEL_FIELD_LABELS[field]} — check all rows, may not apply to every variant`
+}
+
+/** Exact Sync Status text for a row that leaves blank an option its siblings fill (issue #28). */
+function buildMissingOptionMessage(optionName: string): string {
+  return `⚠ Option "${optionName}" is blank – every variant of this product needs a value`
 }

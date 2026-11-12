@@ -7,6 +7,7 @@
 import { hashCanonicalProduct, isIncompletePlaceholderSku } from "../../row-reconciliation"
 import type { CanonicalProduct } from "../../types"
 import type { ProductLinkIds } from "../steps/resolve-product-links"
+import type { ExistingProductOption } from "../steps/resolve-existing-product"
 
 const DEFAULT_OPTION_TITLE = "Default option"
 const DEFAULT_OPTION_VALUE = "Default option"
@@ -175,6 +176,7 @@ export type ExistingVariantInput = ReturnType<typeof buildVariantFacts> & {
   id: string
   title: string
   sku: string
+  options: VariantOptionSelection
   prices: { amount: number; currency_code: string }[]
   metadata: Record<string, unknown>
 }
@@ -187,25 +189,35 @@ export type UpdateProductInput = ProductLinkIds & ReturnType<typeof buildProduct
   status: CanonicalProduct["status"]
   discountable: boolean
   images: { url: string }[]
-  /** Only sent when new option values need adding - see buildOptionsUpdate. */
-  options: { id: string; title: string; values: string[] }[] | undefined
+  /** Only sent when the Sheet's options differ from the product's - see buildOptionsUpdate. */
+  options: { id?: string; title: string; values: string[] }[] | undefined
   variants: (ExistingVariantInput | { id: string })[]
 }
 
-/** The product's options with any new values appended, or `undefined` when there are none. */
+/**
+ * The product's complete option set as the Sheet now describes it, or `undefined` when it already
+ * matches. Medusa replaces the product's options with this list (issue #28): options the Sheet
+ * still names keep their id and gain any new values, options it newly names are created, and
+ * options it no longer names are removed. Existing values are never dropped from a kept option,
+ * since a variant outside the Sheet may still select one.
+ */
 function buildOptionsUpdate(
   products: CanonicalProduct[],
-  existingOptions: { id: string; title: string; values: string[] }[]
+  existingOptions: ExistingProductOption[]
 ): UpdateProductInput["options"] {
-  const incoming = buildProductOptions(products)
-  const merged = existingOptions.map((option) => ({
-    ...option,
-    values: Array.from(
-      new Set([...option.values, ...(incoming.find(({ title }) => title === option.title)?.values ?? [])])
-    ),
-  }))
-  const hasNewValues = merged.some((option, index) => option.values.length > existingOptions[index].values.length)
-  return hasNewValues ? merged : undefined
+  const desired = buildProductOptions(products).map(({ title, values }) => {
+    const existing = existingOptions.find((option) => option.title === title)
+    return existing
+      ? { id: existing.id, title, values: Array.from(new Set([...existing.values, ...values])) }
+      : { title, values }
+  })
+  const unchanged =
+    desired.length === existingOptions.length &&
+    desired.every((option) => {
+      const existing = existingOptions.find(({ id }) => id === option.id)
+      return existing !== undefined && existing.values.length === option.values.length
+    })
+  return unchanged ? undefined : desired
 }
 
 /**
@@ -221,7 +233,7 @@ export function buildUpdateProductInput(
   products: CanonicalProduct[],
   existingVariantsBySku: { variantId: string; sku: string }[],
   otherVariantIds: string[],
-  existingOptions: { id: string; title: string; values: string[] }[],
+  existingOptions: ExistingProductOption[],
   links: ProductLinkIds
 ): UpdateProductInput {
   assertNoPlaceholderSkus(products)
@@ -239,7 +251,11 @@ export function buildUpdateProductInput(
     discountable: representative.discountable,
     images: buildImages(representative),
     options: buildOptionsUpdate(products, existingOptions),
+    // The id-only siblings go first: Medusa 2.8's duplicate-option-combination check
+    // (checkIfVariantsHaveUniqueOptionsCombinations) crashes when a variant with options is
+    // compared against a later one without any, but skips cleanly when the one without comes first.
     variants: [
+      ...otherVariantIds.map((id) => ({ id })),
       ...products.flatMap((product) => {
         const variantId = variantIdBySku.get(product.sku)
         return variantId
@@ -249,13 +265,13 @@ export function buildUpdateProductInput(
                 id: variantId,
                 title: product.productTitle,
                 sku: product.sku,
+                options: buildVariantOptionSelection(product),
                 prices: [{ amount: product.retailPrice, currency_code: CURRENCY_CODE }],
                 metadata: buildVariantMetadata(product),
               },
             ]
           : []
       }),
-      ...otherVariantIds.map((id) => ({ id })),
     ],
   }
 }

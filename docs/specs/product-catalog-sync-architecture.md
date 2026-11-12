@@ -171,6 +171,7 @@ Instead: a **custom Medusa workflow** composes the official `createProductsWorkf
 - **MeiliSearch**: automatic, no extra step — the same official workflows emit the same `product.created`/`product.updated` events either path would use.
 - **Variants are never deleted by the sync**: Medusa treats a product update's `variants` as the complete set, so the update lists every variant the rows don't cover. A variant whose row was removed from the Sheet stays in Medusa (#22).
 - **New variants on an existing product**: the product is found by SKU or Handle, any new option values are added, and the variant is created through Medusa's own workflow so it gets an inventory item (#23).
+- **Option changes on an existing product**: the product's options are made to match the Sheet. A new option name is created with its values, a changed Option Value moves the existing variant, and an option no row names any more (including after a rename) is removed from the product. A product created without options has Medusa's placeholder "Default option" replaced once it gains one. Medusa requires every variant to have a value for every option, so all rows of a product must fill the same options. A variant that exists only in Medusa admin, with no row, gets no value for a new option (#28).
 
 ### What reaches Medusa
 
@@ -229,6 +230,7 @@ One unified `Sync Status` column per row:
 | `⚠ <field> doesn't match this product's other N variants` | Product-level disagreement, dissenting row (majority rule) |
 | `⚠ This product's variants disagree on <field> — check all rows, may not apply to every variant` | Product-level disagreement, no clear majority |
 | `⚠ <Category/Collection/Type/Shipping Profile/Sales Channel> "<value>" doesn't exist in Medusa` | A reference that can't be resolved; the product doesn't sync, others do (#25, #27) |
+| `⚠ Option "<name>" is blank – every variant of this product needs a value` | A row leaves blank an option its sibling rows fill; the product doesn't sync, others do (#28) |
 
 Plus a **`Last Synced At`** timestamp, updated whenever a row successfully syncs.
 

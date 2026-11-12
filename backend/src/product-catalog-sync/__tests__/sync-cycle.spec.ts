@@ -144,6 +144,36 @@ describe("runSupplierTabSyncCycle", () => {
     expect(outcome.syncedRows).toEqual([])
   })
 
+  it("blocks a product whose rows don't all fill the same options, flagging the rows left blank (issue #28)", async () => {
+    const option = (name: string, value: string) => ({
+      supplierOptionName: name,
+      supplierOptionValue: value,
+      optionName: name,
+      optionValue: value,
+    })
+    const matte = makeProduct({ productHandle: "side-table", sku: "acm_1", variantOptions: [option("Size", "Small"), option("Finish", "Matte")] })
+    const gloss = makeProduct({ productHandle: "side-table", sku: "acm_2", variantOptions: [option("Size", "Large"), option("Finish", "Gloss")] })
+    const noFinish = makeProduct({ productHandle: "side-table", sku: "acm_3", variantOptions: [option("Size", "Medium")] })
+    const otherProduct = makeProduct({ productHandle: "oak-dining-table", sku: "acm_9" })
+    const applyCanonicalProduct = jest.fn().mockResolvedValue({ productId: "prod_9" })
+    const tab = makeTab({
+      adapter: fakeAdapterFor([matte, gloss, noFinish, otherProduct].map((product) => ({ ok: true as const, product }))),
+      io: fakeIO([], [{}, {}, {}, {}]),
+    })
+
+    const outcome = await runSupplierTabSyncCycle(tab, { applyCanonicalProduct })
+
+    expect(applyCanonicalProduct).toHaveBeenCalledTimes(1)
+    expect(applyCanonicalProduct).toHaveBeenCalledWith([otherProduct])
+    expect(outcome.blockedRows).toEqual([
+      {
+        anchor: "acm_3",
+        product: noFinish,
+        status: '⚠ Option "Finish" is blank – every variant of this product needs a value',
+      },
+    ])
+  })
+
   it("excludes an incomplete-placeholder-SKU row (ADR 0004) from apply, writing back Needs SKU", async () => {
     const product = makeProduct({ sku: "acm_" })
     const applyCanonicalProduct = jest.fn()
